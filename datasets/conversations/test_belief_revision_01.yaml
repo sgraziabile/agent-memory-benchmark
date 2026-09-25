@@ -1,0 +1,66 @@
+# ─────────────────────────────────────────────────────────────────
+# test_belief_revision_01.yaml — Basic Belief Revision Scenario
+# ─────────────────────────────────────────────────────────────────
+# Tests whether the agent correctly updates its internal beliefs
+# when the user explicitly contradicts a previously stated fact.
+# This is the core challenge addressed by the thesis: A vs. ¬A.
+# ─────────────────────────────────────────────────────────────────
+
+id: belief_revision_01
+name: "Basic Belief Revision"
+description: >
+  A user establishes a fact (cat's name is Luna, age 3), verifies recall,
+  then explicitly corrects the name to Miso. The agent must update its
+  belief and no longer reference the old name.
+category: belief_revision
+metadata:
+  difficulty: basic
+  expected_level_0_behavior: "May fail revision if context window is reset between invocations"
+  target_research_question: "P2"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: "Hi! I want to tell you about my pet. My cat's name is Luna and she is 3 years old. She's a calico."
+    assertions: []
+
+  - turn_number: 2
+    role: user
+    content: "What is my cat's name and how old is she?"
+    assertions:
+      - type: must_contain
+        value: "Luna"
+        case_sensitive: false
+      - type: must_contain
+        value: "3"
+        case_sensitive: false
+
+  - turn_number: 3
+    role: user
+    content: "Actually, I made a mistake earlier. My cat's name is Miso, not Luna. I always mix them up! Her name is definitely Miso."
+    assertions: []
+
+  - turn_number: 4
+    role: user
+    content: "So, what is my cat's name?"
+    assertions:
+      - type: must_contain
+        value: "Miso"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "Luna"
+        case_sensitive: false
+
+  - turn_number: 5
+    role: user
+    content: "Great. And just to confirm — how old is Miso and what breed is she?"
+    assertions:
+      - type: must_contain
+        value: "3"
+        case_sensitive: false
+      - type: must_contain
+        value: "calico"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "Luna"
+        case_sensitive: false

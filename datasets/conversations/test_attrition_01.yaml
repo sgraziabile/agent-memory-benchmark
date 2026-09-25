@@ -1,0 +1,94 @@
+# ─────────────────────────────────────────────────────────────────
+# test_attrition_01.yaml — Information Attrition Over Turns
+# ─────────────────────────────────────────────────────────────────
+# Tests whether the agent retains critical information introduced
+# early in the conversation after multiple unrelated distractor
+# turns push it further from the context window's attention.
+# ─────────────────────────────────────────────────────────────────
+
+id: attrition_01
+name: "Information Attrition Over Turns"
+description: >
+  A critical project detail (launch date and budget) is stated in Turn 1.
+  Six distractor turns on unrelated topics follow. The final turn asks
+  the agent to recall the original project details.
+category: attrition
+metadata:
+  difficulty: moderate
+  distractor_turns: 6
+  expected_level_0_behavior: "Likely fails — early facts may be lost without persistent memory"
+  target_research_question: "P1"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: >
+      I need you to remember this important detail: Project Falcon is
+      scheduled to launch on March 15th, 2025 with a total budget of
+      $2.5 million. The project lead is Dr. Sarah Chen.
+    assertions: []
+
+  - turn_number: 2
+    role: user
+    content: "By the way, what's the capital of Portugal?"
+    assertions:
+      - type: must_contain
+        value: "Lisbon"
+        case_sensitive: false
+
+  - turn_number: 3
+    role: user
+    content: "Can you explain the difference between a stack and a queue in computer science?"
+    assertions: []
+
+  - turn_number: 4
+    role: user
+    content: "What are the three primary colors in the RGB color model?"
+    assertions:
+      - type: must_contain
+        value: "red"
+        case_sensitive: false
+      - type: must_contain
+        value: "green"
+        case_sensitive: false
+      - type: must_contain
+        value: "blue"
+        case_sensitive: false
+
+  - turn_number: 5
+    role: user
+    content: "Who wrote the novel 'One Hundred Years of Solitude'?"
+    assertions:
+      - type: must_contain
+        value: "Gabriel"
+        case_sensitive: false
+
+  - turn_number: 6
+    role: user
+    content: "What is the chemical symbol for gold?"
+    assertions:
+      - type: must_contain
+        value: "Au"
+        case_sensitive: false
+
+  - turn_number: 7
+    role: user
+    content: "Can you describe how photosynthesis works in simple terms?"
+    assertions: []
+
+  - turn_number: 8
+    role: user
+    content: >
+      OK, now going back to what I told you at the very beginning —
+      when does Project Falcon launch, what is its budget, and who
+      is the project lead?
+    assertions:
+      - type: must_contain
+        value: "March 15"
+        case_sensitive: false
+      - type: must_contain
+        value: "2.5"
+        case_sensitive: false
+      - type: must_contain
+        value: "Sarah Chen"
+        case_sensitive: false

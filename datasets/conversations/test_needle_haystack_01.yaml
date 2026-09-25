@@ -1,0 +1,94 @@
+# ─────────────────────────────────────────────────────────────────
+# test_needle_haystack_01.yaml — Needle in a Haystack
+# ─────────────────────────────────────────────────────────────────
+# Tests retrieval of a single critical fact ("needle") buried among
+# a dense set of similar but distracting information ("haystack").
+# ─────────────────────────────────────────────────────────────────
+
+id: needle_haystack_01
+name: "Needle in a Haystack"
+description: >
+  The user describes five different projects with various details.
+  One project contains a specific security clearance code. The agent
+  must retrieve that exact code when asked, demonstrating precise
+  fact extraction from dense informational context.
+category: needle_haystack
+metadata:
+  difficulty: moderate
+  needle_location: "project_3_of_5"
+  expected_level_0_behavior: "Should succeed within single context window; tests attention, not persistence"
+  target_research_question: "P1"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: >
+      I'm going to brief you on our five active projects. Please keep track
+      of all the details.
+
+      Project Alpha: Led by James Park, budget $1.2M, launches June 2025.
+      Focus area: renewable energy storage. Status: Phase 2 testing.
+
+      Project Beta: Led by Maria Santos, budget $800K, launches April 2025.
+      Focus area: supply chain optimization. Status: Requirements gathering.
+
+      Project Gamma: Led by Alex Wu, budget $3.1M, launches September 2025.
+      Focus area: quantum-resistant cryptography. Security clearance code: DELTA-7749.
+      Status: Active development.
+
+      Project Delta: Led by Priya Sharma, budget $500K, launches February 2025.
+      Focus area: natural language processing. Status: Pilot deployment.
+
+      Project Epsilon: Led by Omar Hassan, budget $2.0M, launches December 2025.
+      Focus area: autonomous drone logistics. Status: Regulatory review.
+    assertions: []
+
+  - turn_number: 2
+    role: user
+    content: "How many active projects do we have and what are their names?"
+    assertions:
+      - type: must_contain
+        value: "Alpha"
+        case_sensitive: false
+      - type: must_contain
+        value: "Beta"
+        case_sensitive: false
+      - type: must_contain
+        value: "Gamma"
+        case_sensitive: false
+      - type: must_contain
+        value: "Delta"
+        case_sensitive: false
+      - type: must_contain
+        value: "Epsilon"
+        case_sensitive: false
+
+  - turn_number: 3
+    role: user
+    content: "What is the security clearance code for Project Gamma?"
+    assertions:
+      - type: must_contain
+        value: "DELTA-7749"
+        case_sensitive: false
+
+  - turn_number: 4
+    role: user
+    content: "Which project has the highest budget, and which has the lowest?"
+    assertions:
+      - type: must_contain
+        value: "Gamma"
+        case_sensitive: false
+      - type: must_contain
+        value: "Delta"
+        case_sensitive: false
+
+  - turn_number: 5
+    role: user
+    content: "Who leads the project focused on quantum-resistant cryptography, and what is its launch date?"
+    assertions:
+      - type: must_contain
+        value: "Alex Wu"
+        case_sensitive: false
+      - type: must_contain
+        value: "September"
+        case_sensitive: false

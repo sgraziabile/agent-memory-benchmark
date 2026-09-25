@@ -1,0 +1,186 @@
+"""core.model_factory — Dynamic multi-provider LLM instantiator.
+
+Resolves model identifiers from ``configs/models.yaml`` or parses inline
+``provider:model_name`` strings.  Supports Google GenAI, OpenAI, Anthropic,
+Groq, and (optionally) Ollama.
+
+Lazy imports ensure that only the requested provider package needs to be
+installed — missing optional providers won't crash the harness at import time.
+
+Example usage::
+
+    # From YAML registry
+    model = create_model("gemini-2.0-flash")
+
+    # From inline provider-qualified string
+    model = create_model("openai:gpt-4o-mini", temperature=0.0)
+"""
+
+from __future__ import annotations
+
+import importlib
+import logging
+from pathlib import Path
+from typing import Any
+
+import yaml
+from langchain_core.language_models import BaseChatModel
+
+logger = logging.getLogger(__name__)
+
+# ── Default paths ────────────────────────────────────────────────────────────
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_DEFAULT_MODELS_CONFIG = _PROJECT_ROOT / "configs" / "models.yaml"
+
+# ── Provider dispatch table ──────────────────────────────────────────────────
+# Maps provider key → (module_path, class_name)
+
+PROVIDER_MAP: dict[str, tuple[str, str]] = {
+    "google": ("langchain_google_genai", "ChatGoogleGenerativeAI"),
+    "openai": ("langchain_openai", "ChatOpenAI"),
+    "anthropic": ("langchain_anthropic", "ChatAnthropic"),
+    "groq": ("langchain_groq", "ChatGroq"),
+    "ollama": ("langchain_ollama", "ChatOllama"),
+}
+
+
+# ── YAML registry loader ────────────────────────────────────────────────────
+
+
+def load_model_registry(
+    config_path: Path | str = _DEFAULT_MODELS_CONFIG,
+) -> dict[str, dict[str, Any]]:
+    """Load the model registry from a YAML configuration file.
+
+    Args:
+        config_path: Path to the ``models.yaml`` file.
+
+    Returns:
+        Dictionary mapping model IDs to their configuration dicts, each
+        containing at least ``provider`` and ``model_name`` keys.
+
+    Raises:
+        FileNotFoundError: If the config file does not exist.
+        ValueError: If the YAML structure is invalid.
+    """
+    config_path = Path(config_path)
+    if not config_path.exists():
+        raise FileNotFoundError(f"Model config not found: {config_path}")
+
+    with open(config_path, "r", encoding="utf-8") as fh:
+        raw = yaml.safe_load(fh)
+
+    if not isinstance(raw, dict) or "models" not in raw:
+        raise ValueError(
+            f"Invalid models.yaml structure — expected top-level 'models' key, "
+            f"got: {list(raw.keys()) if isinstance(raw, dict) else type(raw).__name__}"
+        )
+
+    return raw["models"]
+
+
+# ── Provider class resolver ──────────────────────────────────────────────────
+
+
+def _resolve_provider_class(provider: str) -> type[BaseChatModel]:
+    """Dynamically import and return the chat model class for a provider.
+
+    Args:
+        provider: Provider key (e.g., ``"google"``, ``"openai"``).
+
+    Returns:
+        The chat model class (e.g., ``ChatGoogleGenerativeAI``).
+
+    Raises:
+        ValueError: If the provider is not recognized.
+        ImportError: If the provider package is not installed.
+    """
+    if provider not in PROVIDER_MAP:
+        raise ValueError(
+            f"Unknown provider '{provider}'. "
+            f"Supported providers: {sorted(PROVIDER_MAP.keys())}"
+        )
+
+    module_path, class_name = PROVIDER_MAP[provider]
+
+    try:
+        module = importlib.import_module(module_path)
+    except ImportError as exc:
+        raise ImportError(
+            f"Provider package '{module_path}' is not installed. "
+            f"Install it with: pip install {module_path.replace('_', '-')}"
+        ) from exc
+
+    return getattr(module, class_name)
+
+
+# ── Main factory function ────────────────────────────────────────────────────
+
+
+def create_model(
+    model_id: str,
+    temperature: float = 0.0,
+    config_path: Path | str = _DEFAULT_MODELS_CONFIG,
+    **kwargs: Any,
+) -> BaseChatModel:
+    """Create a chat model instance by model ID or provider-qualified string.
+
+    Resolution order:
+
+    1. If ``model_id`` contains ``:``, parse as ``provider:model_name``.
+    2. Otherwise, look up ``model_id`` in the YAML registry.
+
+    Args:
+        model_id: Either a registry key (e.g., ``"gemini-2.0-flash"``) or a
+                  provider-qualified string (e.g., ``"openai:gpt-4o-mini"``).
+        temperature: Sampling temperature for the model.
+        config_path: Path to ``models.yaml`` for registry lookups.
+        **kwargs: Additional keyword arguments passed to the model constructor.
+
+    Returns:
+        An instantiated ``BaseChatModel`` ready for ``.invoke()`` calls.
+
+    Raises:
+        ValueError: If the model_id cannot be resolved.
+        ImportError: If the required provider package is not installed.
+    """
+    if ":" in model_id:
+        # ── Inline provider:model_name format ────────────────────────────
+        provider, model_name = model_id.split(":", maxsplit=1)
+        provider = provider.strip().lower()
+        model_name = model_name.strip()
+        logger.info(
+            "Resolving model from inline format: provider=%s, model=%s",
+            provider,
+            model_name,
+        )
+    else:
+        # ── YAML registry lookup ─────────────────────────────────────────
+        registry = load_model_registry(config_path)
+
+        if model_id not in registry:
+            available = sorted(registry.keys())
+            raise ValueError(
+                f"Model '{model_id}' not found in registry. "
+                f"Available models: {available}"
+            )
+
+        entry = registry[model_id]
+        provider = entry["provider"]
+        model_name = entry["model_name"]
+        logger.info(
+            "Resolving model from registry: id=%s, provider=%s, model=%s",
+            model_id,
+            provider,
+            model_name,
+        )
+
+    # ── Instantiate the model ────────────────────────────────────────────
+    model_class = _resolve_provider_class(provider)
+
+    return model_class(
+        model=model_name,
+        temperature=temperature,
+        **kwargs,
+    )

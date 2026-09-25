@@ -1,0 +1,89 @@
+# ─────────────────────────────────────────────────────────────────
+# models.yaml — Unified Multi-Provider Model Registry
+# ─────────────────────────────────────────────────────────────────
+# Each entry maps a friendly model_id to its provider and model name.
+# The model_factory resolves these at runtime.
+#
+# Environment variables required per provider:
+#   google    → GOOGLE_API_KEY
+#   openai    → OPENAI_API_KEY
+#   anthropic → ANTHROPIC_API_KEY
+#   groq      → GROQ_API_KEY
+# ─────────────────────────────────────────────────────────────────
+
+models:
+  # ── Google GenAI (Free / AI Studio) ───────────────────────────
+  gemini-3.8-flash-lite:
+    provider: google
+    model_name: gemini-3.8-flash-lite
+    tier: free
+    description: "Google Gemini 3.8 Flash Lite — ultra-fast lightweight model"
+
+  gemini-3.8-flash:
+    provider: google
+    model_name: gemini-3.8-flash
+    tier: free
+    description: "Google Gemini 3.8 Flash — high efficiency balanced model"
+
+  # ── Anthropic Claude ──────────────────────────────────────────
+  claude-haiku-4-5:
+    provider: anthropic
+    model_name: claude-haiku-4-5
+    tier: paid
+    description: "Anthropic Claude Haiku 4.5 — rapid response tier"
+
+  claude-sonnet-4-6:
+    provider: anthropic
+    model_name: claude-sonnet-4-6
+    tier: paid
+    description: "Anthropic Claude Sonnet 4.6 — balanced reasoning and coding"
+
+  claude-opus-4-7:
+    provider: anthropic
+    model_name: claude-opus-4-7
+    tier: paid
+    description: "Anthropic Claude Opus 4.7 — flagship frontier intelligence"
+
+  # ── OpenAI ────────────────────────────────────────────────────
+  gpt-4.1-mini:
+    provider: openai
+    model_name: gpt-4.1-mini
+    tier: paid
+    description: "OpenAI GPT-4.1 Mini — efficient fast reasoning"
+
+  gpt-4o-mini:
+    provider: openai
+    model_name: gpt-4o-mini
+    tier: paid
+    description: "OpenAI GPT-4o Mini — cost-effective multimodal baseline"
+
+  gpt-4.1:
+    provider: openai
+    model_name: gpt-4.1
+    tier: paid
+    description: "OpenAI GPT-4.1 — core general-purpose model"
+
+  o3-mini:
+    provider: openai
+    model_name: o3-mini
+    tier: paid
+    description: "OpenAI o3-mini — high-efficiency STEM reasoning"
+
+  # ── Groq (Open-Source Inference) ──────────────────────────────
+  qwen-2.5-coder-32b:
+    provider: groq
+    model_name: qwen-2.5-coder-32b
+    tier: free
+    description: "Qwen 2.5 Coder 32B via Groq"
+
+  llama-3.3-70b-versatile:
+    provider: groq
+    model_name: llama-3.3-70b-versatile
+    tier: free
+    description: "Meta Llama 3.3 70B Versatile via Groq"
+
+  deepseek-r1-distill-70b:
+    provider: groq
+    model_name: deepseek-r1-distill-llama-70b
+    tier: free
+    description: "DeepSeek R1 Distill 70B (Llama) via Groq"
