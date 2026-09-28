@@ -63,9 +63,10 @@ def model_node(state: AgentState, config: RunnableConfig) -> dict[str, Any]:
         "system_prompt", "You are a helpful assistant."
     )
     tools: list[Any] = configurable.get("tools", [])
+    model_kwargs: dict[str, Any] = configurable.get("model_kwargs", {})
 
     # ── Create model instance dynamically ────────────────────────────
-    model = create_model(model_id)
+    model = create_model(model_id, **model_kwargs)
 
     # ── Bind tools if provided ───────────────────────────────────────
     if tools:

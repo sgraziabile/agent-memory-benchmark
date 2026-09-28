@@ -48,20 +48,35 @@ _DEFAULT_CONFIG_DIR = _PROJECT_ROOT / "configs"
 _DEFAULT_DATASET_DIR = _PROJECT_ROOT / "datasets" / "conversations"
 _DEFAULT_OUTPUT_DIR = _PROJECT_ROOT / "outputs" / "runs"
 
-
 class BenchmarkRunner:
     """Orchestrates benchmark execution across the full experimental matrix.
 
     Loads scenarios, prompts, and model configurations, then executes every
     combination as a multi-turn conversation against the provided LangGraph
     agent graph.
-
-    Args:
-        config_dir: Path to the directory containing ``models.yaml`` and
-                    ``prompts.yaml``.
-        dataset_dir: Path to the directory containing scenario YAML files.
-        output_dir: Path to the root output directory for run results.
     """
+
+    @staticmethod
+    def _extract_text_content(content: Any) -> str:
+        """Extract clean text from message content (handles str, list of dicts/blocks, etc.)."""
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            text_parts: list[str] = []
+            for block in content:
+                if isinstance(block, str):
+                    text_parts.append(block)
+                elif isinstance(block, dict):
+                    if block.get("type") == "text" and "text" in block:
+                        text_parts.append(str(block["text"]))
+                    elif "text" in block:
+                        text_parts.append(str(block["text"]))
+                    elif "content" in block and isinstance(block["content"], str):
+                        text_parts.append(block["content"])
+                elif hasattr(block, "text"):
+                    text_parts.append(str(getattr(block, "text")))
+            return "\n".join(text_parts).strip() if text_parts else str(content)
+        return str(content)
 
     def __init__(
         self,
@@ -255,7 +270,7 @@ class BenchmarkRunner:
 
                 for msg in reversed(response_messages):
                     if isinstance(msg, AIMessage):
-                        ai_response = msg.content if isinstance(msg.content, str) else str(msg.content)
+                        ai_response = self._extract_text_content(msg.content)
                         # Try to extract token usage from metadata
                         if hasattr(msg, "usage_metadata") and msg.usage_metadata:
                             token_usage = dict(msg.usage_metadata)

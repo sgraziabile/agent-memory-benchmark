@@ -2,7 +2,8 @@
 # models.yaml — Unified Multi-Provider Model Registry
 # ─────────────────────────────────────────────────────────────────
 # Each entry maps a friendly model_id to its provider and model name.
-# The model_factory resolves these at runtime.
+# Optional parameters like 'timeout' (seconds), 'max_retries',
+# and 'max_tokens' are forwarded to the underlying model constructor.
 #
 # Environment variables required per provider:
 #   google    → GOOGLE_API_KEY
@@ -17,12 +18,27 @@ models:
     provider: google
     model_name: gemini-3.8-flash-lite
     tier: free
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "Google Gemini 3.8 Flash Lite — ultra-fast lightweight model"
+
+  gemini-3.5-flash-lite:
+    provider: google
+    model_name: gemini-3.5-flash-lite
+    tier: free
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
+    description: "Google Gemini 3.5 Flash Lite (alias / alternate version)"
 
   gemini-3.8-flash:
     provider: google
     model_name: gemini-3.8-flash
     tier: free
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "Google Gemini 3.8 Flash — high efficiency balanced model"
 
   # ── Anthropic Claude ──────────────────────────────────────────
@@ -30,18 +46,27 @@ models:
     provider: anthropic
     model_name: claude-haiku-4-5
     tier: paid
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "Anthropic Claude Haiku 4.5 — rapid response tier"
 
   claude-sonnet-4-6:
     provider: anthropic
     model_name: claude-sonnet-4-6
     tier: paid
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "Anthropic Claude Sonnet 4.6 — balanced reasoning and coding"
 
   claude-opus-4-7:
     provider: anthropic
     model_name: claude-opus-4-7
     tier: paid
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "Anthropic Claude Opus 4.7 — flagship frontier intelligence"
 
   # ── OpenAI ────────────────────────────────────────────────────
@@ -49,24 +74,36 @@ models:
     provider: openai
     model_name: gpt-4.1-mini
     tier: paid
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "OpenAI GPT-4.1 Mini — efficient fast reasoning"
 
   gpt-4o-mini:
     provider: openai
     model_name: gpt-4o-mini
     tier: paid
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "OpenAI GPT-4o Mini — cost-effective multimodal baseline"
 
   gpt-4.1:
     provider: openai
     model_name: gpt-4.1
     tier: paid
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "OpenAI GPT-4.1 — core general-purpose model"
 
   o3-mini:
     provider: openai
     model_name: o3-mini
     tier: paid
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "OpenAI o3-mini — high-efficiency STEM reasoning"
 
   # ── Groq (Open-Source Inference) ──────────────────────────────
@@ -74,16 +111,25 @@ models:
     provider: groq
     model_name: qwen-2.5-coder-32b
     tier: free
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "Qwen 2.5 Coder 32B via Groq"
 
   llama-3.3-70b-versatile:
     provider: groq
     model_name: llama-3.3-70b-versatile
     tier: free
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "Meta Llama 3.3 70B Versatile via Groq"
 
   deepseek-r1-distill-70b:
     provider: groq
     model_name: deepseek-r1-distill-llama-70b
     tier: free
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 300
     description: "DeepSeek R1 Distill 70B (Llama) via Groq"

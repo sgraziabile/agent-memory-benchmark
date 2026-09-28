@@ -145,6 +145,7 @@ def create_model(
         ValueError: If the model_id cannot be resolved.
         ImportError: If the required provider package is not installed.
     """
+    model_kwargs: dict[str, Any] = {}
     if ":" in model_id:
         # ── Inline provider:model_name format ────────────────────────────
         provider, model_name = model_id.split(":", maxsplit=1)
@@ -176,11 +177,19 @@ def create_model(
             model_name,
         )
 
+        # Extract optional configuration parameters from YAML (e.g. timeout, max_retries)
+        for k, v in entry.items():
+            if k not in ("provider", "model_name", "tier", "description"):
+                model_kwargs[k] = v
+
+    # Explicit kwargs override YAML settings
+    model_kwargs.update(kwargs)
+
     # ── Instantiate the model ────────────────────────────────────────────
     model_class = _resolve_provider_class(provider)
 
     return model_class(
         model=model_name,
         temperature=temperature,
-        **kwargs,
+        **model_kwargs,
     )

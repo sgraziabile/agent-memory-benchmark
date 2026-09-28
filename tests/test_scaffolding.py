@@ -91,6 +91,9 @@ class TestModelFactory:
         for model_id, cfg in registry.items():
             assert "provider" in cfg, f"{model_id} missing 'provider'"
             assert "model_name" in cfg, f"{model_id} missing 'model_name'"
+            assert cfg.get("timeout") == 60.0, f"{model_id} missing or incorrect timeout"
+            assert cfg.get("max_retries") == 2, f"{model_id} missing or incorrect max_retries"
+            assert cfg.get("max_tokens") == 300, f"{model_id} missing or incorrect max_tokens"
 
     def test_all_providers_in_map(self):
         registry = load_model_registry()
@@ -135,6 +138,13 @@ class TestRunnerAssertions:
         rules = [AssertionRule(type="must_contain", value="HELLO", case_sensitive=True)]
         results = BenchmarkRunner.evaluate_assertions("hello world", rules)
         assert results[0]["passed"] is False
+
+    def test_extract_text_content_string(self):
+        assert BenchmarkRunner._extract_text_content("Simple string") == "Simple string"
+
+    def test_extract_text_content_blocks(self):
+        blocks = [{"type": "text", "text": "The answer is 42.", "extras": {"signature": "sig123"}}]
+        assert BenchmarkRunner._extract_text_content(blocks) == "The answer is 42."
 
 
 # ── Level 0 Agent Tests ─────────────────────────────────────────────────────
