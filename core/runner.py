@@ -324,6 +324,19 @@ class BenchmarkRunner:
         total_latency = sum(tr.latency_ms for tr in turn_results)
         num_turns = len(turn_results)
 
+        # Aggregate token usage across all turns
+        total_tokens = 0
+        prompt_tokens = 0
+        completion_tokens = 0
+        for tr in turn_results:
+            usage = tr.token_usage or {}
+            p_tok = usage.get("input_tokens") or usage.get("prompt_tokens") or 0
+            c_tok = usage.get("output_tokens") or usage.get("completion_tokens") or 0
+            t_tok = usage.get("total_tokens") or (p_tok + c_tok)
+            prompt_tokens += p_tok
+            completion_tokens += c_tok
+            total_tokens += t_tok
+
         summary = BenchmarkRunSummary(
             run_id=run_id,
             scenario_id=scenario.id,
@@ -337,6 +350,9 @@ class BenchmarkRunner:
             pass_rate=total_passed / total_assertions if total_assertions > 0 else 0.0,
             total_latency_ms=total_latency,
             avg_latency_per_turn_ms=total_latency / num_turns if num_turns > 0 else 0.0,
+            total_tokens=total_tokens,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
             turn_results=turn_results,
             timestamp=timestamp,
         )
@@ -463,6 +479,9 @@ class BenchmarkRunner:
             "pass_rate",
             "total_latency_ms",
             "avg_latency_per_turn_ms",
+            "total_tokens",
+            "prompt_tokens",
+            "completion_tokens",
             "timestamp",
         ]
 

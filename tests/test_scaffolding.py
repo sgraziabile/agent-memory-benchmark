@@ -70,8 +70,14 @@ class TestSchemas:
             passed_assertions=7,
             failed_assertions=3,
             pass_rate=0.7,
+            total_tokens=1500,
+            prompt_tokens=1200,
+            completion_tokens=300,
         )
         assert summary.pass_rate == 0.7
+        assert summary.total_tokens == 1500
+        assert summary.prompt_tokens == 1200
+        assert summary.completion_tokens == 300
 
 
 # ── Model Factory Tests ─────────────────────────────────────────────────────
@@ -174,6 +180,15 @@ class TestLevel0Agent:
     def test_repr(self):
         agent = Level0ReactiveAgent()
         assert "level_0_reactive" in repr(agent)
+
+    def test_graph_compiles_with_tools(self):
+        def sample_tool(query: str) -> str:
+            """Sample tool."""
+            return query
+        agent = Level0ReactiveAgent()
+        graph = agent.build_graph(tools=[sample_tool])
+        assert graph is not None
+        assert graph.checkpointer is None
 
 
 # ── Scenario Loading Tests ───────────────────────────────────────────────────

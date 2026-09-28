@@ -151,5 +151,8 @@ class BenchmarkRunSummary(BaseModel):
     pass_rate: float = 0.0
     total_latency_ms: float = 0.0
     avg_latency_per_turn_ms: float = 0.0
+    total_tokens: int = 0
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
     turn_results: list[TurnResult] = Field(default_factory=list)
     timestamp: str = ""

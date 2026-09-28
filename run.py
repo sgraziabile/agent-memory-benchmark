@@ -225,11 +225,21 @@ def _print_run_report(results: list, run_dir: Path | None = None) -> None:
         print(f"Assertions:   {res.passed_assertions}/{res.total_assertions} passed ({pass_pct:.1f}%)")
         print(f"Avg Latency:  {res.avg_latency_per_turn_ms:.1f} ms/turn")
         print(f"Total Time:   {res.total_latency_ms:.1f} ms")
+        if res.total_tokens > 0:
+            print(f"Total Tokens: {res.total_tokens:,} (prompt: {res.prompt_tokens:,}, completion: {res.completion_tokens:,})")
         print("-" * 60)
         print("Detailed Turn Breakdown:")
         for tr in res.turn_results:
             status = "PASS" if tr.assertions_failed == 0 else "FAIL"
-            print(f"  [Turn {tr.turn_number}] ({status}) latency={tr.latency_ms:.1f}ms")
+            tok_info = ""
+            if tr.token_usage:
+                t_count = tr.token_usage.get("total_tokens") or (
+                    (tr.token_usage.get("input_tokens", 0) or tr.token_usage.get("prompt_tokens", 0)) +
+                    (tr.token_usage.get("output_tokens", 0) or tr.token_usage.get("completion_tokens", 0))
+                )
+                if t_count:
+                    tok_info = f" tokens={t_count}"
+            print(f"  [Turn {tr.turn_number}] ({status}) latency={tr.latency_ms:.1f}ms{tok_info}")
             print(f"    User:     {tr.user_input[:80]}...")
             print(f"    Agent:    {tr.agent_response[:100]}...")
             if tr.assertion_details:

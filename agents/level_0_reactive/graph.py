@@ -11,11 +11,16 @@ The model and system prompt are injected dynamically at runtime via
 ``config["configurable"]``, following the Zero Hardcoding principle
 from SPEC.md §2.
 
+Routing is handled via modern LangGraph ``Command`` objects inside each
+node rather than manual conditional edge declarations.
+
 Graph topology::
 
-    START ──► model_node ──► tools (if tool_calls) ──► model_node
-                   │
-                   └──► END (if no tool_calls)
+    START ──► model_node ──(Command goto="tools")──► tools_node
+                   │                                       │
+                   │                               (Command goto="model")
+                   │                                       │
+                   └──(Command goto=END)──► END ◄──────────┘
 """
 
 from __future__ import annotations
@@ -26,7 +31,8 @@ from typing import Any
 from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
-from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.prebuilt import ToolNode
+from langgraph.types import Command
 
 from agents.base import BaseBenchmarkAgent
 from core.model_factory import create_model
@@ -38,22 +44,29 @@ logger = logging.getLogger(__name__)
 # ── Graph Nodes ──────────────────────────────────────────────────────────────
 
 
-def model_node(state: AgentState, config: RunnableConfig) -> dict[str, Any]:
+def model_node(
+    state: AgentState,
+    config: RunnableConfig,
+    default_tools: list[Any] | None = None,
+) -> Command:
     """LLM invocation node — dynamically resolves model and prompt from config.
 
     Reads ``model_id`` and ``system_prompt`` from ``config["configurable"]``,
     instantiates the model via the factory, prepends an ephemeral
     ``SystemMessage``, and invokes the model.
 
-    This function is intentionally **stateless**: every call re-creates the
-    model from config.  This is the Level 0 design — no caching, no memory.
+    Conditional routing is defined **inside** this node via ``Command``:
+    - If the model emits ``tool_calls`` and tools are configured, returns
+      ``Command(update=..., goto="tools")``.
+    - Otherwise, returns ``Command(update=..., goto=END)``.
 
     Args:
         state: Current agent state containing the message history.
         config: LangGraph ``RunnableConfig`` with ``configurable`` dict.
+        default_tools: Optional tools passed at graph construction time.
 
     Returns:
-        Dict with ``messages`` key containing the model's response.
+        A ``Command`` specifying state updates and the dynamic destination.
     """
     configurable = config.get("configurable", {})
 
@@ -62,7 +75,7 @@ def model_node(state: AgentState, config: RunnableConfig) -> dict[str, Any]:
     system_prompt: str = configurable.get(
         "system_prompt", "You are a helpful assistant."
     )
-    tools: list[Any] = configurable.get("tools", [])
+    tools: list[Any] = configurable.get("tools") or default_tools or []
     model_kwargs: dict[str, Any] = configurable.get("model_kwargs", {})
 
     # ── Create model instance dynamically ────────────────────────────
@@ -84,7 +97,28 @@ def model_node(state: AgentState, config: RunnableConfig) -> dict[str, Any]:
     )
     response = model.invoke(messages)
 
-    return {"messages": [response]}
+    # ── Dynamic edge routing via Command ─────────────────────────────
+    has_tool_calls = bool(getattr(response, "tool_calls", None))
+    goto = "tools" if (tools and has_tool_calls) else END
+
+    return Command(
+        update={"messages": [response]},
+        goto=goto,
+    )
+
+
+def make_tools_node(tools: list[Any]):
+    """Create a tool execution node that returns a Command back to the model."""
+    tool_executor = ToolNode(tools)
+
+    def tools_node(state: AgentState, config: RunnableConfig) -> Command:
+        result = tool_executor.invoke(state, config=config)
+        return Command(
+            update=result,
+            goto="model",
+        )
+
+    return tools_node
 
 
 # ── Agent Class ──────────────────────────────────────────────────────────────
@@ -97,8 +131,7 @@ class Level0ReactiveAgent(BaseBenchmarkAgent):
     ``config["configurable"]``.  There is no checkpointer, no store,
     and no persistent memory of any kind.
 
-    This serves as the baseline against which higher levels (L1–L4)
-    with progressively richer memory architectures are compared.
+    Transitions are encapsulated within node-returned ``Command`` objects.
     """
 
     @property
@@ -108,31 +141,28 @@ class Level0ReactiveAgent(BaseBenchmarkAgent):
     def build_graph(self, tools: list[Any] | None = None) -> Any:
         """Build and compile the Level 0 stateless agent graph.
 
+        Uses ``Command`` inside nodes for all conditional edge transitions
+        rather than external ``add_conditional_edges()``.
+
         Args:
-            tools: Optional list of tool callables.  If provided, a
-                   ``ToolNode`` is added and conditional routing is
-                   configured.  Tools are also passed via
-                   ``config["configurable"]["tools"]`` at invocation time
-                   so the model node can bind them.
+            tools: Optional list of tool callables. If provided, a
+                   ``tools`` node is registered and transitions are
+                   handled via ``Command(goto=...)``.
 
         Returns:
             A compiled ``StateGraph`` with NO checkpointer or store.
         """
         builder = StateGraph(AgentState)
 
-        # ── Add nodes ────────────────────────────────────────────────
-        builder.add_node("model", model_node)
+        # ── Add model node ───────────────────────────────────────────
+        def _model_step(state: AgentState, config: RunnableConfig) -> Command:
+            return model_node(state, config, default_tools=tools)
 
+        builder.add_node("model", _model_step)
+
+        # ── Add tools node if tools are supplied ─────────────────────
         if tools:
-            tool_node = ToolNode(tools)
-            builder.add_node("tools", tool_node)
-
-            # Conditional routing: tool_calls → tools node, else → END
-            builder.add_conditional_edges("model", tools_condition)
-            builder.add_edge("tools", "model")
-        else:
-            # No tools — always go to END after model response
-            builder.add_edge("model", END)
+            builder.add_node("tools", make_tools_node(tools))
 
         # ── Entry point ──────────────────────────────────────────────
         builder.add_edge(START, "model")
@@ -140,5 +170,5 @@ class Level0ReactiveAgent(BaseBenchmarkAgent):
         # ── Compile WITHOUT checkpointer or store (STRICT L0) ────────
         compiled = builder.compile()
 
-        logger.info("Level 0 reactive graph compiled (stateless, no checkpointer)")
+        logger.info("Level 0 reactive graph compiled with Command routing (stateless, no checkpointer)")
         return compiled
