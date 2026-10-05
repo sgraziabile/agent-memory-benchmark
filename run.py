@@ -26,13 +26,11 @@ import logging
 import sys
 from pathlib import Path
 
-# Load .env if present
-try:
-    from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-    load_dotenv()
-except ImportError:
-    pass
+# Load .env if present (python-dotenv is a declared dependency — a missing
+# install must fail loudly, never silently skip the user's API keys).
+load_dotenv()
 
 from agents.level_0_reactive.graph import Level0ReactiveAgent
 from core.runner import BenchmarkRunner
@@ -227,6 +225,8 @@ def _print_run_report(results: list, run_dir: Path | None = None) -> None:
         print(f"Model:        {res.model_id}")
         print(f"Prompt:       {res.prompt_id}")
         print(f"Total Turns:  {res.total_turns}")
+        if res.error_turns:
+            print(f"Error Turns:  {res.error_turns} ({res.error_rate * 100:.1f}%) — excluded from metrics")
         print(f"Assertions:   {res.passed_assertions}/{res.total_assertions} passed ({pass_pct:.1f}%)")
         print(f"Avg Latency:  {res.avg_latency_per_turn_ms:.1f} ms/turn")
         print(f"Total Time:   {res.total_latency_ms:.1f} ms")
@@ -235,6 +235,11 @@ def _print_run_report(results: list, run_dir: Path | None = None) -> None:
         print("-" * 60)
         print("Detailed Turn Breakdown:")
         for tr in res.turn_results:
+            if tr.status == "error":
+                print(f"  [Turn {tr.turn_number}] (ERROR) latency={tr.latency_ms:.1f}ms — excluded from metrics")
+                print(f"    User:     {tr.user_input[:80]}...")
+                print(f"    Error:    {tr.error}")
+                continue
             status = "PASS" if tr.assertions_failed == 0 else "FAIL"
             tok_info = ""
             if tr.token_usage:

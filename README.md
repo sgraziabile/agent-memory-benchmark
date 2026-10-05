@@ -246,6 +246,8 @@ These results demonstrate the **amnesic baseline** (no checkpointer, no memory, 
 
 > **Key insight:** The positive control (`in_context_control_01`) achieves 100% as expected — the model *can* process contradictions when all premises are in a single prompt. Failures in multi-turn scenarios confirm that the degradation is a **persistence problem**, not a reasoning problem. This validates the thesis hypothesis and motivates Level 1+ architectures.
 
+> **Measurement validity:** Model instances are cached per configuration (`lru_cache` in `core/model_factory.py`), so after the first invocation per `(model_id, temperature, config)` tuple, each measured turn reflects model inference and graph orchestration only — not YAML re-reads or provider client construction. Additionally, errored turns (e.g., API outages) are flagged and excluded from pass-rate, latency, and token metrics, so infrastructure failures never contaminate benchmark numbers.
+
 ---
 
 ## Agent Levels Roadmap
