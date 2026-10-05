@@ -1,5 +1,7 @@
 """Smoke tests for the benchmark harness scaffolding."""
 
+from pathlib import Path
+
 import yaml
 import pytest
 from langchain_core.messages import AIMessage
@@ -449,3 +451,52 @@ class TestScenarioLoading:
         model_ids = runner.load_model_ids()
         assert len(model_ids) >= 8
         assert "gemini-3.8-flash" in model_ids
+
+
+# ── Dependency Declaration Tests (audit §3.2) ─────────────────────────────────
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10 — tomllib landed in 3.11
+    tomllib = None
+
+
+class TestDependencyDeclarations:
+    """Audit §3.2 — runtime dependencies must be declared and imported loudly.
+
+    ``run.py`` used to wrap ``from dotenv import load_dotenv`` in a silent
+    ``except ImportError: pass`` while ``python-dotenv`` was missing from
+    ``pyproject.toml``. In a fresh venv the ``.env`` file was then silently
+    never loaded, so users got a confusing provider auth error despite
+    following the README quickstart. These tests pin both the declaration
+    and the unconditional import so the silent fallback cannot regress.
+    """
+
+    REPO_ROOT = Path(__file__).resolve().parent.parent
+    PYPROJECT = REPO_ROOT / "pyproject.toml"
+    RUN_PY = REPO_ROOT / "run.py"
+
+    @pytest.mark.skipif(tomllib is None, reason="tomllib requires Python >= 3.11")
+    def test_python_dotenv_declared_in_pyproject(self):
+        with open(self.PYPROJECT, "rb") as fh:
+            data = tomllib.load(fh)
+        declared = [
+            dep.split(">=")[0].split("==")[0].strip()
+            for dep in data["project"]["dependencies"]
+        ]
+        assert "python-dotenv" in declared, (
+            "python-dotenv must be a declared runtime dependency (audit §3.2): "
+            "run.py loads .env unconditionally"
+        )
+
+    def test_dotenv_importable_and_unconditional(self):
+        # Hard dependency now — ImportError must propagate, not be swallowed.
+        import dotenv  # noqa: F401
+
+        source = self.RUN_PY.read_text(encoding="utf-8")
+        assert "from dotenv import load_dotenv" in source
+        # The old silent fallback must not guard the dotenv import.
+        assert "except ImportError" not in source, (
+            "run.py must import dotenv unconditionally (audit §3.2): "
+            "a silent except hides a missing dependency by design"
+        )

@@ -26,13 +26,11 @@ import logging
 import sys
 from pathlib import Path
 
-# Load .env if present
-try:
-    from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-    load_dotenv()
-except ImportError:
-    pass
+# Load .env if present (python-dotenv is a declared dependency — a missing
+# install must fail loudly, never silently skip the user's API keys).
+load_dotenv()
 
 from agents.level_0_reactive.graph import Level0ReactiveAgent
 from core.runner import BenchmarkRunner

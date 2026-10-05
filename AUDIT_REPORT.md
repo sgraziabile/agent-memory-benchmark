@@ -6,7 +6,7 @@
 
 **Verification performed:** Full file-tree inspection, line-by-line review of `core/`, `agents/`, `run.py`, `tests/`, configs, and datasets; live execution of `pytest` (28 passed in 4.78s, no API keys required); live `pip install -e . --no-deps --dry-run` (fails with `OSError: Readme file does not exist: docs/SPEC.md`); dependency audit via `pip show`; git-tracking hygiene audit.
 
-> **📌 Revision 3 (Oct 5, 2026):** **§3.1** (broken packaging path), the `[cite: N]` artifacts from **§4 / action item 11**, and **§3.3** (error turns contaminating benchmark metrics — action item 6) have been **fixed and live-verified** (test suite: **33/33 pass, no network, 0.83s**) — see status markers inline and the [Changelog](#changelog) at the end of this report. **§3.4** (per-turn model construction polluting latency — action item 8) is resolved as of **Revision 4** (37/37 tests pass).
+> **📌 Revision 3 (Oct 5, 2026):** **§3.1** (broken packaging path), the `[cite: N]` artifacts from **§4 / action item 11**, and **§3.3** (error turns contaminating benchmark metrics — action item 6) have been **fixed and live-verified** (test suite: **33/33 pass, no network, 0.83s**) — see status markers inline and the [Changelog](#changelog) at the end of this report. **§3.4** (per-turn model construction polluting latency — action item 8) is resolved as of **Revision 4** (37/37 tests pass). **§3.2** (undeclared `python-dotenv` with its silent `.env` fallback — action item 2) is resolved as of **Revision 5** (39/39 tests pass; clean-venv verified).
 
 ---
 
@@ -33,7 +33,9 @@
 
 **✅ Update (Rev 3, Oct 5, 2026):** Metric contamination is **resolved** (§3.3 ✅) — error turns are now explicitly flagged (`TurnResult.status`) and excluded from `pass_rate`, latency, and token metrics; `BenchmarkRunSummary` self-reports `error_turns`/`error_rate`; exports and the CLI carry the new accounting; and the fix is pinned by deterministic fake-graph tests (33/33 pass, no network). Remaining top blockers: undeclared `python-dotenv` (§3.2), zero CI (§4 / item 3), and per-turn model construction polluting latency (§3.4). ~~Revised standing: 7.0 / 10~~.
 
-**✅ Update (Rev 4, Oct 5, 2026):** Latency pollution is **resolved** (§3.4 ✅) — the model factory now caches instances per `(model_id, temperature, config_path, kwargs)` via `lru_cache`, so after the first invocation per configuration each measured turn reflects inference and graph orchestration only; `models.yaml` is read once per config, not once per turn. Live-verified: 3 `create_model` calls → 1 constructor call for identical configs; suite **37/37 pass in 0.86s**. Remaining top blockers: undeclared `python-dotenv` (§3.2) and zero CI/linting/typing gates (§4 / items 2–4). **Revised standing: 7.2 / 10**.
+**✅ Update (Rev 4, Oct 5, 2026):** Latency pollution is **resolved** (§3.4 ✅) — the model factory now caches instances per `(model_id, temperature, config_path, kwargs)` via `lru_cache`, so after the first invocation per configuration each measured turn reflects inference and graph orchestration only; `models.yaml` is read once per config, not once per turn. Live-verified: 3 `create_model` calls → 1 constructor call for identical configs; suite **37/37 pass in 0.86s**. Remaining top blockers: undeclared `python-dotenv` (§3.2) and zero CI/linting/typing gates (§4 / items 2–4). ~~Revised standing: 7.2 / 10~~.
+
+**✅ Update (Rev 5, Oct 5, 2026):** The silent dotenv fallback is **resolved** (§3.2 ✅) — `python-dotenv>=1.0.0` is now declared in `pyproject.toml` and `run.py` imports it unconditionally (the `except ImportError: pass` is gone), pinned by 2 new regression tests. **Live-verified in a clean venv:** `pip install -e ".[dev]"` green, `pip show python-dotenv` reports `Required-by: agent-memory-benchmark`, suite **39/39 pass**. All three audit-time "clone → install → verify" blockers (§3.1, §3.2, §3.3) are closed. Remaining top blockers: zero CI and zero linting/typing gates (§4 / items 3–4). **Revised standing: 7.4 / 10**.
 
 ---
 
@@ -76,9 +78,9 @@
 - **Resolution (Oct 5, 2026):** Changed to `readme = "SPEC.md"` (root-level SPEC retained as the project readme per maintainer's choice, rather than switching to `README.md` as originally suggested). **Live-verified:** `pip install -e . --no-deps --dry-run` now reports `finished with status 'done'` and `Would install agent-memory-benchmark-0.1.0`.
 - **Follow-up:** a CI step running `pip install -e ".[dev]"` (action item 3) would have caught this automatically and will guard against regressions.
 
-### 3.2 🔴 Undeclared runtime dependency with silent fallback (`python-dotenv`)
+### 3.2 🔴 Undeclared runtime dependency with silent fallback (`python-dotenv`) — ✅ RESOLVED (Rev 5)
 - **Location:** `run.py:30–35`; `pyproject.toml:11–20` (dependency list).
-- **Issue:** `run.py` does `try: from dotenv import load_dotenv ... except ImportError: pass`. `python-dotenv` is **not** in `pyproject.toml` (verified: it's only installed in your global interpreter by accident). In a fresh venv, the `except ImportError: pass` swallows the problem and `.env` is **silently never loaded** — the user's API key is ignored, and they get a confusing provider auth error despite having done exactly what the README said. A silent except around an *expected* code path is a harness leak: it hides a missing dependency by design.
+- **Issue (at audit time):** `run.py` does `try: from dotenv import load_dotenv ... except ImportError: pass`. `python-dotenv` is **not** in `pyproject.toml` (verified: it's only installed in your global interpreter by accident). In a fresh venv, the `except ImportError: pass` swallows the problem and `.env` is **silently never loaded** — the user's API key is ignored, and they get a confusing provider auth error despite having done exactly what the README said. A silent except around an *expected* code path is a harness leak: it hides a missing dependency by design.
 - **Suggested refactor:**
   ```toml
   # pyproject.toml — declare it
@@ -93,6 +95,7 @@
   load_dotenv()
   ```
   If you genuinely want dotenv optional, at least warn: `logger.warning("python-dotenv not installed — .env will NOT be loaded")`.
+- **Resolution (Oct 5, 2026):** Implemented as suggested: `"python-dotenv>=1.0.0"` added to `pyproject.toml` `dependencies`; `run.py` now imports `dotenv` unconditionally (`from dotenv import load_dotenv` + `load_dotenv()`), and the silent `except ImportError: pass` is gone. **Live-verified in a clean venv:** `python -m venv .venv-audit` → `pip install -e ".[dev]"` completes green; `pip show python-dotenv` inside the venv reports `Required-by: agent-memory-benchmark` — i.e., it is now installed *because* the project declares it, not by interpreter accident. The behavior is pinned by 2 new deterministic tests (`TestDependencyDeclarations`: declaration present in `pyproject.toml`; `run.py` source contains no `except ImportError` guard). Suite: **39/39 pass** (0.85s in the global interpreter, 6.76s in the clean venv), zero network at test time.
 
 ### 3.3 🔴 Error turns contaminate benchmark metrics — ✅ RESOLVED (Rev 3)
 - **Location:** `core/runner.py:283–290` (exception handler inside `run_single`) and `runner.py:292–309`.
@@ -241,7 +244,7 @@
 ### 🔴 High impact — do these first (~6 hours total)
 
 1. ~~**Fix the packaging bug (15 min).**~~ ✅ **DONE (Rev 2, Oct 5, 2026)** — fixed as `readme = "SPEC.md"` (root-level SPEC retained as project readme per maintainer's choice); `pip install -e . --dry-run` live-verified green. Remaining follow-up: run `pip install -e ".[dev]" && pytest tests/ -q` in a clean venv once `python-dotenv` is declared (§3.2 / item 2).
-2. **Declare `python-dotenv` and remove the silent except (15 min).** Add to `dependencies`, import unconditionally in `run.py`. Verify with a clean venv: `python -m venv .venv && .venv\Scripts\activate && pip install -e ".[dev]"`.
+2. ~~**Declare `python-dotenv` and remove the silent except (15 min).**~~ ✅ **DONE (Rev 5, Oct 5, 2026)** — `python-dotenv>=1.0.0` declared in `dependencies`; unconditional import in `run.py`; the prescribed clean-venv verification was executed end-to-end (`pip install -e ".[dev]"` green; `pip show python-dotenv` → `Required-by: agent-memory-benchmark`; suite **39/39 pass** inside the venv), which also closes the clean-venv follow-up deferred from item 1 (Rev 2). Pinned by 2 new tests (`TestDependencyDeclarations`).
 3. **Add GitHub Actions CI (45 min).** `.github/workflows/ci.yml`: matrix over `python 3.10/3.11/3.12`, steps = `pip install -e ".[dev]"`, `ruff check .`, `mypy core agents run.py`, `pytest tests/ -v`. Add the status badge as the **first line** of the README. This is the single highest portfolio-ROI item: it converts your private test pass into public, attested proof.
 4. **Add `ruff` + `mypy` + `pre-commit` (1 h).** `pyproject.toml` config: `ruff` (line-length 88, target `py310`), `mypy` with `disallow_untyped_defs = true` for `core`/`agents`. Tighten the `Any`s from §3.11 to `CompiledStateGraph`. Wire a 4-hook `.pre-commit-config.yaml` (ruff, ruff-format, mypy, end-of-file-fixer). Your codebase is already clean enough that these will pass nearly green — free credibility.
 5. **Mock-LLM end-to-end tests (2–3 h).** Add `tests/test_runner_e2e.py` using `langchain_core.language_models.fake_chat_models.GenericFakeChatModel`, monkeypatching `core.model_factory.create_model` (or injecting via `configurable["model_id"]` with a registry fixture). Cover: full `run_single` happy path with scripted responses, `system_event` skip, token aggregation arithmetic, error-turn handling (after §3.3 refactor), and export file contents (assert the CSV header row and the summary.md table cells). These tests turn your runner from "probably works" into "provably works" — and they're the tests a Staff interviewer will ask about.
@@ -274,6 +277,13 @@ This is a **well-architected research harness trapped in pre-production packagin
 ---
 
 ## Changelog
+
+### Rev 5 — Oct 5, 2026
+- **✅ §3.2 RESOLVED — `python-dotenv` declared; silent fallback removed.** `pyproject.toml` gained `"python-dotenv>=1.0.0"` in `dependencies`, and `run.py` now does an unconditional `from dotenv import load_dotenv` + `load_dotenv()` — the `try/except ImportError: pass` is gone. In a fresh venv the `.env` file is now actually loaded (or the missing dependency fails loudly), instead of the user's API key being silently ignored and surfacing as a confusing provider auth error.
+- **✅ Action item 2 DONE; item 1 follow-up closed.** The prescribed clean-venv verification was executed end-to-end: `python -m venv .venv-audit` → `pip install -e ".[dev]"` → green; inside the venv, `pip show python-dotenv` reports `Required-by: agent-memory-benchmark` (installed *because* the project declares it, not by interpreter accident); `pip install -e . --no-deps --dry-run` metadata generation green; `python run.py --list-models` CLI smoke test green.
+- **✅ Test coverage: 2 new deterministic tests** (`TestDependencyDeclarations`): (1) `python-dotenv` present in `project.dependencies` (parsed via stdlib `tomllib`, auto-skipped on Python 3.10 where `tomllib` is absent), and (2) `run.py` imports dotenv unconditionally — its source contains no `except ImportError` guard, and `import dotenv` succeeds as a hard dependency.
+- **Live verification:** `pytest tests/ -q` → **39 passed** (37 prior + 2 new) in the global interpreter (0.85s) **and** in the clean venv (6.76s), zero network at test time, zero API keys.
+- **Score: 7.2 → 7.4.** Rationale: the last hermetic-install blocker from the audit-time top-3 is closed and pinned by regression tests — the README quickstart now genuinely works clone → install → verify in a clean environment. Remaining top gaps are purely infrastructural: the CI pipeline (item 3), ruff/mypy/pre-commit gates (item 4), and the mock-LLM test depth (item 5).
 
 ### Rev 4 — Oct 5, 2026
 - **✅ §3.4 RESOLVED — per-turn model construction no longer pollutes the latency metric.** `core/model_factory.py` was refactored into three focused functions: `_build_model` (uncached resolution + construction), `_create_model_cached` (`@lru_cache(maxsize=64)` keyed on `(model_id, temperature, config_path, sorted-kwargs tuple)`), and the public `create_model` facade which builds the hashable cache key and falls back to direct construction for unhashable kwargs. New public API: `clear_model_cache()` for tests and API-key rotation.
