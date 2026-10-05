@@ -6,16 +6,16 @@ Este documento constituye la **Fuente Única de Verdad (Single Source of Truth)*
 
 ## 1. Contexto Académico e Hipótesis de Investigación
 
-* **Proyecto:** Tesis de Licenciatura en Ciencias de la Computación (DCIC - Universidad Nacional del Sur)[cite: 2].
-* **Lugar de Trabajo:** Laboratorio ICIC (CONICET - UNS), Grupo de Representación de Conocimiento y Razonamiento (KRR)[cite: 2, 26].
-* **Dirección:** Dr. Alejandro J. García[cite: 2, 26] | **Codirección:** Dr. Sebastián Gottifredi[cite: 26].
+* **Proyecto:** Tesis de Licenciatura en Ciencias de la Computación (DCIC - Universidad Nacional del Sur).
+* **Lugar de Trabajo:** Laboratorio ICIC (CONICET - UNS), Grupo de Representación de Conocimiento y Razonamiento (KRR).
+* **Dirección:** Dr. Alejandro J. García | **Codirección:** Dr. Sebastián Gottifredi.
 * **Metodología:** *Evaluation-Driven Development* (EDD).
-* **Objetivo Teórico:** Medir empíricamente la degradación de consistencia lógica y evaluar mecanismos de memoria y revisión de creencias (*Belief Revision*) en arquitecturas deliberativas basadas en LLMs y LangGraph[cite: 1, 2].
+* **Objetivo Teórico:** Medir empíricamente la degradación de consistencia lógica y evaluar mecanismos de memoria y revisión de creencias (*Belief Revision*) en arquitecturas deliberativas basadas en LLMs y LangGraph.
 
 ### Preguntas de Investigación Guía
-1. **P1:** ¿Cuál es la arquitectura mínima necesaria para gestionar persistencia contextual entre múltiples sesiones (*cross-thread*) de forma fiable[cite: 1, 2]?
-2. **P2:** ¿Cómo afecta el desacoplamiento de un mecanismo de reflexión (*LLM-as-a-Judge*) frente a información contradictoria o extinta ($A$ vs. $\neg A$)[cite: 1, 17]?
-3. **P3:** ¿Qué penalización en latencia y sobrecosto de tokens introduce la persistencia estructurada frente a un baseline reactivo o amnésico[cite: 1]?
+1. **P1:** ¿Cuál es la arquitectura mínima necesaria para gestionar persistencia contextual entre múltiples sesiones (*cross-thread*) de forma fiable?
+2. **P2:** ¿Cómo afecta el desacoplamiento de un mecanismo de reflexión (*LLM-as-a-Judge*) frente a información contradictoria o extinta ($A$ vs. $\neg A$)?
+3. **P3:** ¿Qué penalización en latencia y sobrecosto de tokens introduce la persistencia estructurada frente a un baseline reactivo o amnésico?
 
 ---
 
