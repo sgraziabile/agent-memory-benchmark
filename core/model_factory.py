@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import importlib
 import logging
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -118,28 +119,23 @@ def _resolve_provider_class(provider: str) -> type[BaseChatModel]:
 # ── Main factory function ────────────────────────────────────────────────────
 
 
-def create_model(
+def _build_model(
     model_id: str,
-    temperature: float = 0.0,
-    config_path: Path | str = _DEFAULT_MODELS_CONFIG,
-    **kwargs: Any,
+    temperature: float,
+    config_path: str,
+    kwargs_key: tuple[tuple[str, Any], ...],
 ) -> BaseChatModel:
-    """Create a chat model instance by model ID or provider-qualified string.
-
-    Resolution order:
-
-    1. If ``model_id`` contains ``:``, parse as ``provider:model_name``.
-    2. Otherwise, look up ``model_id`` in the YAML registry.
+    """Resolve and instantiate a chat model (uncached core).
 
     Args:
-        model_id: Either a registry key (e.g., ``"gemini-2.0-flash"``) or a
-                  provider-qualified string (e.g., ``"openai:gpt-4o-mini"``).
+        model_id: Registry key or ``provider:model_name`` string.
         temperature: Sampling temperature for the model.
         config_path: Path to ``models.yaml`` for registry lookups.
-        **kwargs: Additional keyword arguments passed to the model constructor.
+        kwargs_key: Sorted tuple of ``(key, value)`` items with explicit
+                    constructor overrides (these beat YAML settings).
 
     Returns:
-        An instantiated ``BaseChatModel`` ready for ``.invoke()`` calls.
+        A freshly instantiated ``BaseChatModel``.
 
     Raises:
         ValueError: If the model_id cannot be resolved.
@@ -183,7 +179,7 @@ def create_model(
                 model_kwargs[k] = v
 
     # Explicit kwargs override YAML settings
-    model_kwargs.update(kwargs)
+    model_kwargs.update(dict(kwargs_key))
 
     # ── Instantiate the model ────────────────────────────────────────────
     model_class = _resolve_provider_class(provider)
@@ -193,3 +189,79 @@ def create_model(
         temperature=temperature,
         **model_kwargs,
     )
+
+
+@lru_cache(maxsize=64)
+def _create_model_cached(
+    model_id: str,
+    temperature: float,
+    config_path: str,
+    kwargs_key: tuple[tuple[str, Any], ...],
+) -> BaseChatModel:
+    """Cached wrapper around :func:`_build_model`.
+
+    Chat model instances are stateless per configuration and thread-safe
+    for ``.invoke()``, so identical ``(model_id, temperature, config_path,
+    kwargs)`` tuples safely share one instance. This is critical for
+    benchmark validity: the agent graph resolves its model on **every
+    turn** (Zero Hardcoding), and without caching each measured turn
+    would pay a fresh YAML read plus provider client-pool construction
+    inside the latency window (audit §3.4).
+    """
+    return _build_model(model_id, temperature, config_path, kwargs_key)
+
+
+def clear_model_cache() -> None:
+    """Clear the model instance cache.
+
+    Useful in tests and long-lived processes that must guarantee a freshly
+    constructed provider client (e.g., after rotating API keys).
+    """
+    _create_model_cached.cache_clear()
+
+
+def create_model(
+    model_id: str,
+    temperature: float = 0.0,
+    config_path: Path | str = _DEFAULT_MODELS_CONFIG,
+    **kwargs: Any,
+) -> BaseChatModel:
+    """Create (or retrieve a cached) chat model by ID or provider-qualified string.
+
+    Resolution order:
+
+    1. If ``model_id`` contains ``:``, parse as ``provider:model_name``.
+    2. Otherwise, look up ``model_id`` in the YAML registry.
+
+    Instances are cached per ``(model_id, temperature, config_path,
+    kwargs)`` configuration: repeated calls with identical parameters —
+    e.g., every turn of a benchmark run — return the same instance
+    without re-reading YAML or rebuilding the provider client pool, so
+    per-turn latency reflects inference, not construction. Call
+    :func:`clear_model_cache` to reset.
+
+    Args:
+        model_id: Either a registry key (e.g., ``"gemini-2.0-flash"``) or a
+                  provider-qualified string (e.g., ``"openai:gpt-4o-mini"``).
+        temperature: Sampling temperature for the model.
+        config_path: Path to ``models.yaml`` for registry lookups.
+        **kwargs: Additional keyword arguments passed to the model
+                  constructor. Must be hashable to benefit from caching.
+
+    Returns:
+        An instantiated ``BaseChatModel`` ready for ``.invoke()`` calls.
+
+    Raises:
+        ValueError: If the model_id cannot be resolved.
+        ImportError: If the required provider package is not installed.
+    """
+    config_path_str = str(Path(config_path))
+    kwargs_key = tuple(sorted(kwargs.items()))
+    try:
+        return _create_model_cached(
+            model_id, temperature, config_path_str, kwargs_key
+        )
+    except TypeError:
+        # Unhashable kwargs cannot form a cache key — construct directly.
+        # (If construction itself raised TypeError, this re-raises it.)
+        return _build_model(model_id, temperature, config_path_str, kwargs_key)

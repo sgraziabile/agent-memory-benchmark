@@ -98,12 +98,16 @@ class TurnResult(BaseModel):
     Attributes:
         turn_number: The turn index this result corresponds to.
         user_input: The user message that was sent.
-        agent_response: The agent's textual response.
+        agent_response: The agent's textual response (empty for errored turns).
         assertions_passed: Count of assertions that passed.
         assertions_failed: Count of assertions that failed.
         assertion_details: Per-assertion breakdown with rule, expected, actual, passed.
         latency_ms: Wall-clock time for the agent to respond (milliseconds).
         token_usage: Token counts extracted from model response metadata.
+        status: ``"ok"`` if the model responded; ``"error"`` if the turn
+                failed at the infrastructure level (API outage, auth error).
+        error: Exception description for errored turns; ``None`` otherwise.
+                Errored turns are excluded from pass-rate and token metrics.
     """
 
     turn_number: int
@@ -114,6 +118,8 @@ class TurnResult(BaseModel):
     assertion_details: list[dict[str, Any]] = Field(default_factory=list)
     latency_ms: float = 0.0
     token_usage: dict[str, Any] = Field(default_factory=dict)
+    status: Literal["ok", "error"] = "ok"
+    error: str | None = None
 
 
 class BenchmarkRunSummary(BaseModel):
@@ -132,9 +138,13 @@ class BenchmarkRunSummary(BaseModel):
         total_assertions: Total assertions evaluated across all turns.
         passed_assertions: Count of passed assertions.
         failed_assertions: Count of failed assertions.
-        pass_rate: Fraction of assertions passed (0.0–1.0).
-        total_latency_ms: Cumulative latency across all turns.
-        avg_latency_per_turn_ms: Average latency per turn.
+        pass_rate: Fraction of assertions passed (0.0–1.0), computed over
+                   successfully completed turns only.
+        error_turns: Number of turns that failed at the infrastructure level
+                     and were excluded from all metrics.
+        error_rate: Fraction of turns that errored (0.0–1.0).
+        total_latency_ms: Cumulative latency across successfully completed turns.
+        avg_latency_per_turn_ms: Average latency per successfully completed turn.
         turn_results: Detailed per-turn results.
         timestamp: ISO 8601 timestamp of when the run started.
     """
@@ -149,6 +159,8 @@ class BenchmarkRunSummary(BaseModel):
     passed_assertions: int = 0
     failed_assertions: int = 0
     pass_rate: float = 0.0
+    error_turns: int = 0
+    error_rate: float = 0.0
     total_latency_ms: float = 0.0
     avg_latency_per_turn_ms: float = 0.0
     total_tokens: int = 0

@@ -283,13 +283,25 @@ class BenchmarkRunner:
             except Exception as exc:
                 t_end = time.perf_counter()
                 latency_ms = (t_end - t_start) * 1000.0
-                ai_response = f"[ERROR] {type(exc).__name__}: {exc}"
-                token_usage = {}
                 logger.error(
                     "  Error at turn %d: %s", turn.turn_number, exc
                 )
+                # Record the infrastructure failure for observability, but
+                # never evaluate assertions against it — error strings must
+                # not contaminate pass-rate or token metrics (audit §3.3).
+                turn_results.append(
+                    TurnResult(
+                        turn_number=turn.turn_number,
+                        user_input=turn.content,
+                        agent_response="",
+                        status="error",
+                        error=f"{type(exc).__name__}: {exc}",
+                        latency_ms=latency_ms,
+                    )
+                )
+                continue
 
-            # Evaluate assertions
+            # Evaluate assertions (only for successfully completed turns)
             assertion_details = self.evaluate_assertions(
                 ai_response, turn.assertions
             )
@@ -300,6 +312,7 @@ class BenchmarkRunner:
                 turn_number=turn.turn_number,
                 user_input=turn.content,
                 agent_response=ai_response,
+                status="ok",
                 assertions_passed=passed,
                 assertions_failed=failed,
                 assertion_details=assertion_details,
@@ -316,18 +329,24 @@ class BenchmarkRunner:
                 passed + failed,
             )
 
-        # Compute summary statistics
-        total_assertions = sum(tr.assertions_passed + tr.assertions_failed for tr in turn_results)
-        total_passed = sum(tr.assertions_passed for tr in turn_results)
-        total_failed = sum(tr.assertions_failed for tr in turn_results)
-        total_latency = sum(tr.latency_ms for tr in turn_results)
+        # Compute summary statistics — error turns are kept in the record for
+        # observability but excluded from all scientific metrics (pass rate,
+        # latency, tokens) so infrastructure failures never contaminate
+        # benchmark results (audit §3.3).
         num_turns = len(turn_results)
+        ok_turns = [tr for tr in turn_results if tr.status == "ok"]
+        error_count = num_turns - len(ok_turns)
 
-        # Aggregate token usage across all turns
+        total_assertions = sum(tr.assertions_passed + tr.assertions_failed for tr in ok_turns)
+        total_passed = sum(tr.assertions_passed for tr in ok_turns)
+        total_failed = sum(tr.assertions_failed for tr in ok_turns)
+        total_latency = sum(tr.latency_ms for tr in ok_turns)
+
+        # Aggregate token usage across successfully completed turns
         total_tokens = 0
         prompt_tokens = 0
         completion_tokens = 0
-        for tr in turn_results:
+        for tr in ok_turns:
             usage = tr.token_usage or {}
             p_tok = usage.get("input_tokens") or usage.get("prompt_tokens") or 0
             c_tok = usage.get("output_tokens") or usage.get("completion_tokens") or 0
@@ -347,8 +366,10 @@ class BenchmarkRunner:
             passed_assertions=total_passed,
             failed_assertions=total_failed,
             pass_rate=total_passed / total_assertions if total_assertions > 0 else 0.0,
+            error_turns=error_count,
+            error_rate=error_count / num_turns if num_turns > 0 else 0.0,
             total_latency_ms=total_latency,
-            avg_latency_per_turn_ms=total_latency / num_turns if num_turns > 0 else 0.0,
+            avg_latency_per_turn_ms=total_latency / len(ok_turns) if ok_turns else 0.0,
             total_tokens=total_tokens,
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
@@ -412,6 +433,7 @@ class BenchmarkRunner:
 
         # Execute
         results: list[BenchmarkRunSummary] = []
+        failed_tuples: list[str] = []
         for idx, (scenario, (prompt_id, prompt_cfg), model_id) in enumerate(matrix, 1):
             logger.info("─── Run %d/%d ───", idx, total_runs)
 
@@ -426,6 +448,9 @@ class BenchmarkRunner:
                 )
                 results.append(summary)
             except Exception as exc:
+                failed_tuples.append(
+                    f"scenario={scenario.id}, prompt={prompt_id}, model={model_id}: {exc}"
+                )
                 logger.error(
                     "Run %d/%d FAILED (scenario=%s, model=%s): %s",
                     idx,
@@ -434,6 +459,16 @@ class BenchmarkRunner:
                     model_id,
                     exc,
                 )
+
+        # Failed tuples must never vanish silently — report them loudly so
+        # the exported matrix size can be reconciled against the plan.
+        if failed_tuples:
+            logger.error(
+                "⚠ %d of %d tuples FAILED and were excluded from exports:\n  - %s",
+                len(failed_tuples),
+                total_runs,
+                "\n  - ".join(failed_tuples),
+            )
 
         # Export results
         if results:
@@ -480,6 +515,8 @@ class BenchmarkRunner:
             "passed_assertions",
             "failed_assertions",
             "pass_rate",
+            "error_turns",
+            "error_rate",
             "total_latency_ms",
             "avg_latency_per_turn_ms",
             "total_tokens",
@@ -499,7 +536,7 @@ class BenchmarkRunner:
 
         # ── Markdown Table (immediate human-friendly preview) ─────────
         md_path = run_dir / "summary.md"
-        headers = ["Scenario", "Model", "Prompt", "Level", "Turns", "Pass Rate", "Avg Latency", "Total Tokens"]
+        headers = ["Scenario", "Model", "Prompt", "Level", "Turns", "Pass Rate", "Avg Latency", "Total Tokens", "Errors"]
         table_rows = []
         for summary in results:
             pass_pct = f"{summary.pass_rate * 100:.1f}%"
@@ -514,6 +551,7 @@ class BenchmarkRunner:
                 f"**{pass_pct}**",
                 latency,
                 tokens,
+                str(summary.error_turns),
             ])
 
         col_widths = [len(h) for h in headers]

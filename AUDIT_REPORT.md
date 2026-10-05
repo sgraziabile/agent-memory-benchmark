@@ -6,7 +6,7 @@
 
 **Verification performed:** Full file-tree inspection, line-by-line review of `core/`, `agents/`, `run.py`, `tests/`, configs, and datasets; live execution of `pytest` (28 passed in 4.78s, no API keys required); live `pip install -e . --no-deps --dry-run` (fails with `OSError: Readme file does not exist: docs/SPEC.md`); dependency audit via `pip show`; git-tracking hygiene audit.
 
-> **📌 Revision 2 (Oct 5, 2026):** Issues **§3.1** (broken packaging path) and the `[cite: N]` artifacts from **§4 / action item 11** have been **fixed and live-verified** — see status markers inline and the [Changelog](#changelog) at the end of this report.
+> **📌 Revision 3 (Oct 5, 2026):** **§3.1** (broken packaging path), the `[cite: N]` artifacts from **§4 / action item 11**, and **§3.3** (error turns contaminating benchmark metrics — action item 6) have been **fixed and live-verified** (test suite: **33/33 pass, no network, 0.83s**) — see status markers inline and the [Changelog](#changelog) at the end of this report. **§3.4** (per-turn model construction polluting latency — action item 8) is resolved as of **Revision 4** (37/37 tests pass).
 
 ---
 
@@ -29,7 +29,11 @@
 
 **Single biggest blocker (at audit time):** The documented 1-command quickstart is **broken** — live-verified: `pip install -e ".[dev]"` fails with `OSError: Readme file does not exist: docs/SPEC.md` (`pyproject.toml:5` points at a nonexistent path). Combined with an undeclared runtime dependency (`python-dotenv`), zero CI, zero linting/typing gates, and no lockfile, the project fails the "clone → install → verify" recruiter smoke-test on the very first command. That is a fatal first impression for a portfolio piece, even though the underlying architecture would earn a 7.5–8 on its own.
 
-**✅ Update (Rev 2, Oct 5, 2026):** The packaging blocker is **resolved** — `pyproject.toml` now points at the root-level `SPEC.md` and `pip install -e .` completes successfully (live-verified: `Preparing editable metadata ... finished with status 'done'`). The remaining top blockers are the undeclared `python-dotenv` with its silent fallback (§3.2), zero CI/linting/typing gates (§4), and error-turn metric contamination (§3.3). **Revised standing: 6.8 / 10** (from 6.5 — the fatal first-contact failure is gone, but nothing yet publicly attests to the tests passing).
+**✅ Update (Rev 2, Oct 5, 2026):** The packaging blocker is **resolved** — `pyproject.toml` now points at the root-level `SPEC.md` and `pip install -e .` completes successfully (live-verified: `Preparing editable metadata ... finished with status 'done'`). The remaining top blockers are the undeclared `python-dotenv` with its silent fallback (§3.2), zero CI/linting/typing gates (§4), and error-turn metric contamination (§3.3). Revised standing: 6.8 / 10 (from 6.5 — the fatal first-contact failure is gone, but nothing yet publicly attests to the tests passing).
+
+**✅ Update (Rev 3, Oct 5, 2026):** Metric contamination is **resolved** (§3.3 ✅) — error turns are now explicitly flagged (`TurnResult.status`) and excluded from `pass_rate`, latency, and token metrics; `BenchmarkRunSummary` self-reports `error_turns`/`error_rate`; exports and the CLI carry the new accounting; and the fix is pinned by deterministic fake-graph tests (33/33 pass, no network). Remaining top blockers: undeclared `python-dotenv` (§3.2), zero CI (§4 / item 3), and per-turn model construction polluting latency (§3.4). ~~Revised standing: 7.0 / 10~~.
+
+**✅ Update (Rev 4, Oct 5, 2026):** Latency pollution is **resolved** (§3.4 ✅) — the model factory now caches instances per `(model_id, temperature, config_path, kwargs)` via `lru_cache`, so after the first invocation per configuration each measured turn reflects inference and graph orchestration only; `models.yaml` is read once per config, not once per turn. Live-verified: 3 `create_model` calls → 1 constructor call for identical configs; suite **37/37 pass in 0.86s**. Remaining top blockers: undeclared `python-dotenv` (§3.2) and zero CI/linting/typing gates (§4 / items 2–4). **Revised standing: 7.2 / 10**.
 
 ---
 
@@ -90,49 +94,15 @@
   ```
   If you genuinely want dotenv optional, at least warn: `logger.warning("python-dotenv not installed — .env will NOT be loaded")`.
 
-### 3.3 🔴 Error turns contaminate benchmark metrics
+### 3.3 🔴 Error turns contaminate benchmark metrics — ✅ RESOLVED (Rev 3)
 - **Location:** `core/runner.py:283–290` (exception handler inside `run_single`) and `runner.py:292–309`.
-- **Issue:** Any per-turn exception (API outage, rate limit, malformed response) is converted into `ai_response = f"[ERROR] {type(exc).__name__}: {exc}"` and then **fed through `evaluate_assertions`** as if it were a model response. An infrastructure failure is scored as a 0% benchmark result and exported to CSV/JSON indistinguishably from genuine agent failure. For a scientific harness this is invalid data: your `pass_rate` conflates model behavior with harness reliability.
-- **Suggested refactor:** Add an explicit status to `TurnResult` and exclude errored turns from `pass_rate`:
-  ```python
-  # schemas.py
-  class TurnResult(BaseModel):
-      ...
-      status: Literal["ok", "error"] = "ok"
-      error: str | None = None
+- **Issue (at audit time):** Any per-turn exception (API outage, rate limit, malformed response) was converted into `ai_response = f"[ERROR] {type(exc).__name__}: {exc}"` and then **fed through `evaluate_assertions`** as if it were a model response. An infrastructure failure was scored as a benchmark result and exported to CSV/JSON indistinguishably from genuine agent failure — invalid data for a scientific harness (`pass_rate` conflated model behavior with harness reliability).
+- **Resolution (Oct 5, 2026):** Implemented as suggested, plus full accounting: `TurnResult` gained `status: Literal["ok","error"]` and `error: str | None`; the `except` block now records the failed turn and `continue`s — the error string never reaches `evaluate_assertions`; summary metrics (`pass_rate`, latency, tokens) are computed over `ok` turns only; `BenchmarkRunSummary` gained `error_turns`/`error_rate`; CSV gained both columns and `summary.md` an "Errors" column; `run_matrix` now reconciles failed tuples loudly instead of dropping them silently (failed tuples are logged with a count + full descriptor list; full export of failed tuples deferred to the exporter refactor, item 10); and `run.py` prints `(ERROR)` turns plus per-run error accounting. **Live-verified:** 5 new deterministic tests (`_ScriptedGraph` stub — no network), suite **33/33 pass in 0.83s**.
 
-  # runner.py — inside the except block:
-  turn_results.append(TurnResult(
-      turn_number=turn.turn_number,
-      user_input=turn.content,
-      agent_response="",
-      status="error",
-      error=f"{type(exc).__name__}: {exc}",
-      latency_ms=latency_ms,
-  ))
-  continue  # skip assertion evaluation entirely
-
-  # and in run_matrix's tuple-level except (runner.py:428-436): append a
-  # BenchmarkRunSummary with status="error" (or a FailedRunRecord) so failed
-  # tuples appear in exports instead of silently vanishing.
-  ```
-
-### 3.4 🔴 Per-turn model construction pollutes the latency metric (P3 validity threat)
+### 3.4 🔴 Per-turn model construction pollutes the latency metric (P3 validity threat) — ✅ RESOLVED (Rev 4)
 - **Location:** `agents/level_0_reactive/graph.py:82` (`model = create_model(model_id, **model_kwargs)`) + `core/model_factory.py:161` (registry path re-reads and re-parses `models.yaml` **on every call**) — both execute *inside* `agent_graph.invoke()`, which sits between `t_start`/`t_end` in `runner.py:259–266`.
-- **Issue:** You are measuring disk IO (YAML load), import machinery, and HTTP-client pool construction per turn and reporting it as "agent latency." Since P3 is literally *"What latency overhead does persistence introduce?"*, this systematically inflates the baseline you'll compare against. It also wastes IO on every single turn of every run in the 216-tuple matrix.
-- **Suggested refactor:** Cache instances in the factory (models are stateless per-config):
-  ```python
-  # model_factory.py
-  from functools import lru_cache
-
-  @lru_cache(maxsize=32)
-  def _cached_create(model_id: str, temperature: float, kwargs_key: tuple) -> BaseChatModel:
-      return _create_model_impl(model_id, temperature, dict(kwargs_key))
-
-  def create_model(model_id, temperature=0.0, config_path=..., **kwargs):
-      return _cached_create(model_id, temperature, tuple(sorted(kwargs.items())))
-  ```
-  Alternatively, keep instantiation but load the registry once at `BenchmarkRunner.__init__` and pass entries via `configurable["model_kwargs"]`.
+- **Issue (at audit time):** You are measuring disk IO (YAML load), import machinery, and HTTP-client pool construction per turn and reporting it as "agent latency." Since P3 is literally *"What latency overhead does persistence introduce?"*, this systematically inflates the baseline you'll compare against. It also wastes IO on every single turn of every run in the 216-tuple matrix.
+- **Resolution (Oct 5, 2026):** Implemented as suggested: `create_model` now routes through an `lru_cache(maxsize=64)` wrapper (`_create_model_cached`) keyed on `(model_id, temperature, config_path, sorted-kwargs)`; the uncached core was extracted into `_build_model` (single-responsibility, easy to test); a public `clear_model_cache()` resets the cache (for tests and API-key rotation); unhashable kwargs fall back to direct construction instead of crashing. Cache-key sensitivity is preserved — different temperature or kwargs produce distinct instances. The agent graph is untouched: it still calls `create_model` per turn (Zero Hardcoding intact), but after the first invocation per configuration, `models.yaml` is read exactly once and the provider client pool is built once per model config. **Live-verified:** 4 new deterministic tests (same-config identity, YAML-read-once counter, cache-key sensitivity across temperature/kwargs, `clear_model_cache` semantics) plus a live smoke check (3 `create_model` calls → 1 constructor call); suite **37/37 pass in 0.86s**. README gained a "Measurement validity" note documenting the caching semantics.
 
 ### 3.5 🟠 Methodological contradiction: `strict_epistemic` prompt vs. `must_not_contain` assertions
 - **Location:** `configs/prompts.yaml:36–37` (rule 4: *"reference when they were introduced or corrected … e.g., 'You initially said X, then corrected it to Y'"*) vs. `datasets/conversations/test_belief_revision_01.yaml:50–52, 64–66` (`must_not_contain: "Luna"` on turns 4–5).
@@ -251,7 +221,7 @@
 - ❌ `.pytest_cache/` is not in `.gitignore` (it's currently untracked by luck — a single `git add .` would commit cache internals).
 
 ### Testing & E2E Validation
-- ❌ **Zero LLM mocking.** There is no `FakeChatModel`/`GenericFakeChatModel` (available in `langchain_core.language_models.fake_chat_models`) or stubbed `create_model` fixture. Consequently, the most business-critical code paths — `run_single` turn loop, latency capture, token aggregation, `system_event` skip logic, error-path handling, and all of `_export_results` — have **no test coverage at all**. Your 28 tests cover the scaffolding; nothing covers an actual benchmark execution end-to-end.
+- ⚠️ **Partially resolved (Rev 3):** a deterministic `_ScriptedGraph` stub now covers `run_single` end-to-end — happy path, error-turn handling, and pass-rate/latency accounting (3 E2E tests, no network). Still missing: a full fake-LLM graph harness, `system_event` skip logic, token-aggregation arithmetic, and `_export_results` content assertions (remaining scope of action item 5).
 - ❌ No edge-case tests: empty scenario, zero-assertion scenario (pass_rate division is guarded at `runner.py:349` but untested), unknown scenario ID, all-turns-errored summary, CSV/Markdown export content assertions.
 - ❌ No regression test for the packaging bug (~~a trivial `pip install -e . --dry-run` CI step would have caught it~~ **the bug itself is fixed — Rev 2, §3.1** — but the guard step still needs to land with CI, action item 3).
 - ⚠️ Single-shot measurements: every tuple runs **n=1** with no repeats, no variance, no confidence intervals. The README's latency table (e.g., "10,929 ms" for belief_revision) presents one sample as a finding. For P3 (latency overhead), n≥3 with mean±σ is the minimum bar for the claim to survive scrutiny.
@@ -275,12 +245,12 @@
 3. **Add GitHub Actions CI (45 min).** `.github/workflows/ci.yml`: matrix over `python 3.10/3.11/3.12`, steps = `pip install -e ".[dev]"`, `ruff check .`, `mypy core agents run.py`, `pytest tests/ -v`. Add the status badge as the **first line** of the README. This is the single highest portfolio-ROI item: it converts your private test pass into public, attested proof.
 4. **Add `ruff` + `mypy` + `pre-commit` (1 h).** `pyproject.toml` config: `ruff` (line-length 88, target `py310`), `mypy` with `disallow_untyped_defs = true` for `core`/`agents`. Tighten the `Any`s from §3.11 to `CompiledStateGraph`. Wire a 4-hook `.pre-commit-config.yaml` (ruff, ruff-format, mypy, end-of-file-fixer). Your codebase is already clean enough that these will pass nearly green — free credibility.
 5. **Mock-LLM end-to-end tests (2–3 h).** Add `tests/test_runner_e2e.py` using `langchain_core.language_models.fake_chat_models.GenericFakeChatModel`, monkeypatching `core.model_factory.create_model` (or injecting via `configurable["model_id"]` with a registry fixture). Cover: full `run_single` happy path with scripted responses, `system_event` skip, token aggregation arithmetic, error-turn handling (after §3.3 refactor), and export file contents (assert the CSV header row and the summary.md table cells). These tests turn your runner from "probably works" into "provably works" — and they're the tests a Staff interviewer will ask about.
-6. **Fix metric contamination (1 h).** Implement §3.3 (`status: Literal["ok","error"]` on `TurnResult`, skip assertion evaluation on error turns, record failed tuples in `run_matrix` exports). Pair with an `error_rate` field in `BenchmarkRunSummary`.
+6. ~~**Fix metric contamination (1 h).**~~ ✅ **DONE (Rev 3, Oct 5, 2026)** — §3.3 implemented as specified, plus `error_turns`/`error_rate` on `BenchmarkRunSummary`, CSV/Markdown export columns, `(ERROR)` turn reporting in the CLI, loud `run_matrix` failure reconciliation, and 5 new deterministic tests (suite: 33/33 pass in 0.83s, no network).
 
 ### 🟠 Medium impact — same day (~4 hours)
 
 7. **Lock the environment (30 min).** Adopt `uv` (`uv lock`, commit `uv.lock`) or export `requirements.lock` via `pip-tools`. Update README quickstart to `uv sync`. Record resolved library versions in every run's `results.json` (add `environment: {langgraph: ..., langchain_core: ..., pydantic: ...}` to the run metadata) — a benchmark that doesn't record its stack isn't reproducible.
-8. **Cache model instances (§3.4, 30 min)** so latency numbers measure the agent, not YAML parsing. Note the change in the README methodology section.
+8. ~~**Cache model instances (§3.4, 30 min)**~~ ✅ **DONE (Rev 4, Oct 5, 2026)** — `_build_model` + `_create_model_cached` (`lru_cache(maxsize=64)`) + public `clear_model_cache()` in `core/model_factory.py`; cache-key sensitivity preserved (temperature/kwargs changes yield new instances); unhashable kwargs fall back to direct construction. 4 new deterministic tests + live smoke check (3 calls → 1 construction for identical config); suite 37/37 pass. The README methodology note has been added documenting the caching semantics.
 9. **Resolve the prompt/assertion contradiction (§3.5, 1 h)** — at minimum, add a `match_scope` or regex assertion option (§3.6), and re-run the `strict_epistemic` scenario to update the README table with corrected numbers. Being able to *write about* this fix in the README ("we discovered our assertion engine penalized epistemically correct responses and here's how we fixed it") is itself portfolio gold — it demonstrates eval-design maturity.
 10. **Write the exporter module (§3.15, 1.5 h)** — `core/exporters.py` with a `Protocol`, split JSON/CSV/MD classes, and add per-exporter unit tests.
 11. **Clean `SPEC.md` (30 min)** — ✅ **Partially done (Rev 2):** all `[cite: N]` artifacts stripped and codebase-search-verified. Still pending: add an English executive summary section at the top.
@@ -304,6 +274,21 @@ This is a **well-architected research harness trapped in pre-production packagin
 ---
 
 ## Changelog
+
+### Rev 4 — Oct 5, 2026
+- **✅ §3.4 RESOLVED — per-turn model construction no longer pollutes the latency metric.** `core/model_factory.py` was refactored into three focused functions: `_build_model` (uncached resolution + construction), `_create_model_cached` (`@lru_cache(maxsize=64)` keyed on `(model_id, temperature, config_path, sorted-kwargs tuple)`), and the public `create_model` facade which builds the hashable cache key and falls back to direct construction for unhashable kwargs. New public API: `clear_model_cache()` for tests and API-key rotation.
+- **✅ Design constraints preserved.** Zero Hardcoding is intact — the agent graph still resolves its model from `configurable` on every turn; caching is transparent at the factory layer. Cache-key sensitivity verified: different `temperature` or constructor kwargs produce distinct instances, so the 216-tuple matrix never shares state across configurations.
+- **✅ Test coverage: 4 new deterministic tests** (`TestModelCaching` with a `_DummyChatModel` stub + autouse cache-isolation fixture, no network): same-config identity (`is`), registry-read-once counter (proving `models.yaml` is parsed exactly once for repeated calls), cache-key sensitivity across temperature/kwargs, and `clear_model_cache` semantics. Plus a live smoke check: 3 `create_model` calls with identical config → **1** constructor invocation.
+- **📄 README updated.** A "Measurement validity" note was added to the sample-results section documenting the caching semantics and error-turn exclusion, so benchmark claims now state their measurement conditions.
+- **Live verification:** `pytest tests/ -q` → **37 passed in 0.86s** (33 prior + 4 new), zero network, zero API keys.
+- **Score: 7.0 → 7.2.** Rationale: the last of the three audit-time measurement-validity threats (P3) is closed and pinned by regression tests; all three "🔴" P3/metrics findings (§3.1, §3.3, §3.4) are now resolved. The path to 8.5 is now purely infrastructural: `python-dotenv` declaration (§3.2), CI pipeline + ruff/mypy (items 2–4), and the remaining test-depth items (5).
+
+### Rev 3 — Oct 5, 2026
+- **✅ §3.3 RESOLVED — error turns no longer contaminate benchmark metrics.** `TurnResult` gained `status: Literal["ok","error"]` + `error: str | None` (`core/schemas.py`); the `run_single` `except` block now records the failed turn and `continue`s so error strings are never evaluated by `evaluate_assertions`; summary metrics (`pass_rate`, `total_latency_ms`, `avg_latency_per_turn_ms`, token totals) are computed over `ok` turns only; `BenchmarkRunSummary` gained `error_turns` + `error_rate` so every run self-reports its own harness reliability.
+- **✅ Export & CLI accounting.** `summary.csv` gained `error_turns`/`error_rate` columns; `summary.md` gained an "Errors" column; `run.py` prints an "Error Turns … excluded from metrics" line per run and `(ERROR)` entries (with the exception) in the per-turn breakdown; `run_matrix` now logs failed tuples loudly (`⚠ N of M tuples FAILED ...` with the full descriptor list) instead of letting them vanish silently — exporting failed tuples as records is deferred to the exporter refactor (item 10).
+- **✅ Action item 6 DONE; item 5 partially advanced.** New deterministic test coverage: 2 schema tests (`TurnResult` status defaults/error construction, `BenchmarkRunSummary` error defaults) + `TestErrorTurnHandling` (3 E2E tests via a `_ScriptedGraph` stub — no network, no API keys): error turns recorded & flagged, pass-rate/latency exclusion verified numerically (2/2 → 1.0 vs. the pre-fix 1/3 → 0.33), and healthy-run zero-error invariants. Remaining item-5 scope (fake-LLM graph harness, `system_event` skip, token aggregation, export content assertions) is unchanged.
+- **Live verification:** `pytest tests/ -v` → **33 passed in 0.83s** (28 pre-existing + 5 new), zero network, zero API keys.
+- **Score: 6.8 → 7.0.** Rationale: one of the three remaining top blockers is closed, with regression tests pinning the behavior; CI (item 3) and the dotenv declaration (§3.2) are now the highest-ROI next steps, followed by the latency-validity fix (§3.4).
 
 ### Rev 2 — Oct 5, 2026
 - **✅ §3.1 RESOLVED — packaging path fixed.** `pyproject.toml:5` changed from `readme = "docs/SPEC.md"` → `readme = "SPEC.md"` (root-level SPEC retained as the project readme per maintainer's choice). Live-verified: `pip install -e . --no-deps --dry-run` → `Preparing editable metadata (pyproject.toml): finished with status 'done'`, `Would install agent-memory-benchmark-0.1.0`. The original `OSError: Readme file does not exist` is gone.

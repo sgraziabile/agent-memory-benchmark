@@ -2,6 +2,7 @@
 
 import yaml
 import pytest
+from langchain_core.messages import AIMessage
 
 from core.schemas import (
     AgentState,
@@ -11,7 +12,12 @@ from core.schemas import (
     ConversationTurn,
     TurnResult,
 )
-from core.model_factory import load_model_registry, PROVIDER_MAP
+from core.model_factory import (
+    clear_model_cache,
+    create_model,
+    load_model_registry,
+    PROVIDER_MAP,
+)
 from core.runner import BenchmarkRunner
 from agents.base import BaseBenchmarkAgent
 from agents.level_0_reactive.graph import Level0ReactiveAgent
@@ -58,6 +64,30 @@ class TestSchemas:
         )
         assert tr.latency_ms == 0.0
         assert tr.token_usage == {}
+        assert tr.status == "ok"
+        assert tr.error is None
+
+    def test_turn_result_error_status(self):
+        tr = TurnResult(
+            turn_number=1,
+            user_input="test",
+            agent_response="",
+            status="error",
+            error="RateLimitError: 429 Too Many Requests",
+        )
+        assert tr.status == "error"
+        assert tr.error == "RateLimitError: 429 Too Many Requests"
+
+    def test_run_summary_error_defaults(self):
+        summary = BenchmarkRunSummary(
+            run_id="test",
+            scenario_id="s1",
+            model_id="m1",
+            prompt_id="p1",
+            agent_level="level_0",
+        )
+        assert summary.error_turns == 0
+        assert summary.error_rate == 0.0
 
     def test_run_summary_pass_rate(self):
         summary = BenchmarkRunSummary(
@@ -109,6 +139,78 @@ class TestModelFactory:
             )
 
 
+# ── Model Factory Caching Tests (audit §3.4) ────────────────────────────────
+
+
+class _DummyChatModel:
+    """Stand-in for a provider chat model — accepts any constructor kwargs.
+
+    Deliberately a plain class (not a ``BaseChatModel`` subclass) so that
+    registry YAML extras (``timeout``, ``max_retries``, ``max_tokens``, ...)
+    never trip Pydantic validation in these cache tests. No network.
+    """
+
+    def __init__(self, model: str, temperature: float = 0.0, **kwargs):
+        self.model = model
+        self.temperature = temperature
+        self.kwargs = kwargs
+
+
+class TestModelCaching:
+    """Audit §3.4 — model instances must be cached per configuration so
+    per-turn latency reflects model inference, not YAML re-reads and
+    provider client-pool construction inside the measured window."""
+
+    @pytest.fixture(autouse=True)
+    def _isolate_cache(self, monkeypatch):
+        """Stub the provider resolver and reset the cache around each test."""
+        clear_model_cache()
+        monkeypatch.setattr(
+            "core.model_factory._resolve_provider_class",
+            lambda provider: _DummyChatModel,
+        )
+        yield
+        clear_model_cache()
+
+    def test_same_config_returns_same_instance(self):
+        first = create_model("fake:test-model", temperature=0.0)
+        second = create_model("fake:test-model", temperature=0.0)
+        assert first is second
+
+    def test_registry_read_once_across_calls(self, monkeypatch):
+        calls = {"count": 0}
+        real_loader = load_model_registry
+
+        def counting_loader(config_path):
+            calls["count"] += 1
+            return real_loader(config_path)
+
+        monkeypatch.setattr(
+            "core.model_factory.load_model_registry", counting_loader
+        )
+
+        model_id = next(iter(load_model_registry()))
+        create_model(model_id)
+        create_model(model_id)
+        # Second call must be served from cache — no re-read of models.yaml.
+        assert calls["count"] == 1
+
+    def test_different_config_returns_new_instance(self):
+        base = create_model("fake:test-model", temperature=0.0)
+        hotter = create_model("fake:test-model", temperature=1.0)
+        tuned = create_model("fake:test-model", temperature=0.0, max_tokens=100)
+        # Cache-key sensitivity: distinct configs must never share an instance.
+        assert base is not hotter
+        assert base is not tuned
+        assert hotter is not tuned
+
+    def test_clear_model_cache_forces_new_instance(self):
+        first = create_model("fake:test-model")
+        clear_model_cache()
+        second = create_model("fake:test-model")
+        assert first is not second
+
+
 # ── Runner Assertion Tests ───────────────────────────────────────────────────
 
 
@@ -151,6 +253,123 @@ class TestRunnerAssertions:
     def test_extract_text_content_blocks(self):
         blocks = [{"type": "text", "text": "The answer is 42.", "extras": {"signature": "sig123"}}]
         assert BenchmarkRunner._extract_text_content(blocks) == "The answer is 42."
+
+
+# ── Error-Turn Handling Tests (audit §3.3) ──────────────────────────────────
+
+
+class _ScriptedGraph:
+    """Minimal deterministic stand-in for a compiled LangGraph.
+
+    Fails the first ``fail_first`` invocations with an infrastructure error,
+    then returns a scripted ``AIMessage``. No network, no API keys.
+    """
+
+    def __init__(self, fail_first: int = 0):
+        self.calls = 0
+        self.fail_first = fail_first
+
+    def invoke(self, state, config=None):
+        self.calls += 1
+        if self.calls <= self.fail_first:
+            raise RuntimeError("simulated provider outage")
+        return {"messages": [AIMessage(content="Miso is the cat.")]}
+
+
+class TestErrorTurnHandling:
+    """Verify error turns are recorded, visible, and excluded from metrics."""
+
+    @staticmethod
+    def _make_scenario() -> BenchmarkScenario:
+        return BenchmarkScenario(
+            id="error_handling_01",
+            name="Error handling",
+            description="Turn 1 fails at the provider; turn 2 succeeds.",
+            category="unit_test",
+            turns=[
+                ConversationTurn(
+                    turn_number=1,
+                    role="user",
+                    content="Who is Miso?",
+                    # Pre-fix behavior: the error string "[ERROR] ..."
+                    # would be evaluated here and silently FAIL this rule,
+                    # scoring an outage as a model failure.
+                    assertions=[AssertionRule(type="must_contain", value="Miso")],
+                ),
+                ConversationTurn(
+                    turn_number=2,
+                    role="user",
+                    content="Again: who is Miso?",
+                    assertions=[
+                        AssertionRule(type="must_contain", value="Miso"),
+                        AssertionRule(type="must_not_contain", value="Luna"),
+                    ],
+                ),
+            ],
+        )
+
+    def test_error_turn_recorded_and_flagged(self):
+        summary = BenchmarkRunner().run_single(
+            scenario=self._make_scenario(),
+            prompt_id="unit_test_prompt",
+            prompt_content="You are a deterministic test agent.",
+            model_id="fake-model",
+            agent_graph=_ScriptedGraph(fail_first=1),
+            agent_level="level_0_reactive",
+        )
+
+        # Both turns executed and recorded
+        assert summary.total_turns == 2
+
+        # The failed turn is explicitly flagged as an error
+        first = summary.turn_results[0]
+        assert first.status == "error"
+        assert first.error is not None
+        assert "RuntimeError" in first.error
+
+        # No assertions were evaluated against the error string (§3.3 fix)
+        assert first.assertions_passed == 0
+        assert first.assertions_failed == 0
+        assert first.assertion_details == []
+
+        # Error accounting surfaces in the run summary
+        assert summary.error_turns == 1
+        assert summary.error_rate == 0.5
+
+    def test_pass_rate_excludes_error_turns(self):
+        summary = BenchmarkRunner().run_single(
+            scenario=self._make_scenario(),
+            prompt_id="unit_test_prompt",
+            prompt_content="You are a deterministic test agent.",
+            model_id="fake-model",
+            agent_graph=_ScriptedGraph(fail_first=1),
+            agent_level="level_0_reactive",
+        )
+
+        # Only the healthy turn's 2 assertions count: 2/2 → 1.0.
+        # (Pre-fix behavior would also score the error string: 1/3 → 0.33.)
+        assert summary.total_assertions == 2
+        assert summary.passed_assertions == 2
+        assert summary.pass_rate == 1.0
+
+        # Latency metrics exclude the failed turn's time-to-error
+        healthy = summary.turn_results[1]
+        assert summary.total_latency_ms == pytest.approx(healthy.latency_ms)
+        assert summary.avg_latency_per_turn_ms == pytest.approx(healthy.latency_ms)
+
+    def test_healthy_run_has_no_errors(self):
+        summary = BenchmarkRunner().run_single(
+            scenario=self._make_scenario(),
+            prompt_id="unit_test_prompt",
+            prompt_content="You are a deterministic test agent.",
+            model_id="fake-model",
+            agent_graph=_ScriptedGraph(fail_first=0),
+            agent_level="level_0_reactive",
+        )
+        assert summary.error_turns == 0
+        assert summary.error_rate == 0.0
+        assert summary.pass_rate == 1.0
+        assert all(tr.status == "ok" for tr in summary.turn_results)
 
 
 # ── Level 0 Agent Tests ─────────────────────────────────────────────────────
