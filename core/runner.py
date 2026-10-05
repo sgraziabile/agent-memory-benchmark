@@ -232,16 +232,17 @@ class BenchmarkRunner:
             prompt_id,
         )
 
-        # Build runtime config (Dynamic Injection — Zero Hardcoding)
+        # Build runtime config (Dynamic Injection — Zero Hardcoding).
+        # thread_id scopes conversation state for checkpointer-enabled agents
+        # (Level 1+). For Level 0 (no checkpointer) it is harmless, keeping
+        # the runner code identical across all ablation levels.
         config = {
             "configurable": {
                 "model_id": model_id,
                 "system_prompt": prompt_content,
+                "thread_id": f"{scenario.id}_{run_id}",
             }
         }
-
-        # Accumulate messages for the full conversation
-        accumulated_messages: list[Any] = []
 
         for turn in scenario.turns:
             if turn.role == "system_event":
@@ -249,15 +250,16 @@ class BenchmarkRunner:
                 logger.info("  System event at turn %d: %s", turn.turn_number, turn.content[:80])
                 continue
 
-            # Build user message
+            # Build user message — send only the current turn delta.
+            # History retention across turns is the agent's responsibility
+            # (via its checkpointer), not the runner's.
             user_msg = HumanMessage(content=turn.content)
-            accumulated_messages.append(user_msg)
 
             # Invoke the agent graph
             t_start = time.perf_counter()
             try:
                 result = agent_graph.invoke(
-                    {"messages": accumulated_messages},
+                    {"messages": [user_msg]},
                     config=config,
                 )
                 t_end = time.perf_counter()
@@ -277,9 +279,6 @@ class BenchmarkRunner:
                         elif hasattr(msg, "response_metadata"):
                             token_usage = msg.response_metadata.get("usage", {})
                         break
-
-                # Add the AI response to accumulated messages for next turn
-                accumulated_messages = list(response_messages)
 
             except Exception as exc:
                 t_end = time.perf_counter()
@@ -445,7 +444,7 @@ class BenchmarkRunner:
     # ── Export Functions ──────────────────────────────────────────────────
 
     def _export_results(self, results: list[BenchmarkRunSummary]) -> Path:
-        """Export results to timestamped JSONL and CSV files.
+        """Export results to timestamped JSONL, CSV and Markdown files.
 
         Args:
             results: List of run summaries to export.
@@ -456,15 +455,19 @@ class BenchmarkRunner:
         run_dir = self.output_dir / datetime.now().strftime("%Y%m%d_%H%M%S")
         run_dir.mkdir(parents=True, exist_ok=True)
 
-        # ── JSONL (full fidelity) ────────────────────────────────────
-        jsonl_path = run_dir / "results.jsonl"
-        with open(jsonl_path, "w", encoding="utf-8") as fh:
-            for summary in results:
-                fh.write(summary.model_dump_json() + "\n")
+        # ── JSON (indented, human-readable) ──────────────────────────
+        json_path = run_dir / "results.json"
+        with open(json_path, "w", encoding="utf-8") as fh:
+            json.dump(
+                [summary.model_dump() for summary in results],
+                fh,
+                indent=2,
+                ensure_ascii=False,
+            )
 
-        logger.info("Exported JSONL: %s", jsonl_path)
+        logger.info("Exported JSON: %s", json_path)
 
-        # ── CSV (flattened summary) ──────────────────────────────────
+        # ── CSV (flattened summary, Excel compatible) ────────────────
         csv_path = run_dir / "summary.csv"
         fieldnames = [
             "run_id",
@@ -485,7 +488,7 @@ class BenchmarkRunner:
             "timestamp",
         ]
 
-        with open(csv_path, "w", encoding="utf-8", newline="") as fh:
+        with open(csv_path, "w", encoding="utf-8-sig", newline="") as fh:
             writer = csv.DictWriter(fh, fieldnames=fieldnames)
             writer.writeheader()
             for summary in results:
@@ -493,6 +496,58 @@ class BenchmarkRunner:
                 writer.writerow(row)
 
         logger.info("Exported CSV: %s", csv_path)
+
+        # ── Markdown Table (immediate human-friendly preview) ─────────
+        md_path = run_dir / "summary.md"
+        headers = ["Scenario", "Model", "Prompt", "Level", "Turns", "Pass Rate", "Avg Latency", "Total Tokens"]
+        table_rows = []
+        for summary in results:
+            pass_pct = f"{summary.pass_rate * 100:.1f}%"
+            latency = f"{summary.avg_latency_per_turn_ms:.0f} ms"
+            tokens = f"{summary.total_tokens:,}" if summary.total_tokens > 0 else "N/A"
+            table_rows.append([
+                f"`{summary.scenario_id}`",
+                f"`{summary.model_id}`",
+                f"`{summary.prompt_id}`",
+                f"`{summary.agent_level}`",
+                str(summary.total_turns),
+                f"**{pass_pct}**",
+                latency,
+                tokens,
+            ])
+
+        col_widths = [len(h) for h in headers]
+        for row in table_rows:
+            for i, cell in enumerate(row):
+                col_widths[i] = max(col_widths[i], len(cell))
+
+        # Format rows with padding
+        header_line = "| " + " | ".join(h.ljust(col_widths[i]) for i, h in enumerate(headers)) + " |"
+        sep_parts = []
+        for i, w in enumerate(col_widths):
+            # Right-align numeric columns (turns, pass rate, latency, tokens), left-align others
+            if i >= 4:
+                sep_parts.append("-" * (w - 1) + ":")
+            else:
+                sep_parts.append(":" + "-" * (w - 1))
+        sep_line = "| " + " | ".join(sep_parts) + " |"
+
+        with open(md_path, "w", encoding="utf-8") as fh:
+            fh.write(f"# Benchmark Execution Summary\n\n")
+            fh.write(f"- **Generated at:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            fh.write(f"- **Total Runs:** {len(results)}\n\n")
+            fh.write(header_line + "\n")
+            fh.write(sep_line + "\n")
+            for row in table_rows:
+                row_cells = []
+                for i, cell in enumerate(row):
+                    if i >= 4:
+                        row_cells.append(cell.rjust(col_widths[i]))
+                    else:
+                        row_cells.append(cell.ljust(col_widths[i]))
+                fh.write("| " + " | ".join(row_cells) + " |\n")
+
+        logger.info("Exported Markdown: %s", md_path)
         logger.info("Results directory: %s", run_dir)
 
         return run_dir

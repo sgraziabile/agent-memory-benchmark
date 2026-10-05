@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────────────────────────────
+# test_temporal_multi_hop_01.yaml — Temporal Multi-Hop Reasoning
+# ─────────────────────────────────────────────────────────────────
+# Tests compositional deduction over isolated facts introduced
+# across separate conversation turns (cross-turn / cross-session).
+# Corresponds to Research Question P1 and Stress Test 3 in SPEC.md.
+# ─────────────────────────────────────────────────────────────────
+
+id: temporal_multi_hop_01
+name: "Temporal Multi-Hop Reasoning"
+description: >
+  Premise 1 establishes a relation between two entities (Elena and Carlos
+  live in the same city). An intermediate turn acts as a factual distractor.
+  Premise 2 establishes the location of the second entity (Carlos relocated to
+  Berlin). The final turn asks for Elena's location, requiring multi-hop
+  composition of the distributed premises.
+category: temporal_multi_hop
+metadata:
+  difficulty: moderate
+  hops: 2
+  distractor_turns: 1
+  expected_level_0_behavior: "Fails completely — cannot compose facts across turns without working memory"
+  target_research_question: "P1"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: "I want to share some background about my research team. Elena and Carlos always live and work in the same city."
+    assertions: []
+
+  - turn_number: 2
+    role: user
+    content: "Quick question before we continue: what is the boiling point of water at sea level in Celsius?"
+    assertions:
+      - type: must_contain
+        value: "100"
+        case_sensitive: false
+
+  - turn_number: 3
+    role: user
+    content: "Carlos just accepted a new fellowship and relocated to Berlin."
+    assertions: []
+
+  - turn_number: 4
+    role: user
+    content: "Based on what we discussed, in which city does Elena live?"
+    assertions:
+      - type: must_contain
+        value: "Berlin"
+        case_sensitive: false

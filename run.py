@@ -48,6 +48,11 @@ def setup_logging(verbose: bool = False) -> None:
 
 
 def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
+
     parser = argparse.ArgumentParser(
         description="agent-memory-benchmark: Experimental harness runner",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -244,7 +249,7 @@ def _print_run_report(results: list, run_dir: Path | None = None) -> None:
             print(f"    Agent:    {tr.agent_response[:100]}...")
             if tr.assertion_details:
                 for a in tr.assertion_details:
-                    mark = "✓" if a["passed"] else "✗"
+                    mark = "[PASS]" if a["passed"] else "[FAIL]"
                     print(f"      {mark} {a['rule_type']}: '{a['value']}'")
         print("=" * 60)
 

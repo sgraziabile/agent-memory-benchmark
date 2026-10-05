@@ -1,0 +1,39 @@
+# ─────────────────────────────────────────────────────────────────
+# test_in_context_control_01.yaml — In-Context Positive Control
+# ─────────────────────────────────────────────────────────────────
+# Single-turn control scenario. All premises, including a direct
+# belief correction (A vs ¬A), are provided within the exact same turn.
+# Establishes the empirical upper bound of the LLM's in-context
+# comprehension without relying on multi-turn persistence.
+# ─────────────────────────────────────────────────────────────────
+
+id: in_context_control_01
+name: "In-Context Single-Turn Positive Control"
+description: >
+  A single turn containing both conflicting premises and a final query.
+  The user explains a schedule update: the meeting was on Tuesday in Room 304,
+  but has been rescheduled to Thursday at 14:00 in Room 108. The agent is asked
+  for the final updated room and day in the same prompt.
+category: in_context_control
+metadata:
+  difficulty: basic
+  expected_level_0_behavior: "Should succeed (100% pass rate) because all context is present in a single turn"
+  target_research_question: "P2"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: >
+      Please read this schedule note carefully:
+      "Team briefing was originally planned for Tuesday at 10:00 in Room 304.
+      However, effective immediately, the briefing is rescheduled to Thursday at 14:00
+      in Room 108. The Tuesday session in Room 304 is completely cancelled."
+
+      Based strictly on this note: On what day and in which room is the team briefing now scheduled?
+    assertions:
+      - type: must_contain
+        value: "Thursday"
+        case_sensitive: false
+      - type: must_contain
+        value: "108"
+        case_sensitive: false

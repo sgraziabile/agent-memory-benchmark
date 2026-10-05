@@ -200,7 +200,7 @@ class TestScenarioLoading:
     def test_load_all_scenarios(self):
         runner = BenchmarkRunner()
         scenarios = runner.load_scenarios()
-        assert len(scenarios) == 3
+        assert len(scenarios) >= 5
 
     def test_scenario_ids(self):
         runner = BenchmarkRunner()
@@ -209,6 +209,8 @@ class TestScenarioLoading:
         assert "belief_revision_01" in ids
         assert "attrition_01" in ids
         assert "needle_haystack_01" in ids
+        assert "temporal_multi_hop_01" in ids
+        assert "explicit_forget_01" in ids
 
     def test_scenario_filter(self):
         runner = BenchmarkRunner()
