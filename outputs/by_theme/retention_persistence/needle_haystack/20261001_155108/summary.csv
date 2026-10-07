@@ -1,0 +1,2 @@
+﻿run_id,scenario_id,model_id,prompt_id,agent_level,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
+needle_haystack_01_gemini-3.5-flash-lite_baseline_react_33fba07e,needle_haystack_01,gemini-3.5-flash-lite,baseline_react,level_0_reactive,5,10,0,10,0.0,12521.259000059217,2504.2518000118434,937,662,275,2026-10-01T18:50:55.622073+00:00

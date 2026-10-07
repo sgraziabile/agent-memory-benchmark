@@ -1,0 +1,114 @@
+[
+  {
+    "run_id": "temporal_multi_hop_01_gemini-3.5-flash-lite_baseline_react_120761fa",
+    "scenario_id": "temporal_multi_hop_01",
+    "model_id": "gemini-3.5-flash-lite",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_0_reactive",
+    "total_turns": 4,
+    "total_assertions": 2,
+    "passed_assertions": 1,
+    "failed_assertions": 1,
+    "pass_rate": 0.5,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 4246.752700069919,
+    "avg_latency_per_turn_ms": 1061.6881750174798,
+    "total_tokens": 527,
+    "prompt_tokens": 378,
+    "completion_tokens": 149,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I want to share some background about my research team. Elena and Carlos always live and work in the same city.",
+        "agent_response": "Got it! I've noted that Elena and Carlos always live and work in the same city. \n\nHow can I help you with your research team today?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1911.4603998605162,
+        "token_usage": {
+          "input_tokens": 101,
+          "output_tokens": 33,
+          "total_tokens": 134,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Quick question before we continue: what is the boiling point of water at sea level in Celsius?",
+        "agent_response": "The boiling point of water at sea level is 100 degrees Celsius (°C).",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "100",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 821.2743001058698,
+        "token_usage": {
+          "input_tokens": 97,
+          "output_tokens": 18,
+          "total_tokens": 115,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Carlos just accepted a new fellowship and relocated to Berlin.",
+        "agent_response": "That's a big step for Carlos! Moving to a new city—especially a vibrant and historic one like Berlin—is always an exciting adventure. \n\nHow can I help you with this? For example, are you looking for information on Berlin's neighborhoods, tips for getting settled, cultural insights, or something else entirely?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 776.4616999775171,
+        "token_usage": {
+          "input_tokens": 89,
+          "output_tokens": 67,
+          "total_tokens": 156,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Based on what we discussed, in which city does Elena live?",
+        "agent_response": "Based on our previous conversation, you haven't mentioned where Elena lives yet. Please let me know, and I'll be happy to remember it!",
+        "assertions_passed": 0,
+        "assertions_failed": 1,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Berlin",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 737.5563001260161,
+        "token_usage": {
+          "input_tokens": 91,
+          "output_tokens": 31,
+          "total_tokens": 122,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-05T20:28:08.739983+00:00"
+  }
+]

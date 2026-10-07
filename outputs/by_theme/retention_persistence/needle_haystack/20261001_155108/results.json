@@ -1,0 +1,171 @@
+[
+  {
+    "run_id": "needle_haystack_01_gemini-3.5-flash-lite_baseline_react_33fba07e",
+    "scenario_id": "needle_haystack_01",
+    "model_id": "gemini-3.5-flash-lite",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_0_reactive",
+    "total_turns": 5,
+    "total_assertions": 10,
+    "passed_assertions": 0,
+    "failed_assertions": 10,
+    "pass_rate": 0.0,
+    "total_latency_ms": 12521.259000059217,
+    "avg_latency_per_turn_ms": 2504.2518000118434,
+    "total_tokens": 937,
+    "prompt_tokens": 662,
+    "completion_tokens": 275,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I'm going to brief you on our five active projects. Please keep track of all the details.\nProject Alpha: Led by James Park, budget $1.2M, launches June 2025. Focus area: renewable energy storage. Status: Phase 2 testing.\nProject Beta: Led by Maria Santos, budget $800K, launches April 2025. Focus area: supply chain optimization. Status: Requirements gathering.\nProject Gamma: Led by Alex Wu, budget $3.1M, launches September 2025. Focus area: quantum-resistant cryptography. Security clearance code: DELTA-7749. Status: Active development.\nProject Delta: Led by Priya Sharma, budget $500K, launches February 2025. Focus area: natural language processing. Status: Pilot deployment.\nProject Epsilon: Led by Omar Hassan, budget $2.0M, launches December 2025. Focus area: autonomous drone logistics. Status: Regulatory review.\n",
+        "agent_response": "Got it! I have noted the details for all five active projects: Alpha, Beta, Gamma, Delta, and Epsilon, including their leaders, budgets, launch dates, focus areas, security clearance codes (where applicable), and current statuses. \n\nHow can I help you with these projects today?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2330.4270999506116,
+        "token_usage": {
+          "input_tokens": 296,
+          "output_tokens": 61,
+          "total_tokens": 357,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        }
+      },
+      {
+        "turn_number": 2,
+        "user_input": "How many active projects do we have and what are their names?",
+        "agent_response": "I do not have access to any information regarding your company, database, or ongoing work. Please provide the details about your projects, and I will be happy to help you count and list them!",
+        "assertions_passed": 0,
+        "assertions_failed": 5,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Alpha",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Beta",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Gamma",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Delta",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Epsilon",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 2242.400099989027,
+        "token_usage": {
+          "input_tokens": 91,
+          "output_tokens": 39,
+          "total_tokens": 130,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        }
+      },
+      {
+        "turn_number": 3,
+        "user_input": "What is the security clearance code for Project Gamma?",
+        "agent_response": "I do not have access to any information regarding \"Project Gamma\" or its security clearance code in the provided context. If you have any specific details or documents you'd like to share, please provide them, and I will be happy to help you find the answer!",
+        "assertions_passed": 0,
+        "assertions_failed": 1,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "DELTA-7749",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 4640.461700037122,
+        "token_usage": {
+          "input_tokens": 88,
+          "output_tokens": 54,
+          "total_tokens": 142,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        }
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Which project has the highest budget, and which has the lowest?",
+        "agent_response": "It looks like you haven't provided a list of projects or any budget information yet! \n\nPlease share the details, list, or document containing the projects and their budgets, and I will gladly tell you which one has the highest and lowest budget.",
+        "assertions_passed": 0,
+        "assertions_failed": 2,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Gamma",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Delta",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 1329.8210001084954,
+        "token_usage": {
+          "input_tokens": 91,
+          "output_tokens": 51,
+          "total_tokens": 142,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        }
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Who leads the project focused on quantum-resistant cryptography, and what is its launch date?",
+        "agent_response": "It looks like you didn't mention which project you are asking about, and no prior context has been provided in our conversation yet. \n\nCould you please specify the name of the project or provide the text/information you are referring to? Once you share that, I'll be happy to tell you who leads it and its launch date!",
+        "assertions_passed": 0,
+        "assertions_failed": 2,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Alex Wu",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "September",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 1978.1490999739617,
+        "token_usage": {
+          "input_tokens": 96,
+          "output_tokens": 70,
+          "total_tokens": 166,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        }
+      }
+    ],
+    "timestamp": "2026-10-01T18:50:55.622073+00:00"
+  }
+]

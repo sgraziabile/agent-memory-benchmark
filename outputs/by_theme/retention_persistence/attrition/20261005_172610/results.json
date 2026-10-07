@@ -1,0 +1,235 @@
+[
+  {
+    "run_id": "attrition_01_gemini-3.5-flash-lite_baseline_react_5140df5e",
+    "scenario_id": "attrition_01",
+    "model_id": "gemini-3.5-flash-lite",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_0_reactive",
+    "total_turns": 8,
+    "total_assertions": 9,
+    "passed_assertions": 6,
+    "failed_assertions": 3,
+    "pass_rate": 0.6666666666666666,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 8961.147400084883,
+    "avg_latency_per_turn_ms": 1120.1434250106104,
+    "total_tokens": 1537,
+    "prompt_tokens": 775,
+    "completion_tokens": 762,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I need you to remember this important detail: Project Falcon is scheduled to launch on March 15th, 2025 with a total budget of $2.5 million. The project lead is Dr. Sarah Chen.\n",
+        "agent_response": "I have noted that detail. Project Falcon is scheduled to launch on March 15th, 2025, with a budget of $2.5 million, and is led by Dr. Sarah Chen. \n\nLet me know if you need help with anything else regarding this project!",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1985.3215001057833,
+        "token_usage": {
+          "input_tokens": 126,
+          "output_tokens": 60,
+          "total_tokens": 186,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "By the way, what's the capital of Portugal?",
+        "agent_response": "The capital of Portugal is Lisbon.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Lisbon",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 673.2025998644531,
+        "token_usage": {
+          "input_tokens": 90,
+          "output_tokens": 7,
+          "total_tokens": 97,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Can you explain the difference between a stack and a queue in computer science?",
+        "agent_response": "In computer science, both **stacks** and **queues** are linear data structures used to store collections of elements, but the primary difference lies in **how elements are added and removed**. \n\nHere is the breakdown of the differences:\n\n### 1. Stack (LIFO)\n* **Principle:** **LIFO** stands for **Last In, First Out**. \n* **Analogy:** Think of a stack of plates. When you put a new plate on the stack, you put it on top. When you take a plate off, you also take it from the top. The last plate you put down is the first one you pick up.\n* **Key Operations:**\n  * `Push`: Adds an element to the top of the stack.\n  * `Pop`: Removes and returns the top element from the stack.\n  * `Peek` (or `Top`): Views the top element without removing it.\n* **Common Use Cases:** Function call management (the call stack), undo/redo functionality in software, and expression evaluation.\n\n### 2. Queue (FIFO)\n* **Principle:** **FIFO** stands for **First In, First Out**. \n* **Analogy:** Think of a line of people waiting at a movie theater ticket counter. The first person to get in line is the first person served and leaves the line. \n* **Key Operations:**\n  * `",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1496.0200001951307,
+        "token_usage": {
+          "input_tokens": 93,
+          "output_tokens": 296,
+          "total_tokens": 389,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "What are the three primary colors in the RGB color model?",
+        "agent_response": "The three primary colors in the RGB color model are **Red**, **Green**, and **Blue**.",
+        "assertions_passed": 3,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "red",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "green",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "blue",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 614.1425999812782,
+        "token_usage": {
+          "input_tokens": 90,
+          "output_tokens": 20,
+          "total_tokens": 110,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Who wrote the novel 'One Hundred Years of Solitude'?",
+        "agent_response": "The novel *One Hundred Years of Solitude* was written by the Colombian author **Gabriel García Márquez**.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Gabriel",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 795.6367000006139,
+        "token_usage": {
+          "input_tokens": 90,
+          "output_tokens": 21,
+          "total_tokens": 111,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 6,
+        "user_input": "What is the chemical symbol for gold?",
+        "agent_response": "The chemical symbol for gold is **Au**.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Au",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 572.1519999206066,
+        "token_usage": {
+          "input_tokens": 86,
+          "output_tokens": 9,
+          "total_tokens": 95,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Can you describe how photosynthesis works in simple terms?",
+        "agent_response": "**Photosynthesis** is the process that plants use to turn sunlight, water, and air into food. \n\nYou can think of a plant like a tiny living kitchen. Here are the main ingredients it uses and how it works, step by step:\n\n1. **The Ingredients:**\n   * **Sunlight:** The plant catches sunlight using a special green substance in its leaves called *chlorophyll* (which is also what makes leaves green).\n   * **Water:** The plant drinks water up from the soil through its roots.\n   * **Air:** The plant takes in a gas from the air called *carbon dioxide* (which is the same gas humans and animals breathe out).\n\n2. **The Cooking Process:**\n   The plant uses the energy from the sunlight to power a reaction. It mixes the water and carbon dioxide together, transforming them.\n\n3. **The Finished Products:**\n   * **Food:** The plant turns the ingredients into **glucose** (a type of sugar), which it uses as food to grow, flower, and stay healthy.\n   * **Exhaust/Bonus:** As a wonderful byproduct, the plant releases **oxygen** back out into the air, which we need to breathe!\n\n**In short:** Plants take in sunlight, water, and air; use the sunlight as energy to cook them up into sugar for food; and release fresh oxygen for us to breathe!",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1800.3279000986367,
+        "token_usage": {
+          "input_tokens": 88,
+          "output_tokens": 289,
+          "total_tokens": 377,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 8,
+        "user_input": "OK, now going back to what I told you at the very beginning — when does Project Falcon launch, what is its budget, and who is the project lead?\n",
+        "agent_response": "I don't have any record of what you told me at the very beginning, as this is our first interaction in this conversation and you haven't mentioned Project Falcon yet. \n\nCould you please provide the details about Project Falcon, and I'll be happy to help you with it?",
+        "assertions_passed": 0,
+        "assertions_failed": 3,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "March 15",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "2.5",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Sarah Chen",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 1024.3440999183804,
+        "token_usage": {
+          "input_tokens": 112,
+          "output_tokens": 60,
+          "total_tokens": 172,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-05T20:26:01.966666+00:00"
+  }
+]

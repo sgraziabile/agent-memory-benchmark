@@ -1,0 +1,2 @@
+﻿run_id,scenario_id,model_id,prompt_id,agent_level,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
+explicit_forget_01_gemini-3.5-flash-lite_baseline_react_ee01160f,explicit_forget_01,gemini-3.5-flash-lite,baseline_react,level_0_reactive,5,5,2,3,0.4,9373.699799878523,1874.7399599757046,758,504,254,2026-10-01T18:49:12.366878+00:00
