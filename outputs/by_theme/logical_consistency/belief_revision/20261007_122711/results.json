@@ -1,0 +1,164 @@
+[
+  {
+    "run_id": "belief_revision_01_gemini-3.5-flash-lite_baseline_react_0e48273b",
+    "scenario_id": "belief_revision_01",
+    "model_id": "gemini-3.5-flash-lite",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_0_reactive",
+    "total_turns": 5,
+    "total_assertions": 7,
+    "passed_assertions": 2,
+    "failed_assertions": 5,
+    "pass_rate": 0.2857142857142857,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 54256.01090001874,
+    "avg_latency_per_turn_ms": 10851.202180003747,
+    "total_tokens": 665,
+    "prompt_tokens": 497,
+    "completion_tokens": 168,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Hi! I want to tell you about my pet. My cat's name is Luna and she is 3 years old. She's a calico.",
+        "agent_response": "Hi! It's lovely to meet you and Luna. A 3-year-old calico sounds adorable—they have such unique and beautiful coats! \n\nHow can I help you and Luna today?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 36016.592300031334,
+        "token_usage": {
+          "input_tokens": 111,
+          "output_tokens": 43,
+          "total_tokens": 154,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "What is my cat's name and how old is she?",
+        "agent_response": "You haven't mentioned your cat's name or her age yet! If you tell me, I'll be happy to remember it.",
+        "assertions_passed": 0,
+        "assertions_failed": 2,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Luna",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "3",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 15503.90850007534,
+        "token_usage": {
+          "input_tokens": 91,
+          "output_tokens": 29,
+          "total_tokens": 120,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Actually, I made a mistake earlier. My cat's name is Miso, not Luna. I always mix them up! Her name is definitely Miso.",
+        "agent_response": "Got it! I've updated my notes: your cat's name is Miso, not Luna. Thanks for the correction! How is Miso doing today?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1033.1214000470936,
+        "token_usage": {
+          "input_tokens": 111,
+          "output_tokens": 34,
+          "total_tokens": 145,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "So, what is my cat's name?",
+        "agent_response": "You haven't told me your cat's name yet! What is it?",
+        "assertions_passed": 1,
+        "assertions_failed": 1,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Miso",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "Luna",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 640.8605000469834,
+        "token_usage": {
+          "input_tokens": 88,
+          "output_tokens": 17,
+          "total_tokens": 105,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Great. And just to confirm — how old is Miso and what breed is she?",
+        "agent_response": "I don't have any previous information about Miso in our conversation yet! Could you tell me a bit more about her? Once you share her age and breed, I'll be happy to keep that in mind.",
+        "assertions_passed": 1,
+        "assertions_failed": 2,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "3",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "calico",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "Luna",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 1061.5281998179853,
+        "token_usage": {
+          "input_tokens": 96,
+          "output_tokens": 45,
+          "total_tokens": 141,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-07T15:26:17.077828+00:00"
+  }
+]

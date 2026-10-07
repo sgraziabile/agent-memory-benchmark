@@ -1,7 +1,7 @@
 # Consolidated Benchmark Summary
 
-- **Generated at:** 2026-10-07 13:24:44 UTC
-- **Total Runs:** 11
+- **Generated at:** 2026-10-07 15:33:04 UTC
+- **Total Runs:** 13
 - **Models:** gemini-3.5-flash-lite
 - **Prompts:** baseline_react
 - **Agent Levels:** level_0_reactive
@@ -12,6 +12,8 @@
 | :-- | :-- | :-- | :-- | :-- | :-- | --: | --: | --: | --: | --: |
 | belief_revision | 20261001_154541 | belief_revision_01 | gemini-3.5-flash-lite | baseline_react | level_0_reactive | 5 | 28.6% | 10929 | 715 | 0 |
 | belief_revision | 20261007_102040 | belief_revision_01 | gemini-3.5-flash-lite | baseline_react | level_0_reactive | 5 | 28.6% | 1597 | 653 | 0 |
+| belief_revision | 20261007_122711 | belief_revision_01 | gemini-3.5-flash-lite | baseline_react | level_0_reactive | 5 | 28.6% | 10851 | 665 | 0 |
+| belief_revision | 20261007_122809 | belief_revision_01 | gemini-3.5-flash-lite | baseline_react | level_0_reactive | 5 | 28.6% | 2824 | 644 | 0 |
 | explicit_forget | 20261001_154921 | explicit_forget_01 | gemini-3.5-flash-lite | baseline_react | level_0_reactive | 5 | 40.0% | 1875 | 758 | 0 |
 | in_context_control | 20261001_155037 | in_context_control_01 | gemini-3.5-flash-lite | baseline_react | level_0_reactive | 1 | 100.0% | 1709 | 192 | 0 |
 
@@ -44,4 +46,4 @@ _No runs yet — scaffolding prepared for future tests._
 
 | Runs | Avg Pass Rate | Avg Latency (ms) | Total Turns | Total Tokens | Total Errors |
 | --: | --: | --: | --: | --: | --: |
-| 11 | 51.3% | 3166 | 61 | 10309 | 0 |
+| 13 | 47.8% | 3731 | 71 | 11618 | 0 |

@@ -282,9 +282,15 @@ agent-memory-benchmark/
 │   ├── runner.py                        # Cartesian product orchestrator + export
 │   └── schemas.py                       # Pydantic v2 contracts + LangGraph state
 ├── datasets/
-│   └── conversations/                   # 6 YAML scenarios with structured assertions
+│   └── conversations/                   # Scenario YAMLs, organized by research theme
+│       ├── logical_consistency/         # belief_revision, explicit_forget, in_context_control
+│       ├── retention_persistence/       # attrition, needle_haystack
+│       ├── compositional_reasoning/     # temporal_multi_hop
+│       ├── robustness_security/         # empty (.gitkeep) — planned tests
+│       └── computational_cost/          # empty (.gitkeep) — planned tests
 ├── outputs/
-│   └── runs/                            # Timestamped results (JSON + CSV + Markdown)
+│   ├── runs/                            # Timestamped results (JSON + CSV + Markdown)
+│   └── by_theme/                        # Runs reorganized by theme/category (generated)
 ├── tests/
 │   └── test_scaffolding.py              # 28 deterministic harness tests
 ├── .env.example                         # Environment variable template

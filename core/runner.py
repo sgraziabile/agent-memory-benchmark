@@ -95,6 +95,10 @@ class BenchmarkRunner:
     ) -> list[BenchmarkScenario]:
         """Load benchmark scenarios from YAML files in the dataset directory.
 
+        Scenario files are organized in a nested theme structure
+        (``datasets/conversations/<theme>/<test_category>/test_*.yaml``),
+        so discovery is recursive. Files may also live flat at the top level.
+
         Args:
             filter_ids: Optional list of scenario IDs to include. If ``None``,
                         all scenarios are loaded.
@@ -104,7 +108,7 @@ class BenchmarkRunner:
         """
         scenarios: list[BenchmarkScenario] = []
 
-        for yaml_path in sorted(self.dataset_dir.glob("*.yaml")):
+        for yaml_path in sorted(self.dataset_dir.rglob("*.yaml")):
             with open(yaml_path, "r", encoding="utf-8") as fh:
                 raw = yaml.safe_load(fh)
 

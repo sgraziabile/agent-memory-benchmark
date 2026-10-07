@@ -40,10 +40,10 @@ agent-memory-benchmark/
 │   ├── models.yaml                 # Registro unificado de proveedores y modelos
 │   └── prompts.yaml                # Banco de system prompts e invariantes epistémicas
 ├── datasets/
-│   └── conversations/              # Casos de prueba en YAML con aserciones estructuradas
-│       ├── test_belief_revision_01.yaml
-│       ├── test_attrition_01.yaml
-│       └── test_needle_haystack_01.yaml
+│   └── conversations/              # Casos de prueba YAML, organizados por tema
+│       ├── logical_consistency/    # belief_revision, explicit_forget, in_context_control
+│       ├── retention_persistence/  # attrition, needle_haystack
+│       └── compositional_reasoning/ # temporal_multi_hop (más temas vacíos planificados)
 ├── core/
 │   ├── __init__.py
 │   ├── model_factory.py            # Instanciador dinámico multi-proveedor
