@@ -244,7 +244,7 @@ class BenchmarkRunner:
             "configurable": {
                 "model_id": model_id,
                 "system_prompt": prompt_content,
-                "thread_id": f"{scenario.id}_{run_id}",
+                "thread_id": f"{run_id}_{scenario.id}",
             }
         }
 

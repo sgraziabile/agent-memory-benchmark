@@ -23,6 +23,7 @@ from core.model_factory import (
 from core.runner import BenchmarkRunner
 from agents.base import BaseBenchmarkAgent
 from agents.level_0_reactive.graph import Level0ReactiveAgent
+from agents.level_1_working_memory.graph import Level1WorkingMemoryAgent
 
 
 # ── Schema Tests ─────────────────────────────────────────────────────────────
@@ -411,6 +412,125 @@ class TestLevel0Agent:
         assert graph is not None
         assert graph.checkpointer is None
 
+
+# ── Level 1 Agent Tests ──────────────────────────────────────────────────────
+
+
+class TestLevel1Agent:
+    """Verify Level 1 agent construction and working-memory constraints."""
+
+    def test_agent_is_base_subclass(self):
+        agent = Level1WorkingMemoryAgent()
+        assert isinstance(agent, BaseBenchmarkAgent)
+
+    def test_level_property(self):
+        agent = Level1WorkingMemoryAgent()
+        assert agent.level == "level_1_working_memory"
+
+    def test_repr(self):
+        agent = Level1WorkingMemoryAgent()
+        assert "level_1_working_memory" in repr(agent)
+
+    def test_graph_compiles(self):
+        agent = Level1WorkingMemoryAgent()
+        graph = agent.build_graph()
+        assert graph is not None
+
+    def test_checkpointer_is_memory_saver(self):
+        from langgraph.checkpoint.memory import MemorySaver
+
+        agent = Level1WorkingMemoryAgent()
+        graph = agent.build_graph()
+        assert graph.checkpointer is not None
+        assert isinstance(graph.checkpointer, MemorySaver)
+
+    def test_graph_compiles_with_tools(self):
+        def sample_tool(query: str) -> str:
+            """Sample tool."""
+            return query
+
+        agent = Level1WorkingMemoryAgent()
+        graph = agent.build_graph(tools=[sample_tool])
+        assert graph is not None
+        assert graph.checkpointer is not None
+
+    def test_no_add_conditional_edges(self):
+        source_path = (
+            Path(__file__).resolve().parent.parent
+            / "agents" / "level_1_working_memory" / "graph.py"
+        )
+        source = source_path.read_text(encoding="utf-8")
+        assert ".add_conditional_edges(" not in source, (
+            "Level 1 must route via Command(goto=...), not add_conditional_edges()"
+        )
+        assert "Command(" in source
+        assert "MemorySaver()" in source
+
+    def test_memory_persists_across_turns_within_thread(self, monkeypatch):
+        from langchain_core.messages import HumanMessage, SystemMessage
+
+        class _FakeModel:
+            def invoke(self, messages):
+                history = [m for m in messages if not isinstance(m, SystemMessage)]
+                return AIMessage(content=f"seen={len(history)}")
+
+        monkeypatch.setattr(
+            "agents.level_1_working_memory.graph.create_model",
+            lambda model_id, **kwargs: _FakeModel(),
+        )
+
+        agent = Level1WorkingMemoryAgent()
+        graph = agent.build_graph()
+        config = {
+            "configurable": {
+                "model_id": "fake-model",
+                "system_prompt": "You are a deterministic test agent.",
+                "thread_id": "unit_thread_1",
+            }
+        }
+
+        r1 = graph.invoke({"messages": [HumanMessage("hi")]}, config)
+        assert "seen=1" in r1["messages"][-1].content
+
+        # Second turn on the same thread: the MemorySaver checkpointer must
+        # restore the prior user + assistant messages (working memory).
+        r2 = graph.invoke({"messages": [HumanMessage("there")]}, config)
+        assert "seen=3" in r2["messages"][-1].content
+
+    def test_memory_resets_for_new_thread(self, monkeypatch):
+        from langchain_core.messages import HumanMessage, SystemMessage
+
+        class _FakeModel:
+            def invoke(self, messages):
+                history = [m for m in messages if not isinstance(m, SystemMessage)]
+                return AIMessage(content=f"seen={len(history)}")
+
+        monkeypatch.setattr(
+            "agents.level_1_working_memory.graph.create_model",
+            lambda model_id, **kwargs: _FakeModel(),
+        )
+
+        agent = Level1WorkingMemoryAgent()
+        graph = agent.build_graph()
+        config = {
+            "configurable": {
+                "model_id": "fake-model",
+                "system_prompt": "You are a deterministic test agent.",
+                "thread_id": "unit_thread_1",
+            }
+        }
+        graph.invoke({"messages": [HumanMessage("hi")]}, config)
+
+        # A new thread_id starts from a clean slate: intra-thread memory only.
+        config2 = {
+            "configurable": {
+                "model_id": "fake-model",
+                "system_prompt": "You are a deterministic test agent.",
+                "thread_id": "unit_thread_2",
+            }
+        }
+        result = graph.invoke({"messages": [HumanMessage("fresh")]}, config2)
+        assert "seen=1" in result["messages"][-1].content
 
 # ── Scenario Loading Tests ───────────────────────────────────────────────────
 

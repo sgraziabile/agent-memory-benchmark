@@ -1,0 +1,50 @@
+[
+  {
+    "run_id": "in_context_needle_01_gemini-3.5-flash-lite_baseline_react_0a039ad6",
+    "scenario_id": "in_context_needle_01",
+    "model_id": "gemini-3.5-flash-lite",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_0_reactive",
+    "total_turns": 1,
+    "total_assertions": 1,
+    "passed_assertions": 1,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 1873.5507000237703,
+    "avg_latency_per_turn_ms": 1873.5507000237703,
+    "total_tokens": 237,
+    "prompt_tokens": 214,
+    "completion_tokens": 23,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I am going to brief you on our active projects. Read carefully: Project Alpha: Led by James Park, budget $1.2M. Focus: renewable energy. Project Beta: Led by Maria Santos, budget $800K. Focus: supply chain. Project Gamma: Led by Alex Wu, budget $3.1M. Security clearance code: DELTA-7749. Project Delta: Led by Priya Sharma, budget $500K. Focus: NLP. Project Epsilon: Led by Omar Hassan, budget $2.0M. Focus: drone logistics.\nQuestion: What is the exact security clearance code for Project Gamma?\n",
+        "agent_response": "Based on the information provided, the exact security clearance code for Project Gamma is **DELTA-7749**.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "DELTA-7749",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1873.5507000237703,
+        "token_usage": {
+          "input_tokens": 214,
+          "output_tokens": 23,
+          "total_tokens": 237,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-07T16:28:44.710325+00:00"
+  }
+]

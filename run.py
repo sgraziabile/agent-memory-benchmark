@@ -32,7 +32,7 @@ from dotenv import load_dotenv
 # install must fail loudly, never silently skip the user's API keys).
 load_dotenv()
 
-from agents.level_0_reactive.graph import Level0ReactiveAgent
+from agents import AGENT_REGISTRY
 from core.runner import BenchmarkRunner
 
 
@@ -81,7 +81,7 @@ def main() -> int:
         "-l",
         type=str,
         default="level_0_reactive",
-        choices=["level_0_reactive"],
+        choices=sorted(AGENT_REGISTRY),
         help="Agent persistence level",
     )
     parser.add_argument(
@@ -134,11 +134,12 @@ def main() -> int:
         return 0
 
     # ── Agent Selection ──────────────────────────────────────────────
-    if args.level == "level_0_reactive":
-        agent = Level0ReactiveAgent()
-    else:
+    agent_cls = AGENT_REGISTRY.get(args.level)
+    if agent_cls is None:
         print(f"Error: Level '{args.level}' is not yet implemented.")
+        print(f"Available levels: {', '.join(sorted(AGENT_REGISTRY))}")
         return 1
+    agent = agent_cls()
 
     graph = agent.build_graph()
 

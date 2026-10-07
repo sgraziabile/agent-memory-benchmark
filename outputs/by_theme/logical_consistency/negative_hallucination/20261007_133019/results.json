@@ -1,0 +1,106 @@
+[
+  {
+    "run_id": "negative_hallucination_01_gemini-3.5-flash-lite_baseline_react_b9eb6caa",
+    "scenario_id": "negative_hallucination_01",
+    "model_id": "gemini-3.5-flash-lite",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_0_reactive",
+    "total_turns": 3,
+    "total_assertions": 4,
+    "passed_assertions": 3,
+    "failed_assertions": 1,
+    "pass_rate": 0.75,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 3600.138300098479,
+    "avg_latency_per_turn_ms": 1200.0461000328262,
+    "total_tokens": 438,
+    "prompt_tokens": 289,
+    "completion_tokens": 149,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Project Alpha launches in June 2025. Project Beta launches in August 2025.",
+        "agent_response": "Got it! I have noted that Project Alpha launches in June 2025 and Project Beta launches in August 2025. \n\nHow can I help you with these projects today?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1822.7250999771059,
+        "token_usage": {
+          "input_tokens": 100,
+          "output_tokens": 41,
+          "total_tokens": 141,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "We just hired a new contractor named David. He will work on Project Gamma.",
+        "agent_response": "Got it! I've noted that David is a new contractor and will be working on Project Gamma. Let me know if you need help with onboarding tasks, setting up meetings, or managing project details for him.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 745.4663999378681,
+        "token_usage": {
+          "input_tokens": 94,
+          "output_tokens": 43,
+          "total_tokens": 137,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Based on everything we have discussed, what is the exact launch date for Project Gamma?",
+        "agent_response": "Based on our conversation so far, we haven't discussed any projects, including \"Project Gamma,\" nor have you provided any information about its launch date. Could you please share the details or context regarding Project Gamma? Once you provide that information, I'll be happy to help you find or confirm the exact launch date.",
+        "assertions_passed": 3,
+        "assertions_failed": 1,
+        "assertion_details": [
+          {
+            "rule_type": "must_not_contain",
+            "value": "June",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "August",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "2025",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "not",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 1031.9468001835048,
+        "token_usage": {
+          "input_tokens": 95,
+          "output_tokens": 65,
+          "total_tokens": 160,
+          "input_token_details": {
+            "cache_read": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-07T16:30:16.128458+00:00"
+  }
+]
