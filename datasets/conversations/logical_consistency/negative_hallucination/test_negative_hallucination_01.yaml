@@ -1,0 +1,40 @@
+id: negative_hallucination_01
+name: "Global Negative Control (Anti-Hallucination)"
+description: >
+  Tests if the agent safely declines to answer when asked for information that 
+  was never provided, rather than hallucinating details or confusing entities. 
+  Vital for ensuring advanced memory architectures (L1-L4) don't introduce 
+  false positives.
+category: logical_consistency
+metadata:
+  difficulty: moderate
+  expected_level_0_behavior: "Should safely state that the information is missing. Checks baseline hallucination rate."
+  target_research_question: "P2"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: "Project Alpha launches in June 2025. Project Beta launches in August 2025."
+    assertions: []
+
+  - turn_number: 2
+    role: user
+    content: "We just hired a new contractor named David. He will work on Project Gamma."
+    assertions: []
+
+  - turn_number: 3
+    role: user
+    content: "Based on everything we have discussed, what is the exact launch date for Project Gamma?"
+    assertions:
+      - type: must_not_contain
+        value: "June"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "August"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "2025"
+        case_sensitive: false
+      - type: must_contain
+        value: "not"
+        case_sensitive: false

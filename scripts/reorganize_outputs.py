@@ -42,9 +42,12 @@ SCENARIO_MAP: dict[str, tuple[str, str]] = {
     "belief_revision_01": ("logical_consistency", "belief_revision"),
     "explicit_forget_01": ("logical_consistency", "explicit_forget"),
     "in_context_control_01": ("logical_consistency", "in_context_control"),
+    "negative_hallucination_01": ("logical_consistency", "negative_hallucination"),
     "attrition_01": ("retention_persistence", "attrition"),
     "needle_haystack_01": ("retention_persistence", "needle_haystack"),
+    "in_context_needle_01": ("retention_persistence", "in_context_needle"),
     "temporal_multi_hop_01": ("compositional_reasoning", "temporal_multi_hop"),
+    "in_context_multihop_01": ("compositional_reasoning", "in_context_multihop"),
 }
 
 # Fixed ordering of themes in the directory tree and consolidated markdown.

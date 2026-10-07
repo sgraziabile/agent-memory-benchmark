@@ -1,0 +1,28 @@
+id: in_context_needle_01
+name: "In-Context Needle in a Haystack (Positive Control)"
+description: >
+  A single-turn control scenario. The user provides a dense block of information 
+  (the haystack) and immediately asks for a specific detail (the needle) in the 
+  same prompt, without distractor turns.
+category: retention_persistence
+metadata:
+  difficulty: basic
+  expected_level_0_behavior: "Should succeed (100% pass rate) because the query and context share the same prompt."
+  target_research_question: "P1"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: >
+      I am going to brief you on our active projects. Read carefully:
+      Project Alpha: Led by James Park, budget $1.2M. Focus: renewable energy.
+      Project Beta: Led by Maria Santos, budget $800K. Focus: supply chain.
+      Project Gamma: Led by Alex Wu, budget $3.1M. Security clearance code: DELTA-7749.
+      Project Delta: Led by Priya Sharma, budget $500K. Focus: NLP.
+      Project Epsilon: Led by Omar Hassan, budget $2.0M. Focus: drone logistics.
+
+      Question: What is the exact security clearance code for Project Gamma?
+    assertions:
+      - type: must_contain
+        value: "DELTA-7749"
+        case_sensitive: false
