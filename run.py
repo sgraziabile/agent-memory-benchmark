@@ -4,14 +4,14 @@ Allows running benchmark scenarios against selected models and prompts
 from the command line.
 
 Examples:
-    # Run a single scenario with Gemini:
-    python run.py --model gemini-3.8-flash --scenario belief_revision_01
+    # Run a single scenario (NanoGPT subscription model):
+    python run.py --model qwen3.6-27b --scenario belief_revision_01
 
     # Run with a custom provider-qualified model string:
     python run.py --model google:gemini-2.0-flash --scenario needle_haystack_01
 
     # Run with strict epistemic prompt:
-    python run.py --model gemini-3.8-flash --scenario belief_revision_01 --prompt strict_epistemic
+    python run.py --model qwen3.6-27b --scenario belief_revision_01 --prompt strict_epistemic
 
     # List available components:
     python run.py --list-models
@@ -59,7 +59,7 @@ def main() -> int:
         "--model",
         "-m",
         type=str,
-        default="gemini-3.8-flash",
+        default="qwen3.6-27b",
         help="Model ID from configs/models.yaml or 'provider:model_name'",
     )
     parser.add_argument(

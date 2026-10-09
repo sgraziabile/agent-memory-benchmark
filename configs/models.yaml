@@ -9,127 +9,104 @@
 #   google    → GOOGLE_API_KEY
 #   openai    → OPENAI_API_KEY
 #   anthropic → ANTHROPIC_API_KEY
-#   groq      → GROQ_API_KEY
+#   nanogpt   → NANOGPT_API_KEY (OpenAI-compatible gateway — https://api.nano-gpt.com)
+#
+# ── Subscription policy ─────────────────────────────────────────
+# ALL registered models are NanoGPT subscription models, verified
+# `subscription.included: true` against the live catalog (2026-10-09):
+#   GET https://api.nano-gpt.com/api/v1/models?detailed=true
+#   → 632 models in catalog, 299 subscription-included.
+# "1x/2x" in descriptions = inputTokenMultiplier (2x burns input-token
+# quota twice as fast). NO anthropic/* and NO google/* models are
+# subscription-included — do not register them. Re-verify before every
+# big sweep: availability changes frequently.
 # ─────────────────────────────────────────────────────────────────
 
 models:
-  # ── Google GenAI (Free / AI Studio) ───────────────────────────
-  gemini-3.8-flash-lite:
-    provider: google
-    model_name: gemini-3.8-flash-lite
-    tier: free
+  # ── Frontier tier (maximum capability, 1x quota) ──────────────
+  qwen3-235b:
+    provider: nanogpt
+    model_name: qwen/qwen3-235b-a22b
+    tier: frontier
     timeout: 60.0
     max_retries: 2
     max_tokens: 300
-    description: "Google Gemini 3.8 Flash Lite — ultra-fast lightweight model"
+    description: "Qwen3 235B-A22B — largest subscription-included model (1x input tokens)"
 
-  gemini-3.5-flash-lite:
-    provider: google
-    model_name: gemini-3.5-flash-lite
-    tier: free
+  kimi-k2.6:
+    provider: nanogpt
+    model_name: moonshotai/kimi-k2.6
+    tier: frontier
     timeout: 60.0
     max_retries: 2
     max_tokens: 300
-    description: "Google Gemini 3.5 Flash Lite (alias / alternate version)"
+    description: "Moonshot Kimi K2.6 — frontier open MoE (1x input tokens)"
 
-  gemini-3.8-flash:
-    provider: google
-    model_name: gemini-3.8-flash
-    tier: free
+  # ── Efficient tier (fast workhorses, 1x quota) ────────────────
+  glm-5.3-flash:
+    provider: nanogpt
+    model_name: z-ai/glm-5.3-flash
+    tier: efficient
     timeout: 60.0
     max_retries: 2
     max_tokens: 300
-    description: "Google Gemini 3.8 Flash — high efficiency balanced model"
+    description: "Z.AI GLM 5.3 Flash — efficient tier (1x input tokens)"
 
-  # ── Anthropic Claude ──────────────────────────────────────────
-  claude-haiku-4-5:
-    provider: anthropic
-    model_name: claude-haiku-4-5
-    tier: paid
+  deepseek-v4-flash:
+    provider: nanogpt
+    model_name: deepseek/deepseek-v4-flash
+    tier: efficient
     timeout: 60.0
     max_retries: 2
     max_tokens: 300
-    description: "Anthropic Claude Haiku 4.5 — rapid response tier"
+    description: "DeepSeek V4 Flash — efficient tier (1x input tokens)"
 
-  claude-sonnet-4-6:
-    provider: anthropic
-    model_name: claude-sonnet-4-6
-    tier: paid
+  # ── Open-large tier (big open models) ─────────────────────────
+  gpt-oss-120b:
+    provider: nanogpt
+    model_name: openai/gpt-oss-120b
+    tier: open-large
     timeout: 60.0
     max_retries: 2
     max_tokens: 300
-    description: "Anthropic Claude Sonnet 4.6 — balanced reasoning and coding"
+    description: "OpenAI gpt-oss-120b — open 120B MoE (1x input tokens)"
 
-  claude-opus-4-7:
-    provider: anthropic
-    model_name: claude-opus-4-7
-    tier: paid
+  deepseek-v4-pro:
+    provider: nanogpt
+    model_name: deepseek/deepseek-v4-pro
+    tier: open-large
     timeout: 60.0
     max_retries: 2
     max_tokens: 300
-    description: "Anthropic Claude Opus 4.7 — flagship frontier intelligence"
+    description: "DeepSeek V4 Pro — strongest included DeepSeek (2x input tokens — use sparingly)"
 
-  # ── OpenAI ────────────────────────────────────────────────────
-  gpt-4.1-mini:
-    provider: openai
-    model_name: gpt-4.1-mini
-    tier: paid
+  # ── Open-mid / open-small tiers ───────────────────────────────
+  qwen3.6-27b:
+    provider: nanogpt
+    model_name: qwen/qwen3.6-27b
+    tier: open-mid
     timeout: 60.0
     max_retries: 2
     max_tokens: 300
-    description: "OpenAI GPT-4.1 Mini — efficient fast reasoning"
+    description: "Qwen 3.6 27B — mid-size open model (1x input tokens)"
 
-  gpt-4o-mini:
-    provider: openai
-    model_name: gpt-4o-mini
-    tier: paid
+  gpt-oss-20b:
+    provider: nanogpt
+    model_name: openai/gpt-oss-20b
+    tier: open-small
     timeout: 60.0
     max_retries: 2
     max_tokens: 300
-    description: "OpenAI GPT-4o Mini — cost-effective multimodal baseline"
+    description: "OpenAI gpt-oss-20b — small open model (1x input tokens)"
 
-  gpt-4.1:
-    provider: openai
-    model_name: gpt-4.1
-    tier: paid
-    timeout: 60.0
-    max_retries: 2
-    max_tokens: 300
-    description: "OpenAI GPT-4.1 — core general-purpose model"
-
-  o3-mini:
-    provider: openai
-    model_name: o3-mini
-    tier: paid
-    timeout: 60.0
-    max_retries: 2
-    max_tokens: 300
-    description: "OpenAI o3-mini — high-efficiency STEM reasoning"
-
-  # ── Groq (Open-Source Inference) ──────────────────────────────
-  qwen-2.5-coder-32b:
-    provider: groq
-    model_name: qwen-2.5-coder-32b
-    tier: free
-    timeout: 60.0
-    max_retries: 2
-    max_tokens: 300
-    description: "Qwen 2.5 Coder 32B via Groq"
-
-  llama-3.3-70b-versatile:
-    provider: groq
-    model_name: llama-3.3-70b-versatile
-    tier: free
-    timeout: 60.0
-    max_retries: 2
-    max_tokens: 300
-    description: "Meta Llama 3.3 70B Versatile via Groq"
-
-  deepseek-r1-distill-70b:
-    provider: groq
-    model_name: deepseek-r1-distill-llama-70b
-    tier: free
-    timeout: 60.0
-    max_retries: 2
-    max_tokens: 300
-    description: "DeepSeek R1 Distill 70B (Llama) via Groq"
+# ─────────────────────────────────────────────────────────────────
+# LLM-as-a-Judge — for Level 3 (planned; not yet consumed by the
+# runner, kept here as the documented, subscription-verified choice).
+# Judge volume is low, so a 2x multiplier is acceptable for a stronger
+# cross-family judge (e.g. deepseek/deepseek-v4-pro). Caveat: the
+# current pick is also in the tested set — self-preference bias is
+# possible; prefer a cross-family judge in the final methodology.
+# ─────────────────────────────────────────────────────────────────
+judge:
+  id: qwen/qwen3-235b-a22b
+  temperature: 0
