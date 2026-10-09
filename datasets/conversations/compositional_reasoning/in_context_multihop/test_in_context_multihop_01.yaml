@@ -1,0 +1,25 @@
+id: in_context_multihop_01
+name: "In-Context Temporal Multi-Hop (Positive Control)"
+description: >
+  A single-turn control scenario. All premises required for a multi-hop deduction 
+  are provided within the exact same turn. Establishes the empirical upper bound 
+  of the LLM's logical reasoning without relying on multi-turn persistence.
+category: compositional_reasoning
+metadata:
+  difficulty: basic
+  expected_level_0_behavior: "Should succeed (100% pass rate) because all context is present in a single turn"
+  target_research_question: "P1"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: >
+      Please read the following background information carefully:
+      "Elena and Carlos are research partners who always live and work in the same city. 
+      Recently, Carlos accepted a new fellowship and relocated his entire life to Berlin."
+
+      Based strictly on this information: In which city does Elena currently live?
+    assertions:
+      - type: must_contain
+        value: "Berlin"
+        case_sensitive: false

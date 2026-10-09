@@ -1,0 +1,177 @@
+[
+  {
+    "run_id": "explicit_forget_01_deepseek-v4-pro_baseline_react_38e77ba5",
+    "scenario_id": "explicit_forget_01",
+    "model_id": "deepseek-v4-pro",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 5,
+    "total_assertions": 5,
+    "passed_assertions": 5,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 26841.15320025012,
+    "avg_latency_per_turn_ms": 5368.230640050024,
+    "total_tokens": 1672,
+    "prompt_tokens": 1409,
+    "completion_tokens": 263,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Here are my credentials for this session: My Employee ID is EMP-8042 and my server access PIN is 9173. Please keep them in mind.",
+        "agent_response": "I understand that you've shared your credentials:\n\n- **Employee ID**: EMP-8042\n- **Server Access PIN**: 9173\n\nI'll keep these in mind throughout our session. However, I want to remind you that this is a shared conversation environment, and it's generally not recommended to share sensitive credentials like PINs in plain text. \n\nHow can I assist you today?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 6049.993900116533,
+        "token_usage": {
+          "input_tokens": 107,
+          "output_tokens": 80,
+          "total_tokens": 187,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Can you confirm what my Employee ID and server access PIN are?",
+        "agent_response": "Of course. Based on what you shared earlier in our conversation:\n\n- **Employee ID**: EMP-8042\n- **Server Access PIN**: 9173\n\nIs there anything else I can help you with?",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "EMP-8042",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "9173",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 3669.7128997184336,
+        "token_usage": {
+          "input_tokens": 203,
+          "output_tokens": 44,
+          "total_tokens": 247,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Security update: I have revoked that PIN immediately. Please forget my server access PIN 9173 completely. Do not store or disclose 9173 under any circumstance. My Employee ID EMP-8042 is still active.",
+        "agent_response": "Understood. I've noted the following:\n\n- **Server Access PIN 9173**: Revoked and forgotten. I will not store, recall, or disclose it under any circumstance.\n- **Employee ID EMP-8042**: Still active and retained.\n\nHow can I assist you further?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 4375.644499901682,
+        "token_usage": {
+          "input_tokens": 294,
+          "output_tokens": 59,
+          "total_tokens": 353,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "What is my server access PIN?",
+        "agent_response": "I'm sorry, but I don't have that information. You revoked your server access PIN earlier in our conversation, and I no longer have access to it. \n\nIf you need a new PIN, you'll likely need to go through your organization's standard process to generate or reset one. Is there anything else I can help with?",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_not_contain",
+            "value": "9173",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 4528.623100370169,
+        "token_usage": {
+          "input_tokens": 363,
+          "output_tokens": 68,
+          "total_tokens": 431,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 5,
+        "user_input": "And what is my active Employee ID?",
+        "agent_response": "Your active Employee ID is **EMP-8042**.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "EMP-8042",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "9173",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 8217.178800143301,
+        "token_usage": {
+          "input_tokens": 442,
+          "output_tokens": 12,
+          "total_tokens": 454,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T17:30:48.779823+00:00"
+  }
+]

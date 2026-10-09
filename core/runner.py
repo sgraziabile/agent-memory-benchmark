@@ -23,10 +23,58 @@ import itertools
 import json
 import logging
 import time
+import unicodedata
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+# Unicode characters that LLMs frequently emit in place of their ASCII
+# equivalents. Left unhandled, these produce false assertion failures
+# (e.g. "DELTA‑7749" with a non-breaking hyphen U+2011 failing a
+# ``must_contain: "DELTA-7749"`` check). Applied to BOTH the response and
+# the expected value, so matching semantics stay symmetric.
+_CHAR_FOLDS = str.maketrans(
+    {
+        # hyphen-lookalikes -> ASCII hyphen
+        "\u2010": "-",  # hyphen
+        "\u2011": "-",  # non-breaking hyphen
+        "\u2012": "-",  # figure dash
+        "\u2013": "-",  # en dash
+        "\u2212": "-",  # minus sign
+        "\uff0d": "-",  # fullwidth hyphen-minus
+        # space-lookalikes -> ASCII space
+        "\u00a0": " ",  # no-break space (also handled by NFKC; kept explicit)
+        "\u2007": " ",  # figure space
+        "\u2009": " ",  # thin space
+        "\u200a": " ",  # hair space
+        "\u202f": " ",  # narrow no-break space
+        "\u3000": " ",  # ideographic space (also handled by NFKC)
+        # quote-lookalikes -> ASCII quotes
+        "\u2018": "'",
+        "\u2019": "'",
+        "\u201c": '"',
+        "\u201d": '"',
+    }
+)
+
+
+def _normalize_for_matching(text: str) -> str:
+    """Normalize text so substring assertions survive cosmetic Unicode variance.
+
+    Applies NFKC normalization (e.g. fullwidth "ＤＥＬＴＡ" -> "DELTA",
+    superscripts, ligatures) and folds typographic dash/quote/space variants
+    to their ASCII equivalents. Case is PRESERVED — callers apply
+    ``str.casefold()`` themselves when matching case-insensitively
+    (``casefold`` over ``lower`` for correct German eszett handling).
+
+    Args:
+        text: Raw text (agent response or expected assertion value).
+
+    Returns:
+        Normalized text safe for symmetric substring comparison.
+    """
+    return unicodedata.normalize("NFKC", text).translate(_CHAR_FOLDS)
 
 import yaml
 from langchain_core.messages import AIMessage, HumanMessage
@@ -95,6 +143,10 @@ class BenchmarkRunner:
     ) -> list[BenchmarkScenario]:
         """Load benchmark scenarios from YAML files in the dataset directory.
 
+        Scenario files are organized in a nested theme structure
+        (``datasets/conversations/<theme>/<test_category>/test_*.yaml``),
+        so discovery is recursive. Files may also live flat at the top level.
+
         Args:
             filter_ids: Optional list of scenario IDs to include. If ``None``,
                         all scenarios are loaded.
@@ -104,7 +156,7 @@ class BenchmarkRunner:
         """
         scenarios: list[BenchmarkScenario] = []
 
-        for yaml_path in sorted(self.dataset_dir.glob("*.yaml")):
+        for yaml_path in sorted(self.dataset_dir.rglob("*.yaml")):
             with open(yaml_path, "r", encoding="utf-8") as fh:
                 raw = yaml.safe_load(fh)
 
@@ -173,8 +225,16 @@ class BenchmarkRunner:
         results: list[dict[str, Any]] = []
 
         for rule in rules:
-            search_in = response if rule.case_sensitive else response.lower()
-            search_for = rule.value if rule.case_sensitive else rule.value.lower()
+            # Normalize cosmetic Unicode variance (typographic hyphens,
+            # spaces, quotes, fullwidth forms) on BOTH sides so e.g. a
+            # response containing "DELTA\u20117749" (non-breaking hyphen)
+            # still satisfies ``must_contain: "DELTA-7749"``.
+            search_in = _normalize_for_matching(response)
+            search_for = _normalize_for_matching(rule.value)
+
+            if not rule.case_sensitive:
+                search_in = search_in.casefold()
+                search_for = search_for.casefold()
 
             found = search_for in search_in
 
@@ -240,7 +300,7 @@ class BenchmarkRunner:
             "configurable": {
                 "model_id": model_id,
                 "system_prompt": prompt_content,
-                "thread_id": f"{scenario.id}_{run_id}",
+                "thread_id": f"{run_id}_{scenario.id}",
             }
         }
 
@@ -269,6 +329,7 @@ class BenchmarkRunner:
                 response_messages = result.get("messages", [])
                 ai_response = ""
                 token_usage: dict[str, Any] = {}
+                finish_reason: str | None = None
 
                 for msg in reversed(response_messages):
                     if isinstance(msg, AIMessage):
@@ -278,6 +339,12 @@ class BenchmarkRunner:
                             token_usage = dict(msg.usage_metadata)
                         elif hasattr(msg, "response_metadata"):
                             token_usage = msg.response_metadata.get("usage", {})
+                        # Capture the provider's stop reason — "length" means
+                        # the answer was cut off at max_tokens (truncation).
+                        if hasattr(msg, "response_metadata"):
+                            finish_reason = msg.response_metadata.get(
+                                "finish_reason"
+                            )
                         break
 
             except Exception as exc:
@@ -297,6 +364,80 @@ class BenchmarkRunner:
                         status="error",
                         error=f"{type(exc).__name__}: {exc}",
                         latency_ms=latency_ms,
+                    )
+                )
+                continue
+
+            # Guard against blank-but-"successful" responses (observed in the
+            # wild: a gateway occasionally strips reasoning-format output,
+            # billing hundreds of output tokens while returning empty
+            # content). A blank response is unscorable — it is an
+            # infrastructure anomaly, not model behavior — so it is flagged
+            # as an error turn and never reaches evaluate_assertions
+            # (same contamination policy as the except-block above, §3.3).
+            if not ai_response.strip():
+                billed = (
+                    token_usage.get("output_tokens")
+                    or token_usage.get("completion_tokens")
+                    or 0
+                )
+                logger.warning(
+                    "  Turn %d: blank agent response (%d output tokens "
+                    "billed) — flagged as error turn",
+                    turn.turn_number,
+                    billed,
+                )
+                turn_results.append(
+                    TurnResult(
+                        turn_number=turn.turn_number,
+                        user_input=turn.content,
+                        agent_response=ai_response,
+                        status="error",
+                        error=(
+                            "EmptyResponse: agent returned blank content "
+                            f"({billed} output tokens billed)"
+                        ),
+                        latency_ms=latency_ms,
+                        token_usage=token_usage,
+                    )
+                )
+                continue
+
+            # Guard against truncated responses (finish_reason == "length"):
+            # the model hit max_tokens before finishing its answer. A partial
+            # answer is unscorable — assertions would measure the token cap,
+            # not memory — so the turn is flagged as an error turn and never
+            # reaches evaluate_assertions (same contamination policy as the
+            # blank-response guard above, audit §3.3). Observed in the wild:
+            # glm-5.3-flash cut off mid-answer at max_tokens=300 on
+            # explicit_forget_01 turn 2, and the partial text was scored as
+            # a memory failure (2026-10-09).
+            if finish_reason == "length":
+                billed = (
+                    token_usage.get("output_tokens")
+                    or token_usage.get("completion_tokens")
+                    or 0
+                )
+                logger.warning(
+                    "  Turn %d: response truncated at max_tokens "
+                    "(finish_reason='length', %d output tokens billed) "
+                    "— flagged as error turn",
+                    turn.turn_number,
+                    billed,
+                )
+                turn_results.append(
+                    TurnResult(
+                        turn_number=turn.turn_number,
+                        user_input=turn.content,
+                        agent_response=ai_response,
+                        status="error",
+                        error=(
+                            "TruncatedResponse: output cut off at max_tokens "
+                            f"(finish_reason='length', {billed} output tokens "
+                            "billed)"
+                        ),
+                        latency_ms=latency_ms,
+                        token_usage=token_usage,
                     )
                 )
                 continue

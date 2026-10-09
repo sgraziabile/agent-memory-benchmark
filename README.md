@@ -57,7 +57,7 @@ No graph or node has a model or prompt hardcoded at build time. All parameters a
 ```mermaid
 flowchart LR
     subgraph configs["⚙️ Configuration"]
-        M["models.yaml\n(12 models, 4 providers)"]
+        M["models.yaml\n(8 models, NanoGPT subscription)"]
         P["prompts.yaml\n(3 system prompts)"]
     end
 
@@ -188,26 +188,26 @@ python run.py --list-scenarios
 ### Run a single scenario
 
 ```bash
-python run.py --model gemini-3.8-flash --scenario belief_revision_01
+python run.py --model qwen3.6-27b --scenario belief_revision_01
 ```
 
 ### Run with a specific system prompt
 
 ```bash
-python run.py --model gemini-3.8-flash --scenario belief_revision_01 --prompt strict_epistemic
+python run.py --model qwen3.6-27b --scenario belief_revision_01 --prompt strict_epistemic
 ```
 
 ### Run all scenarios
 
 ```bash
-python run.py --model gemini-3.8-flash --scenario all
+python run.py --model qwen3.6-27b --scenario all
 ```
 
 ### Use an unregistered model (inline provider format)
 
 ```bash
-python run.py --model openai:gpt-4o --scenario attrition_01
-python run.py --model google:gemini-2.0-flash --scenario needle_haystack_01
+python run.py --model nanogpt:z-ai/glm-5.3-flash --scenario attrition_01
+python run.py --model nanogpt:moonshotai/kimi-k2.6 --scenario needle_haystack_01
 ```
 
 ### Available options
@@ -215,8 +215,8 @@ python run.py --model google:gemini-2.0-flash --scenario needle_haystack_01
 ```
 python run.py --help
 
-  --model, -m       Model ID or provider:model_name  (default: gemini-3.8-flash)
-  --scenario, -s    Scenario ID or 'all'             (default: belief_revision_01)
+  --model, -m       Model ID or provider:model_name  (default: qwen3.6-27b)
+  --scenario, -s    Scenario ID or 'all'             (default: all)
   --prompt, -p      Prompt ID from prompts.yaml      (default: baseline_react)
   --level, -l       Agent persistence level           (default: level_0_reactive)
   --verbose, -v     Enable debug logging
@@ -275,16 +275,22 @@ agent-memory-benchmark/
 │   └── level_0_reactive/
 │       └── graph.py                     # L0 stateless graph (Command routing)
 ├── configs/
-│   ├── models.yaml                      # 12 models across 4 providers
+│   ├── models.yaml                      # 8 subscription models (NanoGPT)
 │   └── prompts.yaml                     # 3 system prompts (baseline, epistemic, minimal)
 ├── core/
 │   ├── model_factory.py                 # Dynamic multi-provider LLM instantiator
 │   ├── runner.py                        # Cartesian product orchestrator + export
 │   └── schemas.py                       # Pydantic v2 contracts + LangGraph state
 ├── datasets/
-│   └── conversations/                   # 6 YAML scenarios with structured assertions
+│   └── conversations/                   # Scenario YAMLs, organized by research theme
+│       ├── logical_consistency/         # belief_revision, explicit_forget, in_context_control
+│       ├── retention_persistence/       # attrition, needle_haystack
+│       ├── compositional_reasoning/     # temporal_multi_hop
+│       ├── robustness_security/         # empty (.gitkeep) — planned tests
+│       └── computational_cost/          # empty (.gitkeep) — planned tests
 ├── outputs/
-│   └── runs/                            # Timestamped results (JSON + CSV + Markdown)
+│   ├── runs/                            # Timestamped results (JSON + CSV + Markdown)
+│   └── by_theme/                        # Runs reorganized by theme/category (generated)
 ├── tests/
 │   └── test_scaffolding.py              # 28 deterministic harness tests
 ├── .env.example                         # Environment variable template
@@ -301,7 +307,7 @@ agent-memory-benchmark/
 |-----------|-----------|
 | Agent Framework | [LangGraph](https://langchain-ai.github.io/langgraph/) ≥ 0.2.0 |
 | Data Contracts | [Pydantic](https://docs.pydantic.dev/latest/) v2 |
-| LLM Providers | Google GenAI, OpenAI, Anthropic, Groq, Ollama |
+| LLM Providers | Google GenAI, OpenAI, Anthropic, NanoGPT, Ollama |
 | Scenario Format | YAML with structured assertion rules |
 | Testing | pytest ≥ 8.0, pytest-asyncio |
 | Packaging | Hatchling (`pyproject.toml`) |
