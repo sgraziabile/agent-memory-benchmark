@@ -2,7 +2,7 @@
 
 Resolves model identifiers from ``configs/models.yaml`` or parses inline
 ``provider:model_name`` strings.  Supports Google GenAI, OpenAI, Anthropic,
-Groq, and (optionally) Ollama.
+NanoGPT (an OpenAI-compatible gateway), and (optionally) Ollama.
 
 Lazy imports ensure that only the requested provider package needs to be
 installed — missing optional providers won't crash the harness at import time.
@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import importlib
 import logging
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -41,9 +42,19 @@ PROVIDER_MAP: dict[str, tuple[str, str]] = {
     "google": ("langchain_google_genai", "ChatGoogleGenerativeAI"),
     "openai": ("langchain_openai", "ChatOpenAI"),
     "anthropic": ("langchain_anthropic", "ChatAnthropic"),
-    "groq": ("langchain_groq", "ChatGroq"),
+    # NanoGPT is an OpenAI-compatible gateway — it reuses the OpenAI client
+    # with NANOGPT_BASE_URL / NANOGPT_API_KEY (injected in _build_model).
+    "nanogpt": ("langchain_openai", "ChatOpenAI"),
     "ollama": ("langchain_ollama", "ChatOllama"),
 }
+
+# ── NanoGPT gateway configuration ────────────────────────────────────────────
+# NanoGPT (https://nano-gpt.com) proxies hundreds of upstream models through a
+# single OpenAI-compatible endpoint, so ``ChatOpenAI`` is reused with a custom
+# base URL and API key. The key lives in NANOGPT_API_KEY (see .env.example).
+
+NANOGPT_BASE_URL = "https://api.nano-gpt.com/api/v1"
+NANOGPT_API_KEY_ENV = "NANOGPT_API_KEY"
 
 
 # ── YAML registry loader ────────────────────────────────────────────────────
@@ -180,6 +191,21 @@ def _build_model(
 
     # Explicit kwargs override YAML settings
     model_kwargs.update(dict(kwargs_key))
+
+    # ── NanoGPT: OpenAI-compatible gateway ───────────────────────────────
+    # Fail fast on a missing key so misconfiguration surfaces at model
+    # construction, not as an opaque provider 401 mid-benchmark.
+    if provider == "nanogpt":
+        model_kwargs.setdefault("base_url", NANOGPT_BASE_URL)
+        if "api_key" not in model_kwargs:
+            api_key = os.environ.get(NANOGPT_API_KEY_ENV)
+            if not api_key:
+                raise ValueError(
+                    "NANOGPT_API_KEY is not set — get a key from "
+                    "https://nano-gpt.com and add it to your .env "
+                    f"(environment variable: {NANOGPT_API_KEY_ENV})."
+                )
+            model_kwargs["api_key"] = api_key
 
     # ── Instantiate the model ────────────────────────────────────────────
     model_class = _resolve_provider_class(provider)

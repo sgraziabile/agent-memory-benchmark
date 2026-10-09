@@ -1,0 +1,2 @@
+﻿run_id,scenario_id,model_id,prompt_id,agent_level,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,error_turns,error_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
+attrition_01_gpt-oss-20b_baseline_react_c871dc52,attrition_01,gpt-oss-20b,baseline_react,level_1_working_memory,8,9,7,2,0.7777777777777778,0,0.0,29105.80600053072,3638.22575006634,5519,4483,1036,2026-10-09T15:09:21.225618+00:00

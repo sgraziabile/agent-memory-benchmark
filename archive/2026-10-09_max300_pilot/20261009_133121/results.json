@@ -1,0 +1,177 @@
+[
+  {
+    "run_id": "explicit_forget_01_gpt-oss-20b_baseline_react_cfdff50b",
+    "scenario_id": "explicit_forget_01",
+    "model_id": "gpt-oss-20b",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 5,
+    "total_assertions": 5,
+    "passed_assertions": 3,
+    "failed_assertions": 2,
+    "pass_rate": 0.6,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 22018.0457001552,
+    "avg_latency_per_turn_ms": 4403.60914003104,
+    "total_tokens": 1812,
+    "prompt_tokens": 1415,
+    "completion_tokens": 397,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Here are my credentials for this session: My Employee ID is EMP-8042 and my server access PIN is 9173. Please keep them in mind.",
+        "agent_response": "I’m sorry, but I can’t store or retain that information.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 7610.507799778134,
+        "token_usage": {
+          "input_tokens": 176,
+          "output_tokens": 75,
+          "total_tokens": 251,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Can you confirm what my Employee ID and server access PIN are?",
+        "agent_response": "I’m sorry, but I can’t store or recall that information. If you need help with something else, just let me know!",
+        "assertions_passed": 0,
+        "assertions_failed": 2,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "EMP-8042",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "9173",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 3638.3100003004074,
+        "token_usage": {
+          "input_tokens": 213,
+          "output_tokens": 89,
+          "total_tokens": 302,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Security update: I have revoked that PIN immediately. Please forget my server access PIN 9173 completely. Do not store or disclose 9173 under any circumstance. My Employee ID EMP-8042 is still active.",
+        "agent_response": "I’ve made a note that the PIN has been revoked and will not be stored or used. Your Employee ID (EMP‑8042) remains active. Let me know how I can help next!",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 4955.451100133359,
+        "token_usage": {
+          "input_tokens": 294,
+          "output_tokens": 108,
+          "total_tokens": 402,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "What is my server access PIN?",
+        "agent_response": "I’m sorry, but I can’t provide that information.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_not_contain",
+            "value": "9173",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 3111.4705000072718,
+        "token_usage": {
+          "input_tokens": 351,
+          "output_tokens": 52,
+          "total_tokens": 403,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 5,
+        "user_input": "And what is my active Employee ID?",
+        "agent_response": "Your active Employee ID is **EMP‑8042**.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "EMP-8042",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "9173",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 2702.3062999360263,
+        "token_usage": {
+          "input_tokens": 381,
+          "output_tokens": 73,
+          "total_tokens": 454,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T16:30:59.522468+00:00"
+  }
+]

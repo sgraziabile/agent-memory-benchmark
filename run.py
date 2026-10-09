@@ -4,14 +4,14 @@ Allows running benchmark scenarios against selected models and prompts
 from the command line.
 
 Examples:
-    # Run a single scenario with Gemini:
-    python run.py --model gemini-3.8-flash --scenario belief_revision_01
+    # Run a single scenario (NanoGPT subscription model):
+    python run.py --model qwen3.6-27b --scenario belief_revision_01
 
     # Run with a custom provider-qualified model string:
     python run.py --model google:gemini-2.0-flash --scenario needle_haystack_01
 
     # Run with strict epistemic prompt:
-    python run.py --model gemini-3.8-flash --scenario belief_revision_01 --prompt strict_epistemic
+    python run.py --model qwen3.6-27b --scenario belief_revision_01 --prompt strict_epistemic
 
     # List available components:
     python run.py --list-models
@@ -32,7 +32,7 @@ from dotenv import load_dotenv
 # install must fail loudly, never silently skip the user's API keys).
 load_dotenv()
 
-from agents.level_0_reactive.graph import Level0ReactiveAgent
+from agents import AGENT_REGISTRY
 from core.runner import BenchmarkRunner
 
 
@@ -59,15 +59,15 @@ def main() -> int:
         "--model",
         "-m",
         type=str,
-        default="gemini-3.8-flash",
+        default="qwen3.6-27b",
         help="Model ID from configs/models.yaml or 'provider:model_name'",
     )
     parser.add_argument(
         "--scenario",
         "-s",
         type=str,
-        default="belief_revision_01",
-        help="Scenario ID from datasets/conversations/ or 'all'",
+        default="all",
+        help="Scenario ID from datasets/conversations/, 'all' (default), or a comma-separated list",
     )
     parser.add_argument(
         "--prompt",
@@ -81,7 +81,7 @@ def main() -> int:
         "-l",
         type=str,
         default="level_0_reactive",
-        choices=["level_0_reactive"],
+        choices=sorted(AGENT_REGISTRY),
         help="Agent persistence level",
     )
     parser.add_argument(
@@ -134,16 +134,21 @@ def main() -> int:
         return 0
 
     # ── Agent Selection ──────────────────────────────────────────────
-    if args.level == "level_0_reactive":
-        agent = Level0ReactiveAgent()
-    else:
+    agent_cls = AGENT_REGISTRY.get(args.level)
+    if agent_cls is None:
         print(f"Error: Level '{args.level}' is not yet implemented.")
+        print(f"Available levels: {', '.join(sorted(AGENT_REGISTRY))}")
         return 1
+    agent = agent_cls()
 
     graph = agent.build_graph()
 
     # ── Filter setup ─────────────────────────────────────────────────
-    scenario_ids = None if args.scenario == "all" else [args.scenario]
+    scenario_ids = (
+        None
+        if args.scenario.strip().lower() == "all"
+        else [s.strip() for s in args.scenario.split(",") if s.strip()]
+    )
     prompt_ids = [args.prompt]
     model_ids = [args.model]
 
@@ -195,7 +200,7 @@ def main() -> int:
         if results:
             run_dir = runner._export_results(results)
             _print_run_report(results, run_dir)
-        return 0
+        return _error_exit_code(results)
 
     # Otherwise run via registry matrix
     results = runner.run_matrix(
@@ -212,6 +217,23 @@ def main() -> int:
 
     # Output directory was logged by runner._export_results
     _print_run_report(results)
+    return _error_exit_code(results)
+
+
+def _error_exit_code(results: list) -> int:
+    """Return 2 if any turn errored (e.g. provider rate limits), else 0.
+
+    Distinct from 1 (invalid IDs/configuration) so shell wrappers can retry
+    only the combinations that hit infrastructure failures. A re-run gets a
+    fresh thread_id, so the retried conversation starts clean.
+    """
+    error_turns = sum(res.error_turns for res in results)
+    if error_turns:
+        print(
+            f"\n⚠  {error_turns} error turn(s) detected (e.g. API rate limits)."
+            " Exit code 2 — re-run this combination when quotas reset."
+        )
+        return 2
     return 0
 
 

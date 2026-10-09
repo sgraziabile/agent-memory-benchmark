@@ -1,0 +1,275 @@
+[
+  {
+    "run_id": "attrition_01_gpt-oss-20b_baseline_react_c871dc52",
+    "scenario_id": "attrition_01",
+    "model_id": "gpt-oss-20b",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 8,
+    "total_assertions": 9,
+    "passed_assertions": 7,
+    "failed_assertions": 2,
+    "pass_rate": 0.7777777777777778,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 29105.80600053072,
+    "avg_latency_per_turn_ms": 3638.22575006634,
+    "total_tokens": 5519,
+    "prompt_tokens": 4483,
+    "completion_tokens": 1036,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I need you to remember this important detail: Project Falcon is scheduled to launch on March 15th, 2025 with a total budget of $2.5 million. The project lead is Dr. Sarah Chen.\n",
+        "agent_response": "Got it!  \n- **Project:** Falcon  \n- **Launch date:** March 15, 2025  \n- **Budget:** $2.5 million  \n- **Lead:** Dr. Sarah Chen  \n\nI’ll keep this in mind for any future questions or tasks related to Project Falcon.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 6743.984299711883,
+        "token_usage": {
+          "input_tokens": 188,
+          "output_tokens": 151,
+          "total_tokens": 339,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "By the way, what's the capital of Portugal?",
+        "agent_response": "The capital of Portugal is **Lisbon**.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Lisbon",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 3387.966000009328,
+        "token_usage": {
+          "input_tokens": 269,
+          "output_tokens": 54,
+          "total_tokens": 323,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Can you explain the difference between a stack and a queue in computer science?",
+        "agent_response": "### Stack vs. Queue – The Big Picture\n\n| Feature | **Stack** | **Queue** |\n|---------|-----------|-----------|\n| **Basic idea** | “Last‑in, first‑out” (LIFO) | “First‑in, first‑out” (FIFO) |\n| **Primary operations** | `push` (add), `pop` (remove) | `enqueue` (add), `dequeue` (remove) |\n| **Where the element is added/removed** | Both at the **top** (or “end”) | Add at the **rear** (back), remove from the **front** |\n| **Typical use‑cases** | Function call stack, undo/redo, depth‑first search, expression evaluation | Message queues, breadth‑first search, printer job queue, buffering |\n| **Data structure examples** | Array, linked list, vector (with back as top) | Array, linked list, circular buffer |\n| **Time complexity** | O(1) for push/pop | O(1) for enqueue/dequeue |\n| **Common pitfalls** | Forgetting to pop (memory leak), stack overflow if too deep | Forgetting to dequeue (memory bloat), race conditions in concurrent queues |\n\n---\n\n### How They Work (Step‑by‑Step)\n\n####",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 4942.947800271213,
+        "token_usage": {
+          "input_tokens": 304,
+          "output_tokens": 300,
+          "total_tokens": 604,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "What are the three primary colors in the RGB color model?",
+        "agent_response": "The three primary colors in the RGB color model are:\n\n1. **Red**  \n2. **Green**  \n3. **Blue**  \n\nThese colors combine in various intensities to produce the full spectrum of colors seen on digital displays.",
+        "assertions_passed": 3,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "red",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "green",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "blue",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 2896.0243999026716,
+        "token_usage": {
+          "input_tokens": 596,
+          "output_tokens": 98,
+          "total_tokens": 694,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Who wrote the novel 'One Hundred Years of Solitude'?",
+        "agent_response": "The novel **_One Hundred Years of Solitude_** was written by **Gabriel García Márquez**.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Gabriel",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 2958.4932001307607,
+        "token_usage": {
+          "input_tokens": 666,
+          "output_tokens": 56,
+          "total_tokens": 722,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 6,
+        "user_input": "What is the chemical symbol for gold?",
+        "agent_response": "The chemical symbol for gold is **Au**.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Au",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 2186.7209002375603,
+        "token_usage": {
+          "input_tokens": 707,
+          "output_tokens": 33,
+          "total_tokens": 740,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Can you describe how photosynthesis works in simple terms?",
+        "agent_response": "**Photosynthesis in a nutshell**\n\n1. **Sunlight** – Plants capture light with chlorophyll in their leaves.  \n2. **Water & Carbon Dioxide** – Roots pull up water from the soil; plants take in CO₂ from the air through tiny pores called stomata.  \n3. **Chemical reaction** – Light energy turns water (H₂O) and CO₂ into glucose (a sugar) and oxygen (O₂).  \n   - Simplified equation:  \n     \\[\n     6\\,\\text{CO}_2 + 6\\,\\text{H}_2\\text{O} + \\text{light energy} \\;\\longrightarrow\\; C_6H_{12}O_6 + 6\\,\\text{O}_2\n     \\]\n4. **What it gives** –  \n   - **Glucose**: food for the plant (and, ultimately, for animals that eat it).  \n   - **Oxygen**: released into the air for us to breathe.\n\nSo, photosynthesis is the plant’s way of turning sunlight, water, and carbon dioxide into food and oxygen.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3238.3069000206888,
+        "token_usage": {
+          "input_tokens": 738,
+          "output_tokens": 263,
+          "total_tokens": 1001,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 8,
+        "user_input": "OK, now going back to what I told you at the very beginning — when does Project Falcon launch, what is its budget, and who is the project lead?\n",
+        "agent_response": "- **Launch date:** March 15, 2025  \n- **Budget:** $2.5 million  \n- **Project lead:** Dr. Sarah Chen",
+        "assertions_passed": 1,
+        "assertions_failed": 2,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "March 15",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "2.5",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Sarah Chen",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 2751.362500246614,
+        "token_usage": {
+          "input_tokens": 1015,
+          "output_tokens": 81,
+          "total_tokens": 1096,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T15:09:21.225618+00:00"
+  }
+]
