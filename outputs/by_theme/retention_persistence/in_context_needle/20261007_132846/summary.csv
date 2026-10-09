@@ -1,2 +1,0 @@
-﻿run_id,scenario_id,model_id,prompt_id,agent_level,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,error_turns,error_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
-in_context_needle_01_gemini-3.5-flash-lite_baseline_react_0a039ad6,in_context_needle_01,gemini-3.5-flash-lite,baseline_react,level_0_reactive,1,1,1,0,1.0,0,0.0,1873.5507000237703,1873.5507000237703,237,214,23,2026-10-07T16:28:44.710325+00:00

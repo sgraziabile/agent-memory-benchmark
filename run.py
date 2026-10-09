@@ -66,8 +66,8 @@ def main() -> int:
         "--scenario",
         "-s",
         type=str,
-        default="belief_revision_01",
-        help="Scenario ID from datasets/conversations/ or 'all'",
+        default="all",
+        help="Scenario ID from datasets/conversations/, 'all' (default), or a comma-separated list",
     )
     parser.add_argument(
         "--prompt",
@@ -144,7 +144,11 @@ def main() -> int:
     graph = agent.build_graph()
 
     # ── Filter setup ─────────────────────────────────────────────────
-    scenario_ids = None if args.scenario == "all" else [args.scenario]
+    scenario_ids = (
+        None
+        if args.scenario.strip().lower() == "all"
+        else [s.strip() for s in args.scenario.split(",") if s.strip()]
+    )
     prompt_ids = [args.prompt]
     model_ids = [args.model]
 
@@ -196,7 +200,7 @@ def main() -> int:
         if results:
             run_dir = runner._export_results(results)
             _print_run_report(results, run_dir)
-        return 0
+        return _error_exit_code(results)
 
     # Otherwise run via registry matrix
     results = runner.run_matrix(
@@ -213,6 +217,23 @@ def main() -> int:
 
     # Output directory was logged by runner._export_results
     _print_run_report(results)
+    return _error_exit_code(results)
+
+
+def _error_exit_code(results: list) -> int:
+    """Return 2 if any turn errored (e.g. provider rate limits), else 0.
+
+    Distinct from 1 (invalid IDs/configuration) so shell wrappers can retry
+    only the combinations that hit infrastructure failures. A re-run gets a
+    fresh thread_id, so the retried conversation starts clean.
+    """
+    error_turns = sum(res.error_turns for res in results)
+    if error_turns:
+        print(
+            f"\n⚠  {error_turns} error turn(s) detected (e.g. API rate limits)."
+            " Exit code 2 — re-run this combination when quotas reset."
+        )
+        return 2
     return 0
 
 

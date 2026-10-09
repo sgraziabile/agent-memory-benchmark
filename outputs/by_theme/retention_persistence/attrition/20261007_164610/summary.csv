@@ -1,2 +1,0 @@
-﻿run_id,scenario_id,model_id,prompt_id,agent_level,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,error_turns,error_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
-attrition_01_gemini-3.5-flash-lite_baseline_react_30a71046,attrition_01,gemini-3.5-flash-lite,baseline_react,level_1_working_memory,8,9,9,0,1.0,0,0.0,69208.54309992865,8651.067887491081,4443,3766,677,2026-10-07T19:45:01.417448+00:00

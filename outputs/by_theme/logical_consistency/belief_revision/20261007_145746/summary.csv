@@ -1,2 +1,0 @@
-﻿run_id,scenario_id,model_id,prompt_id,agent_level,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,error_turns,error_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
-belief_revision_01_gemini-3.8-flash_baseline_react_0ae0bfca,belief_revision_01,gemini-3.8-flash,baseline_react,level_1_working_memory,5,2,2,0,1.0,4,0.8,79366.77730013616,79366.77730013616,394,170,224,2026-10-07T17:52:40.031996+00:00
