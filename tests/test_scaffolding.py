@@ -132,7 +132,7 @@ class TestModelFactory:
             assert "model_name" in cfg, f"{model_id} missing 'model_name'"
             assert cfg.get("timeout") == 60.0, f"{model_id} missing or incorrect timeout"
             assert cfg.get("max_retries") == 2, f"{model_id} missing or incorrect max_retries"
-            assert cfg.get("max_tokens") == 300, f"{model_id} missing or incorrect max_tokens"
+            assert cfg.get("max_tokens") == 2048, f"{model_id} missing or incorrect max_tokens"
 
     def test_all_providers_in_map(self):
         registry = load_model_registry()
@@ -318,16 +318,29 @@ class _ScriptedGraph:
     still billing output tokens. No network, no API keys.
     """
 
-    def __init__(self, fail_first: int = 0, content: str = "Miso is the cat."):
+    def __init__(
+        self,
+        fail_first: int = 0,
+        content: str = "Miso is the cat.",
+        finish_reason: str = "stop",
+    ):
         self.calls = 0
         self.fail_first = fail_first
         self.content = content
+        self.finish_reason = finish_reason
 
     def invoke(self, state, config=None):
         self.calls += 1
         if self.calls <= self.fail_first:
             raise RuntimeError("simulated provider outage")
-        return {"messages": [AIMessage(content=self.content)]}
+        return {
+            "messages": [
+                AIMessage(
+                    content=self.content,
+                    response_metadata={"finish_reason": self.finish_reason},
+                )
+            ]
+        }
 
 
 class TestErrorTurnHandling:
@@ -489,6 +502,62 @@ class TestErrorTurnHandling:
 
         healthy = summary.turn_results[1]
         assert summary.total_latency_ms == pytest.approx(healthy.latency_ms)
+
+    def test_truncated_response_flagged_as_error_turn(self):
+        # Regression (Oct 9, 2026): glm-5.3-flash hit max_tokens=300 mid-answer
+        # ("Sure — here's what you shared earlier" then nothing) and the
+        # partial text was scored as a memory failure. A turn with
+        # finish_reason='length' is a measurement of the token cap, not of
+        # memory, and must be excluded from scoring.
+        summary = BenchmarkRunner().run_single(
+            scenario=self._make_scenario(),
+            prompt_id="unit_test_prompt",
+            prompt_content="You are a deterministic test agent.",
+            model_id="fake-model",
+            agent_graph=_ScriptedGraph(
+                content="Sure — here's what you shared earlier",
+                finish_reason="length",
+            ),
+            agent_level="level_0_reactive",
+        )
+
+        # Both turns executed, recorded, and flagged as error turns
+        assert summary.total_turns == 2
+        assert summary.error_turns == 2
+        assert summary.error_rate == 1.0
+        for tr in summary.turn_results:
+            assert tr.status == "error"
+            assert tr.error is not None
+            assert "TruncatedResponse" in tr.error
+            # Assertions never evaluated against the partial content
+            assert tr.assertions_passed == 0
+            assert tr.assertions_failed == 0
+            assert tr.assertion_details == []
+
+        # No assertion was scored
+        assert summary.total_assertions == 0
+        assert summary.pass_rate == 0.0
+
+        # Truncated turns are excluded from token/latency metrics
+        assert summary.total_latency_ms == 0.0
+        assert summary.total_tokens == 0
+
+    def test_finish_reason_stop_still_scores_normally(self):
+        # The truncation guard must not flag normal completions: pin the
+        # behaviour that finish_reason='stop' goes through normal scoring.
+        summary = BenchmarkRunner().run_single(
+            scenario=self._make_scenario(),
+            prompt_id="unit_test_prompt",
+            prompt_content="You are a deterministic test agent.",
+            model_id="fake-model",
+            agent_graph=_ScriptedGraph(finish_reason="stop"),
+            agent_level="level_0_reactive",
+        )
+
+        assert summary.error_turns == 0
+        assert summary.error_rate == 0.0
+        assert summary.pass_rate == 1.0
+        assert all(tr.status == "ok" for tr in summary.turn_results)
 
 
 # ── Level 0 Agent Tests ─────────────────────────────────────────────────────

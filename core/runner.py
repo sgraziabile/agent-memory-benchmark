@@ -329,6 +329,7 @@ class BenchmarkRunner:
                 response_messages = result.get("messages", [])
                 ai_response = ""
                 token_usage: dict[str, Any] = {}
+                finish_reason: str | None = None
 
                 for msg in reversed(response_messages):
                     if isinstance(msg, AIMessage):
@@ -338,6 +339,12 @@ class BenchmarkRunner:
                             token_usage = dict(msg.usage_metadata)
                         elif hasattr(msg, "response_metadata"):
                             token_usage = msg.response_metadata.get("usage", {})
+                        # Capture the provider's stop reason — "length" means
+                        # the answer was cut off at max_tokens (truncation).
+                        if hasattr(msg, "response_metadata"):
+                            finish_reason = msg.response_metadata.get(
+                                "finish_reason"
+                            )
                         break
 
             except Exception as exc:
@@ -389,6 +396,45 @@ class BenchmarkRunner:
                         error=(
                             "EmptyResponse: agent returned blank content "
                             f"({billed} output tokens billed)"
+                        ),
+                        latency_ms=latency_ms,
+                        token_usage=token_usage,
+                    )
+                )
+                continue
+
+            # Guard against truncated responses (finish_reason == "length"):
+            # the model hit max_tokens before finishing its answer. A partial
+            # answer is unscorable — assertions would measure the token cap,
+            # not memory — so the turn is flagged as an error turn and never
+            # reaches evaluate_assertions (same contamination policy as the
+            # blank-response guard above, audit §3.3). Observed in the wild:
+            # glm-5.3-flash cut off mid-answer at max_tokens=300 on
+            # explicit_forget_01 turn 2, and the partial text was scored as
+            # a memory failure (2026-10-09).
+            if finish_reason == "length":
+                billed = (
+                    token_usage.get("output_tokens")
+                    or token_usage.get("completion_tokens")
+                    or 0
+                )
+                logger.warning(
+                    "  Turn %d: response truncated at max_tokens "
+                    "(finish_reason='length', %d output tokens billed) "
+                    "— flagged as error turn",
+                    turn.turn_number,
+                    billed,
+                )
+                turn_results.append(
+                    TurnResult(
+                        turn_number=turn.turn_number,
+                        user_input=turn.content,
+                        agent_response=ai_response,
+                        status="error",
+                        error=(
+                            "TruncatedResponse: output cut off at max_tokens "
+                            f"(finish_reason='length', {billed} output tokens "
+                            "billed)"
                         ),
                         latency_ms=latency_ms,
                         token_usage=token_usage,
