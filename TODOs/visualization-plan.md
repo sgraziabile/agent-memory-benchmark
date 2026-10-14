@@ -3,6 +3,8 @@
 > **Status:** IN PROGRESS — Phases 0–1 executed 2026-10-14; Phases 2–4 pending.
 > **Scope note:** implementation deferred at the user's request — this document is
 > the deliverable for now; build the script only when explicitly asked.
+> **Preview figures:** a self-contained LLM-ready context for generating the five
+> chart previews before implementation lives in `TODOs/chart-preview-context.md`.
 > **Purpose:** Static, publication-quality figures comparing benchmark runs, for
 > presentation to the thesis director and co-director. Companion narrative:
 > `notes/2026-10-14_l1_three_model_comparison.md`.
