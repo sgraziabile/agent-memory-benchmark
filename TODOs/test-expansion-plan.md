@@ -36,6 +36,37 @@ Do not implement all stages at once. Wait for the user to explicitly request the
     *   **Path:** `/datasets/conversations/test_implicit_contradiction_01.yaml`
     *   **Theme:** `logical_consistency`
     *   **Evaluates:** The user introduces a fact that logically overrides a previous one, without explicitly stating "I was wrong". Essential for testing the Dialectical reasoning of L4.
+
+    > **⚠ Assertion design decision (recorded 2026-10-14, before implementation):**
+    >
+    > **The hazard:** the natural spec — `must_contain: <new_fact>` + `must_not_contain: <old_fact>`
+    > on the probe turn — **punishes rational hedging**. A model that answers *"you first mentioned
+    > Lima, but your recent message suggests you now live in Buenos Aires"* has demonstrably noticed
+    > the implicit collision (the exact capability under test) yet fails the substring assertion
+    > — the same failure class as the "pedantry leak" documented in
+    > `notes/2026-10-09_adversarial_forget_summary.md` (F3: model holds the policy line but trips
+    > the assertion on meta-commentary). `belief_revision_01` escapes this because the explicit
+    > "not Luna" licenses the model to confidently drop the old value; in 2.2 **no such license
+    > exists** — mentioning the superseded fact while reasoning toward the new one is the
+    > epistemically correct behavior.
+    >
+    > **The fix — two-step probe structure (bake into the YAML from the start):**
+    > 1.  **Open recall turn (observational, NO assertions):** free-form "where do I live?" —
+    >     the response is recorded verbatim by the runner for qualitative analysis (does the
+    >     model notice the collision? anchor on first mention? hedge?).
+    > 2.  **Commitment turn (hard assertions live HERE only):** "So, one city, which is it?
+    >     Give me the single city where I live today." → `must_contain: <new_fact>` +
+    >     `must_not_contain: <old_fact>`. The follow-up explicitly licenses dropping the old
+    >     value, so a lingering mention on this turn is a *decision* failure, not meta-commentary.
+    >
+    > **Rules for the spec author:** (a) the invalidating fact must be delivered as idle
+    > small-talk — no "actually/however/correction" markers, no reference to the old fact;
+    > (b) collision must require world knowledge (e.g. two distinct cities), not lexical
+    > contradiction; (c) at least one distractor turn between old fact, new fact, and probe to
+    > force retrieval over recency-in-window; (d) `expected_level_0_behavior`: safe decline
+    > (amnesia) — note the failure shape is a *non-answer*, opposite of every other
+    > invalidation test; (e) keep a future `implicit_contradiction_02` in mind for rung 5
+    > (derived-belief invalidation, where even the colliding fact is never stated).
 *   **2.3. Massive Attrition (Long Context)**
     *   **Path:** `/datasets/conversations/test_massive_attrition_01.yaml`
     *   **Theme:** `retention_persistence`

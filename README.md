@@ -218,7 +218,7 @@ python run.py --help
   --model, -m       Model ID or provider:model_name  (default: qwen3.6-27b)
   --scenario, -s    Scenario ID or 'all'             (default: all)
   --prompt, -p      Prompt ID from prompts.yaml      (default: baseline_react)
-  --level, -l       Agent persistence level           (default: level_0_reactive)
+  --level, -l       Level number(s), name, or 'all'   (default: 0; e.g. 1 or 0,1)
   --verbose, -v     Enable debug logging
   --list-models     List registered models and exit
   --list-scenarios  List available scenarios and exit
