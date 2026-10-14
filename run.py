@@ -13,6 +13,10 @@ Examples:
     # Run with strict epistemic prompt:
     python run.py --model qwen3.6-27b --scenario belief_revision_01 --prompt strict_epistemic
 
+    # Select agent level(s) by number — full registry names also accepted:
+    python run.py --level 1 --model glm-5.3-flash --scenario belief_revision_01
+    python run.py --level 0,1 --model qwen3.6-27b --scenario belief_revision_01
+
     # List available components:
     python run.py --list-models
     python run.py --list-scenarios
@@ -32,7 +36,7 @@ from dotenv import load_dotenv
 # install must fail loudly, never silently skip the user's API keys).
 load_dotenv()
 
-from agents import AGENT_REGISTRY
+from agents import AGENT_REGISTRY, resolve_level_ids
 from core.runner import BenchmarkRunner
 
 
@@ -80,9 +84,8 @@ def main() -> int:
         "--level",
         "-l",
         type=str,
-        default="level_0_reactive",
-        choices=sorted(AGENT_REGISTRY),
-        help="Agent persistence level",
+        default="0",
+        help="Agent level(s): number (0-4), full registry name, 'all', or comma-separated list",
     )
     parser.add_argument(
         "--verbose",
@@ -133,15 +136,12 @@ def main() -> int:
             print(f"  - {pid:18s} — {pdata.get('description', '')}")
         return 0
 
-    # ── Agent Selection ──────────────────────────────────────────────
-    agent_cls = AGENT_REGISTRY.get(args.level)
-    if agent_cls is None:
-        print(f"Error: Level '{args.level}' is not yet implemented.")
-        print(f"Available levels: {', '.join(sorted(AGENT_REGISTRY))}")
+    # ── Level resolution ('0', '1', '0,1', 'all', or full names) ──────
+    try:
+        level_ids = resolve_level_ids(args.level)
+    except ValueError as exc:
+        print(f"Error: {exc}")
         return 1
-    agent = agent_cls()
-
-    graph = agent.build_graph()
 
     # ── Filter setup ─────────────────────────────────────────────────
     scenario_ids = (
@@ -152,17 +152,14 @@ def main() -> int:
     prompt_ids = [args.prompt]
     model_ids = [args.model]
 
-    print("\n" + "=" * 60)
-    print("AGENT MEMORY BENCHMARK — EXECUTION RUN")
-    print("=" * 60)
-    print(f"  Level:    {agent.level}")
-    print(f"  Model:    {args.model}")
-    print(f"  Prompt:   {args.prompt}")
-    print(f"  Scenario: {args.scenario}")
-    print("=" * 60 + "\n")
-
-    # Validate model
-    if ":" not in args.model:
+    # ── Model validation (once, before the per-level loop) ───────────
+    # Registry IDs run via run_matrix; 'provider:model_name' strings run
+    # inline — scenario/prompt are validated up front so the loop never
+    # repeats that work.
+    inline_model = ":" in args.model
+    scenarios = None
+    prompt_content = None
+    if not inline_model:
         registered_models = runner.load_model_ids()
         if args.model not in registered_models:
             print(f"Error: Model '{args.model}' not found in configs/models.yaml.")
@@ -170,10 +167,7 @@ def main() -> int:
             print("Tip: If you want to use an unregistered model, use the 'provider:model_name' format.")
             print(f"     Example: --model google:{args.model}")
             return 1
-
-    # If args.model contains ':', handle it as an inline provider:model string
-    if ":" in args.model:
-        # Load scenario and prompt directly
+    else:
         scenarios = runner.load_scenarios(filter_ids=scenario_ids)
         if not scenarios:
             print(f"Error: Scenario '{args.scenario}' not found.")
@@ -185,39 +179,59 @@ def main() -> int:
             return 1
 
         prompt_content = prompts[args.prompt]["content"]
-        results = []
-        for sc in scenarios:
-            summary = runner.run_single(
-                scenario=sc,
-                prompt_id=args.prompt,
-                prompt_content=prompt_content,
-                model_id=args.model,
-                agent_graph=graph,
-                agent_level=agent.level,
+
+    print("\n" + "=" * 60)
+    print("AGENT MEMORY BENCHMARK — EXECUTION RUN")
+    print("=" * 60)
+    print(f"  Level:    {', '.join(level_ids)}")
+    print(f"  Model:    {args.model}")
+    print(f"  Prompt:   {args.prompt}")
+    print(f"  Scenario: {args.scenario}")
+    print("=" * 60 + "\n")
+
+    # ── Execute one pass per level ────────────────────────────────────
+    # Per-pass exports are suppressed (run_matrix(export=False), deferred
+    # for the inline path) so ONE invocation writes ONE results directory
+    # containing every requested level.
+    all_results: list = []
+    for level_id in level_ids:
+        if len(level_ids) > 1:
+            print(f"\n─── Level: {level_id} ────────────────────────")
+
+        agent = AGENT_REGISTRY[level_id]()
+        graph = agent.build_graph()
+
+        if inline_model:
+            for sc in scenarios:
+                summary = runner.run_single(
+                    scenario=sc,
+                    prompt_id=args.prompt,
+                    prompt_content=prompt_content,
+                    model_id=args.model,
+                    agent_graph=graph,
+                    agent_level=agent.level,
+                )
+                all_results.append(summary)
+        else:
+            all_results.extend(
+                runner.run_matrix(
+                    agent_graph=graph,
+                    agent_level=agent.level,
+                    scenario_ids=scenario_ids,
+                    prompt_ids=prompt_ids,
+                    model_ids=model_ids,
+                    export=False,
+                )
             )
-            results.append(summary)
 
-        if results:
-            run_dir = runner._export_results(results)
-            _print_run_report(results, run_dir)
-        return _error_exit_code(results)
-
-    # Otherwise run via registry matrix
-    results = runner.run_matrix(
-        agent_graph=graph,
-        agent_level=agent.level,
-        scenario_ids=scenario_ids,
-        prompt_ids=prompt_ids,
-        model_ids=model_ids,
-    )
-
-    if not results:
+    if not all_results:
         print("No runs executed. Check your scenario, model, or prompt IDs.")
         return 1
 
-    # Output directory was logged by runner._export_results
-    _print_run_report(results)
-    return _error_exit_code(results)
+    # Single export per invocation — the directory covers all levels.
+    run_dir = runner._export_results(all_results)
+    _print_run_report(all_results, run_dir)
+    return _error_exit_code(all_results)
 
 
 def _error_exit_code(results: list) -> int:
