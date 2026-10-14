@@ -805,3 +805,58 @@ class TestDependencyDeclarations:
             "run.py must import dotenv unconditionally (audit §3.2): "
             "a silent except hides a missing dependency by design"
         )
+
+
+# ── CLI Level Resolution Tests ──────────────────────────────────────────────
+
+from agents import AGENT_REGISTRY, resolve_level_ids
+
+
+class TestResolveLevelIds:
+    """Verify --level shorthand: numbers, prefixes, lists, 'all', and errors."""
+
+    def test_number_maps_to_registry_key(self):
+        assert resolve_level_ids("0") == ["level_0_reactive"]
+        assert resolve_level_ids("1") == ["level_1_working_memory"]
+
+    def test_full_registry_name_still_works(self):
+        assert resolve_level_ids("level_1_working_memory") == [
+            "level_1_working_memory"
+        ]
+
+    def test_registry_prefix_matches(self):
+        assert resolve_level_ids("level_0") == ["level_0_reactive"]
+        assert resolve_level_ids("level_1_working") == ["level_1_working_memory"]
+
+    def test_comma_separated_list(self):
+        assert resolve_level_ids("0,1") == [
+            "level_0_reactive",
+            "level_1_working_memory",
+        ]
+
+    def test_list_preserves_order_and_drops_duplicates(self):
+        assert resolve_level_ids("1,0,1") == [
+            "level_1_working_memory",
+            "level_0_reactive",
+        ]
+
+    def test_mixed_tokens(self):
+        assert resolve_level_ids("1,level_0_reactive") == [
+            "level_1_working_memory",
+            "level_0_reactive",
+        ]
+
+    def test_all_returns_every_registered_level(self):
+        assert resolve_level_ids("all") == sorted(AGENT_REGISTRY)
+
+    def test_unimplemented_level_raises_with_available_listed(self):
+        with pytest.raises(ValueError, match="not implemented"):
+            resolve_level_ids("2")
+
+    def test_unknown_token_raises(self):
+        with pytest.raises(ValueError, match="Available levels"):
+            resolve_level_ids("xyz")
+
+    def test_empty_input_raises(self):
+        with pytest.raises(ValueError, match="No agent level specified"):
+            resolve_level_ids("")

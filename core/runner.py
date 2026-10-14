@@ -536,6 +536,7 @@ class BenchmarkRunner:
         scenario_ids: list[str] | None = None,
         prompt_ids: list[str] | None = None,
         model_ids: list[str] | None = None,
+        export: bool = True,
     ) -> list[BenchmarkRunSummary]:
         """Execute the full Cartesian product: Scenarios × Prompts × Models.
 
@@ -545,6 +546,10 @@ class BenchmarkRunner:
             scenario_ids: Optional filter for specific scenarios.
             prompt_ids: Optional filter for specific prompts.
             model_ids: Optional filter for specific models.
+            export: When False, skip the automatic export — used by the CLI
+                when looping over multiple levels so one invocation writes a
+                single shared results directory (and back-to-back exports
+                can never collide on the same timestamp).
 
         Returns:
             List of ``BenchmarkRunSummary`` objects for all executed tuples.
@@ -611,8 +616,9 @@ class BenchmarkRunner:
                 "\n  - ".join(failed_tuples),
             )
 
-        # Export results
-        if results:
+        # Export results (suppressible so the CLI can batch multiple levels
+        # into a single shared results directory per invocation)
+        if results and export:
             self._export_results(results)
 
         return results
