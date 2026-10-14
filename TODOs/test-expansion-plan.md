@@ -85,6 +85,52 @@ Do not implement all stages at once. Wait for the user to explicitly request the
     *   **Path:** `/datasets/conversations/test_3hop_temporal_01.yaml`
     *   **Theme:** `compositional_reasoning`
     *   **Evaluates:** A chain of facts: A relates to B, B relates to C, C relates to D. The agent must deduce D from A across multiple conversational turns.
+*   **3.3. Cross-Thread Derived Answer** *(recorded 2026-10-14; motivated by the reasoning-token analysis in `notes/2026-10-14_l1_three_model_comparison.md`)*
+    *   **Path:** `/datasets/conversations/test_cross_thread_derived_01.yaml`
+    *   **Theme:** `compositional_reasoning`
+    *   **Evaluates:** The conjunction of 3.1 and 3.2 — premises seeded in *different* `thread_id`s, retrieved via BaseStore, then **combined through a computation (date arithmetic)** whose answer exists in no stored fact. The derived answer must be produced, not recalled: this is the only planned configuration where the value of model deliberation (reasoning tokens) can be measured on inference that exceeds retrieval.
+
+    > **⚠ Design decision (recorded 2026-10-14, before implementation):**
+    >
+    > **Origin:** at L1, all three tested models scored 100% on every in-window derivation scenario;
+    > qwen3.6-27b's externalized chain-of-thought (≈22k hidden reasoning tokens) made it simultaneously
+    > the most expensive and the weakest scorer, while qwen3-235b (`reasoning: 0` across the sweep)
+    > topped the board at the lowest quota cost. The question *"does deliberation pay off on hard
+    > inference?"* is unanswerable with any current or planned scenario: 3.1 tests retrieval only;
+    > 3.2 tests derivation but keeps every premise inside L1's context window (attention, not memory).
+    > This entry supplies the missing conjunction.
+    >
+    > **Spec structure (three threads, one probe):**
+    > 1.  **Thread A:** fact A (e.g. "contract signed on March 3, 2025") buried mid-thread among
+    >     distractor turns containing plausible decoy dates.
+    > 2.  **Thread B:** fact B (e.g. "delivery is due 45 days after signing") buried similarly.
+    > 3.  **Probe turn:** asks for the derived answer ("what's the delivery date?") — requires
+    >     A + B + real date arithmetic. The derived date (April 17, 2025) must appear in **no turn
+    >     of any thread**: no verbatim-recall path to the answer may exist.
+    >
+    > **The confound, and the paired control that resolves it:** the composite scenario confounds
+    > *retrieval failure* with *derivation failure* — a probe miss doesn't attribute. Fix: a **paired
+    > hard in-context derivation control** containing the *same* derivation problem with all premises
+    > in a single prompt. The existing 1.1 control cannot serve: it is at ceiling for all tested
+    > models. The paired control must be calibrated hard enough that a terse strong model is not
+    > trivially at 100%, so the two outcomes stay interpretable: **pass control + fail cross-thread
+    > → memory failure; fail both → reasoning failure** (and per-model deltas on the control measure
+    > the raw value of deliberation, independent of memory architecture). Run each model on both;
+    > comparing reasoning-token spend between them gives the direct P3 measurement of the cost/value
+    > of deliberation.
+    >
+    > **Rules for the spec author:** (a) date arithmetic must require actual computation (day-level,
+    > not month-level "same month + 1"); (b) premises must sit mid-thread with distractors before and
+    > after — never the final turn of a thread (defeat recency); (c) the probe must **paraphrase** —
+    > it may not echo either premise verbatim, so lexical matching cannot substitute for retrieval;
+    > (d) the derived date must be distinct from every stated date; (e) each thread must contain
+    > plausible decoy dates so guess-and-check fails; (f) `expected_level_0/1_behavior`: safe decline
+    > (premises out of window) — this scenario is an L2 capability gate, same as 3.1.
+    >
+    > **Prerequisites:** per-turn `thread_id` support in the runner (`core/runner.py` currently pins
+    > one thread per run — the limitation documented in the adversarial-forget analysis) and the L2
+    > BaseStore agent. Implement **after 3.1**, which validates the multi-thread harness this test
+    > inherits.
 
 ---
 
