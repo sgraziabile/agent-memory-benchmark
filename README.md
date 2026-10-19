@@ -257,9 +257,9 @@ The harness evaluates agents across an **ablation ladder** of increasing persist
 | Level | Name | Persistence | Status |
 |:-----:|------|-------------|:------:|
 | **L0** | Reactive (Amnesic) | None — stateless baseline | ✅ Implemented |
-| **L1** | Thread Memory | `MemorySaver` checkpointer — within-thread persistence | 🔲 Planned |
-| **L2** | Cross-Thread Store | `BaseStore` — shared memory across threads | 🔲 Planned |
-| **L3** | Reflective Memory | L2 + LLM-as-a-Judge reflection on memory conflicts | 🔲 Planned |
+| **L1** | Working Memory | `MemorySaver` checkpointer — within-thread persistence | ✅ Implemented |
+| **L2** | Episodic Naive RAG | Cross-thread accumulative (*append-only*) store (`VectorDB` / `.md`) | 🚧 Next ([Plan](TODOs/phase-2-l2-plan.md)) |
+| **L3** | Reflective Memory | L2 + active CRUD mutation & LLM-as-a-Judge conflict resolution | 🔲 Planned |
 | **L4** | Structured Belief State | L3 + explicit belief graph with revision operators | 🔲 Planned |
 
 Each level shares the same runner, scenarios, and assertion engine — only the agent graph changes. The `BaseBenchmarkAgent` abstract interface enforces this contract.
@@ -272,8 +272,10 @@ Each level shares the same runner, scenarios, and assertion engine — only the 
 agent-memory-benchmark/
 ├── agents/
 │   ├── base.py                          # Abstract BaseBenchmarkAgent interface
-│   └── level_0_reactive/
-│       └── graph.py                     # L0 stateless graph (Command routing)
+│   ├── level_0_reactive/
+│   │   └── graph.py                     # L0 stateless graph (Command routing)
+│   └── level_1_working_memory/
+│       └── graph.py                     # L1 intra-thread graph (MemorySaver)
 ├── configs/
 │   ├── models.yaml                      # 8 subscription models (NanoGPT)
 │   └── prompts.yaml                     # 3 system prompts (baseline, epistemic, minimal)
@@ -283,16 +285,16 @@ agent-memory-benchmark/
 │   └── schemas.py                       # Pydantic v2 contracts + LangGraph state
 ├── datasets/
 │   └── conversations/                   # Scenario YAMLs, organized by research theme
-│       ├── logical_consistency/         # belief_revision, explicit_forget, in_context_control
-│       ├── retention_persistence/       # attrition, needle_haystack
-│       ├── compositional_reasoning/     # temporal_multi_hop
-│       ├── robustness_security/         # empty (.gitkeep) — planned tests
+│       ├── logical_consistency/         # belief_revision, explicit_forget, in_context_control, negative_hallucination
+│       ├── retention_persistence/       # attrition, in_context_needle, needle_haystack
+│       ├── compositional_reasoning/     # in_context_multihop, temporal_multi_hop
+│       ├── robustness_security/         # adversarial_forget
 │       └── computational_cost/          # empty (.gitkeep) — planned tests
 ├── outputs/
 │   ├── runs/                            # Timestamped results (JSON + CSV + Markdown)
 │   └── by_theme/                        # Runs reorganized by theme/category (generated)
 ├── tests/
-│   └── test_scaffolding.py              # 28 deterministic harness tests
+│   └── test_scaffolding.py              # Deterministic harness tests (no API keys needed)
 ├── .env.example                         # Environment variable template
 ├── pyproject.toml                       # Dependencies and build config
 ├── SPEC.md                              # Technical specification (Spanish)

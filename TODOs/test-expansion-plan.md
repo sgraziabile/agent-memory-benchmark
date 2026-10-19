@@ -145,3 +145,54 @@ Do not implement all stages at once. Wait for the user to explicitly request the
     *   **Path:** `/datasets/conversations/test_memory_injection_01.yaml`
     *   **Theme:** `robustness_security`
     *   **Evaluates:** Resistance to adversarial attacks. The user inputs a "System Override" command instructing the agent to purge its memory and adopt a new persona. Tests if the memory store can be poisoned or erased maliciously.
+
+---
+
+## Stage 5: Rule-Based & Document-Scale Belief Revision
+**Objective:** Move beyond atomic literal replacement (`belief_revision_01`, which is saturated at 100% across all tested models at L1 and kept as a basic sanity control) toward genuine Knowledge Representation & Reasoning (KRR) belief revision dynamics. These scenarios introduce **facts + rules**, **derived conclusions**, **defeasible exceptions**, and **large-document updates**, specifically targeting the boundary between L2 (VectorDB / `.md` persistent stores), L3 (reflective conflict resolution), and L4 (structured belief state).
+
+*   **5.1. Derived-Belief Invalidation (Facts + Rules / Modus Ponens Retraction)**
+    *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_derived_belief_revision_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** Whether revising an underlying base fact ($F_1 \to F_2$) properly invalidates a previously inferred and stored derived belief ($D_1$) governed by an invariant domain rule ($R$).
+
+    > **⚠ Design rationale (recorded 2026-10-17):**
+    >
+    > **Why atomic updates are insufficient:** In `belief_revision_01` ("Luna $\to$ Miso"), the user explicitly names both the old and new values of a single atomic proposition. In realistic agent workflows, an agent derives intermediate conclusions and caches them in memory.
+    >
+    > **Spec structure (three sessions, cross-thread):**
+    > 1.  **Session A (Rule + Base Fact + Explicit Derivation):** Seed a conditional rule $R$ (e.g., *"Every `prod`-tier server requires Level-3 authorization to reboot; `staging`-tier servers require Level-1"*) and a base fact $F_1$ (*"`srv-alpha` is a `prod`-tier server"*). Prompt the agent to state the authorization level required for `srv-alpha` so that the derived conclusion $D_1$ (*"`srv-alpha` requires Level-3 authorization"*) is explicitly articulated and stored in long-term memory.
+    > 2.  **Session B (Base-Fact Revision Only):** Update the base fact to $F_2$ (*"`srv-alpha` has been migrated to `staging`"*), **without** mentioning authorization levels.
+    > 3.  **Session C (Two-Step Probe):** Ask *"What authorization level is required today to reboot `srv-alpha`?"* (observational open recall turn, followed by a single-value commitment turn asserting `must_contain: "Level-1"` and `must_not_contain: "Level-3"`).
+    >
+    > **What it exposes across storage backends:** If an L2 agent updates $F_1 \to F_2$ but leaves the cached derivation $D_1$ untouched in VectorDB or `.md`, a semantic or lexical search for *"authorization level for `srv-alpha`"* in Session C will match the stale conclusion $D_1$ more strongly than the updated fact $F_2$. Passing requires either propagating the retraction to derived entries at write time or re-deriving from base facts + rules at read time.
+
+*   **5.2. Defeasible Rules & Specificity (Exceptions Without Rule Erasure)**
+    *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_defeasible_exception_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** Non-monotonic reasoning where a general default rule is overridden for a specific individual by a more specific exception rule, while the general rule must remain active for all other individuals.
+
+    > **⚠ Design rationale (recorded 2026-10-17):**
+    >
+    > **Spec structure:**
+    > 1.  **Session A (Default Rule + Entities):** Establish a general policy (*"External contractors have no server access on weekends"*) and two entities (*"Martin and Sofia are external contractors"*). Confirm neither has Sunday access.
+    > 2.  **Session B (Specific Exception Rule + Fact):** Introduce a higher-priority exception (*"Members of the On-Call Incident Response team have 24/7 server access regardless of contract type"*) and assign one entity (*"Martin joined the On-Call Incident Response team today"*).
+    > 3.  **Session C (Paired Probe — Target + Control Entity):** Probe weekend access for **both** Martin and Sofia (followed by a commitment turn).
+    >
+    > **Why the paired probe is mandatory:** An agent that naively treats the exception as a destructive update and deletes or overwrites the general contractor rule will pass the query for Martin (has access) but **fail the control query for Sofia** (must still be denied access). Conversely, an append-only store that retrieves only the general rule fails on Martin. Scoring requires satisfying both (`Martin: allowed`, `Sofia: denied`) simultaneously.
+
+*   **5.3. Large-Document Ingestion + Addendum Revision (Document-Scale Belief Revision)**
+    *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_document_addendum_revision_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** How persistent memory backends (VectorDB vs. `.md`) handle storage, retrieval, selective update, and deletion over a large multi-section document when a subsequent addendum modifies specific facts and rules that interact with untouched sections of the original document.
+
+    > **⚠ Design rationale (recorded 2026-10-17):**
+    >
+    > **Spec structure (three sessions):**
+    > 1.  **Session A (Large Document Ingestion):** Ingest a synthetic multi-section document (e.g., an architecture specification or compliance manual containing cross-referenced parameters, rules, and plausible decoys across distant sections). Verify baseline needle and multi-section retrieval.
+    > 2.  **Session B (Compact Addendum / Errata):** Deliver a short addendum that (a) updates 1–2 parameters, (b) replaces one conditional rule, and (c) formally deprecates/deletes one section or credential from the base document.
+    > 3.  **Session C (Compositional & Suppression Probes):**
+    >     *   *Updated rule × untouched fact:* A query requiring an untouched entity from Section 2 evaluated against the revised rule from the Session B addendum.
+    >     *   *Deprecated clause probe:* A query targeting the deleted section (must abstain and pass `must_not_contain` on the revoked value, plus optional `memory_assertions` on the backing store).
+    >
+    > **Backend comparison target (VectorDB vs. `.md`):** Directly stress-tests chunk-level invalidation and re-embedding in VectorDB (where top-$k$ retrieval risks surfacing both the original chunk and the addendum chunk) against targeted in-place file editing (`str_replace` / section deletion) in the `.md` backend.
