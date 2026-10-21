@@ -20,6 +20,7 @@ from agents.level_2_episodic_rag.backends.base import (
     estimate_tokens,
     utc_now_iso,
 )
+from agents.level_2_episodic_rag.backends.vector import VectorMemoryBackend
 
 __all__ = [
     "AppendTelemetry",
@@ -28,6 +29,7 @@ __all__ = [
     "EpisodicMemoryBackend",
     "RetrievedEpisode",
     "RetrievalTelemetry",
+    "VectorMemoryBackend",
     "estimate_tokens",
     "utc_now_iso",
 ]
