@@ -121,3 +121,38 @@ models:
 judge:
   id: qwen/qwen3-235b-a22b
   temperature: 0
+
+# ─────────────────────────────────────────────────────────────────
+# embeddings — Embedding model registry for Level 2+ episodic memory
+# (TODOs/phase-2-l2-plan.md §3.2).
+#
+# 'dims' MUST be declared explicitly per model: LangGraph's InMemoryStore
+# vector index requires the exact dimensionality at construction time —
+# never hardcode 1024 vs. 4096.
+#
+# Both models are served through NanoGPT's OpenAI-compatible
+# /api/v1/embeddings endpoint. API over local execution is deliberate: the
+# dev machine has no CUDA GPU, so local 8B embedding inference during
+# chunk ingestion would bottleneck on CPU and distort P3 latency metrics.
+#
+# ⚠ Verify subscription inclusion against the live catalog before every
+# sweep (same policy as chat models):
+#   GET https://api.nano-gpt.com/api/v1/models?detailed=true
+# ─────────────────────────────────────────────────────────────────
+embeddings:
+  qwen3-embedding-8b:
+    provider: nanogpt
+    model_name: qwen/qwen3-embedding-8b
+    dims: 4096
+    timeout: 60.0
+    max_retries: 2
+    description: "Qwen3-Embedding-8B — primary embedding model (4096 dims, 32k-token context; subscription availability must be verified pre-sweep)"
+
+  bge-large-en-v1.5:
+    provider: nanogpt
+    model_name: baai/bge-large-en-v1.5
+    dims: 1024
+    timeout: 60.0
+    max_retries: 2
+    description: "BAAI bge-large-en-v1.5 — backup/comparison embedding model (1024 dims, 512-token context; subscription availability must be verified pre-sweep)"
+

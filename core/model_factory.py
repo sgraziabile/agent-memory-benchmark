@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from langchain_core.embeddings import Embeddings
 from langchain_core.language_models import BaseChatModel
 
 logger = logging.getLogger(__name__)
@@ -291,3 +292,244 @@ def create_model(
         # Unhashable kwargs cannot form a cache key — construct directly.
         # (If construction itself raised TypeError, this re-raises it.)
         return _build_model(model_id, temperature, config_path_str, kwargs_key)
+
+
+# ── Embedding registry & factory (Level 2+ episodic memory) ──────────────────
+#
+# Embedding models are registered under a top-level ``embeddings:`` key in
+# ``configs/models.yaml``. Every entry MUST declare ``dims`` explicitly —
+# LangGraph's ``InMemoryStore`` vector index needs the exact dimensionality
+# at construction time, and hardcoding 1024 vs. 4096 would silently break
+# the Qwen3-Embedding-8B primary (TODOs/phase-2-l2-plan.md §3.2).
+
+#: Provider dispatch for embedding models — mirrors ``PROVIDER_MAP`` but
+#: resolves to LangChain ``Embeddings`` implementation classes.
+EMBEDDING_PROVIDER_MAP: dict[str, tuple[str, str]] = {
+    # NanoGPT proxies embedding models through its OpenAI-compatible
+    # /api/v1/embeddings endpoint, so the OpenAIEmbeddings client is reused
+    # with NANOGPT_BASE_URL / NANOGPT_API_KEY (same policy as chat models).
+    "nanogpt": ("langchain_openai", "OpenAIEmbeddings"),
+    "openai": ("langchain_openai", "OpenAIEmbeddings"),
+}
+
+
+def load_embedding_registry(
+    config_path: Path | str = _DEFAULT_MODELS_CONFIG,
+) -> dict[str, dict[str, Any]]:
+    """Load the embedding model registry from a YAML configuration file.
+
+    Args:
+        config_path: Path to the ``models.yaml`` file.
+
+    Returns:
+        Dictionary mapping embedding IDs to their configuration dicts, each
+        containing at least ``provider``, ``model_name`` and ``dims``.
+
+    Raises:
+        FileNotFoundError: If the config file does not exist.
+        ValueError: If the YAML structure is invalid or the top-level
+            ``embeddings`` key is missing.
+    """
+    config_path = Path(config_path)
+    if not config_path.exists():
+        raise FileNotFoundError(f"Model config not found: {config_path}")
+
+    with open(config_path, "r", encoding="utf-8") as fh:
+        raw = yaml.safe_load(fh)
+
+    if not isinstance(raw, dict) or "embeddings" not in raw:
+        raise ValueError(
+            "Invalid models.yaml structure — expected top-level 'embeddings' "
+            f"key, got: {list(raw.keys()) if isinstance(raw, dict) else type(raw).__name__}"
+        )
+
+    return raw["embeddings"]
+
+
+def get_embedding_dims(
+    embedding_id: str,
+    config_path: Path | str = _DEFAULT_MODELS_CONFIG,
+) -> int:
+    """Return the explicitly declared vector dimensionality for an ID.
+
+    ``dims`` is required because LangGraph's ``InMemoryStore`` vector index
+    must know the exact dimensionality at construction time (TODOs/
+    phase-2-l2-plan.md §3.2) — a missing or zero value would silently
+    misindex every chunk.
+
+    Raises:
+        ValueError: If the ID is unknown or ``dims`` is missing/invalid.
+    """
+    registry = load_embedding_registry(config_path)
+    if embedding_id not in registry:
+        raise ValueError(
+            f"Embedding model '{embedding_id}' not found in registry. "
+            f"Available embedding models: {sorted(registry.keys())}"
+        )
+    dims = registry[embedding_id].get("dims")
+    if isinstance(dims, bool) or not isinstance(dims, int) or dims <= 0:
+        raise ValueError(
+            f"Embedding model '{embedding_id}' must declare an integer "
+            f"'dims' > 0 in models.yaml — InMemoryStore needs the exact "
+            f"vector dimensionality at construction time (got {dims!r})."
+        )
+    return dims
+
+
+def _resolve_embeddings_class(provider: str) -> type[Embeddings]:
+    """Dynamically import and return the ``Embeddings`` class for a provider.
+
+    Raises:
+        ValueError: If the provider is not recognized.
+        ImportError: If the provider package is not installed.
+    """
+    if provider not in EMBEDDING_PROVIDER_MAP:
+        raise ValueError(
+            f"Unknown embedding provider '{provider}'. "
+            f"Supported providers: {sorted(EMBEDDING_PROVIDER_MAP.keys())}"
+        )
+
+    module_path, class_name = EMBEDDING_PROVIDER_MAP[provider]
+
+    try:
+        module = importlib.import_module(module_path)
+    except ImportError as exc:
+        raise ImportError(
+            f"Provider package '{module_path}' is not installed. "
+            f"Install it with: pip install {module_path.replace('_', '-')}"
+        ) from exc
+
+    return getattr(module, class_name)
+
+
+def _build_embeddings(
+    embedding_id: str,
+    config_path: str,
+    kwargs_key: tuple[tuple[str, Any], ...],
+) -> Embeddings:
+    """Resolve and instantiate an embedding model (uncached core).
+
+    Mirrors :func:`_build_model`: registry lookup, YAML optional params
+    (timeout, max_retries, ...) overridable by explicit kwargs, NanoGPT
+    gateway fail-fast on a missing API key. ``dims`` is validated BEFORE
+    client construction so misconfiguration never surfaces mid-benchmark.
+
+    Raises:
+        ValueError: If the ID is unknown, ``dims`` is invalid, or the
+            NanoGPT API key is missing.
+        ImportError: If the required provider package is not installed.
+    """
+    registry = load_embedding_registry(config_path)
+
+    if embedding_id not in registry:
+        raise ValueError(
+            f"Embedding model '{embedding_id}' not found in registry. "
+            f"Available embedding models: {sorted(registry.keys())}"
+        )
+
+    entry = registry[embedding_id]
+    provider = entry["provider"]
+    model_name = entry["model_name"]
+
+    # Fail fast on missing/invalid 'dims' BEFORE building the API client.
+    get_embedding_dims(embedding_id, config_path)
+
+    logger.info(
+        "Resolving embedding model: id=%s, provider=%s, model=%s",
+        embedding_id,
+        provider,
+        model_name,
+    )
+
+    # Extract optional constructor parameters from YAML (timeout, ...).
+    # 'dims' is deliberately NOT forwarded — it configures InMemoryStore,
+    # not the embedding client.
+    embed_kwargs: dict[str, Any] = {}
+    for k, v in entry.items():
+        if k not in ("provider", "model_name", "dims", "description"):
+            embed_kwargs[k] = v
+
+    # Explicit kwargs override YAML settings
+    embed_kwargs.update(dict(kwargs_key))
+
+    # ── NanoGPT: OpenAI-compatible gateway (same policy as chat models) ──
+    if provider == "nanogpt":
+        embed_kwargs.setdefault("base_url", NANOGPT_BASE_URL)
+        if "api_key" not in embed_kwargs:
+            api_key = os.environ.get(NANOGPT_API_KEY_ENV)
+            if not api_key:
+                raise ValueError(
+                    "NANOGPT_API_KEY is not set — get a key from "
+                    "https://nano-gpt.com and add it to your .env "
+                    f"(environment variable: {NANOGPT_API_KEY_ENV})."
+                )
+            embed_kwargs["api_key"] = api_key
+
+    # ── Instantiate the embedding client ─────────────────────────────
+    embeddings_class = _resolve_embeddings_class(provider)
+
+    return embeddings_class(model=model_name, **embed_kwargs)
+
+
+@lru_cache(maxsize=64)
+def _create_embeddings_cached(
+    embedding_id: str,
+    config_path: str,
+    kwargs_key: tuple[tuple[str, Any], ...],
+) -> Embeddings:
+    """Cached wrapper around :func:`_build_embeddings`.
+
+    Embedding client instances are stateless per configuration and
+    thread-safe for ``.embed_documents()`` / ``.embed_query()``, so
+    identical ``(embedding_id, config_path, kwargs)`` tuples safely share
+    one client — critical for P3 latency validity: every benchmark turn
+    re-resolves the backend's embedding model, and without caching each
+    measured turn would pay a fresh YAML read + client construction inside
+    the latency window (same rationale as ``_create_model_cached``).
+    """
+    return _build_embeddings(embedding_id, config_path, kwargs_key)
+
+
+def clear_embeddings_cache() -> None:
+    """Clear the embedding client cache (tests, API-key rotation)."""
+    _create_embeddings_cached.cache_clear()
+
+
+def create_embeddings(
+    embedding_id: str,
+    config_path: Path | str = _DEFAULT_MODELS_CONFIG,
+    **kwargs: Any,
+) -> Embeddings:
+    """Create (or retrieve a cached) embedding model by registry ID.
+
+    Resolution mirrors :func:`create_model`: the ID is looked up in the
+    ``embeddings:`` section of ``configs/models.yaml``; optional YAML params
+    (``timeout``, ``max_retries``) are forwarded to the constructor and can
+    be overridden by explicit kwargs. Instances are cached per
+    ``(embedding_id, config_path, kwargs)`` so per-turn latency reflects
+    embedding inference, not construction. Use
+    :func:`get_embedding_dims` to fetch the declared vector dimensionality
+    for LangGraph's ``InMemoryStore`` index.
+
+    Args:
+        embedding_id: Registry key (e.g. ``"qwen3-embedding-8b"``).
+        config_path: Path to ``models.yaml`` for registry lookups.
+        **kwargs: Additional constructor overrides (must be hashable to
+            benefit from caching).
+
+    Returns:
+        An instantiated LangChain ``Embeddings`` client.
+
+    Raises:
+        ValueError: If the ID is unknown, ``dims`` is missing/invalid, or
+            a required API key is not set.
+        ImportError: If the required provider package is not installed.
+    """
+    config_path_str = str(Path(config_path))
+    kwargs_key = tuple(sorted(kwargs.items()))
+    try:
+        return _create_embeddings_cached(embedding_id, config_path_str, kwargs_key)
+    except TypeError:
+        # Unhashable kwargs cannot form a cache key — construct directly.
+        # (If construction itself raised TypeError, this re-raises it.)
+        return _build_embeddings(embedding_id, config_path_str, kwargs_key)
