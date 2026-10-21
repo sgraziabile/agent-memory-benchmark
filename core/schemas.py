@@ -30,6 +30,39 @@ class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
 
+class L2AgentState(TypedDict):
+    """LangGraph state for the Level 2 episodic RAG agent (plan §4.2).
+
+    ``messages`` keeps the ``add_messages`` accumulator (MemorySaver-backed
+    intra-session history). Every telemetry channel below is a **per-turn
+    overwrite channel**: no reducer, so each graph invocation replaces the
+    previous turn's value. ``BenchmarkRunner.run_single()`` reads these
+    channels from the invoke result (guarded with ``.get()``) so the same
+    runner code serves L0/L1 (channels absent) and L2 (channels present).
+
+    Channels:
+        retrieved_context_chars: Char length of the formatted
+            ``[Memory ...]`` block injected into ``model_node``.
+        retrieved_context_tokens: Token estimate of that block.
+        retrieval_latency_ms: Time spent in ``retrieve_node``.
+        append_latency_ms: Time spent in ``append_node`` (chat episodes).
+        embedding_latency_ms: Embedding-API wait inside retrieve+append.
+        embedding_tokens: Tokens sent to the embedding API this turn.
+        retrieved_memories: Top-k ``RetrievedEpisode`` dicts (provenance).
+        appended_chunk_ids: Chunk IDs written to the backend this turn.
+    """
+
+    messages: Annotated[Sequence[BaseMessage], add_messages]
+    retrieved_context_chars: int
+    retrieved_context_tokens: int
+    retrieval_latency_ms: float
+    append_latency_ms: float
+    embedding_latency_ms: float
+    embedding_tokens: int
+    retrieved_memories: list[dict[str, Any]]
+    appended_chunk_ids: list[str]
+
+
 # ── Test Scenario Schemas ────────────────────────────────────────────────────
 
 
@@ -57,12 +90,25 @@ class ConversationTurn(BaseModel):
               ``system_event`` for injected environmental changes.
         content: The text content of the turn.
         assertions: Rules to evaluate against the agent's response to this turn.
+        session_id: Conversation session this turn belongs to (plan §5.2).
+              Turns sharing a ``session_id`` share one LangGraph thread
+              (``thread_id = run_id + scenario_id + session_id``), so
+              checkpointer-backed agents (L1+) remember within a session
+              but forget across sessions. Existing single-session YAMLs
+              omit the key and default to ``"default"`` — 100% backward
+              compatible.
+        attachments: Optional file paths for ``system_event`` document
+              ingestion (plan §5.3, deferred to a later milestone).
+              Resolved relative to the scenario YAML file or
+              ``datasets/documents/``.
     """
 
     turn_number: int
     role: Literal["user", "system_event"]
     content: str
     assertions: list[AssertionRule] = Field(default_factory=list)
+    session_id: str = "default"
+    attachments: list[str] = Field(default_factory=list)
 
 
 class BenchmarkScenario(BaseModel):
@@ -108,6 +154,36 @@ class TurnResult(BaseModel):
                 failed at the infrastructure level (API outage, auth error).
         error: Exception description for errored turns; ``None`` otherwise.
                 Errored turns are excluded from pass-rate and token metrics.
+        session_id: Session this turn belongs to (``"default"``, ``"s1"``).
+        role: Turn role — lets ``system_event`` document ingestions be
+              logged in ``turn_results`` without entering the chat
+              assertion denominators (plan §4.2).
+        prompt_tokens: Chat LLM input tokens billed on this turn, summed
+              across ALL ``AIMessage``s generated after the input
+              ``HumanMessage`` (plan §4.1 slicing rule — never re-counts
+              prior turns in checkpointer-backed graphs).
+        completion_tokens: Chat LLM total output tokens billed (includes
+              hidden reasoning tokens).
+        total_tokens: ``prompt_tokens + completion_tokens``.
+        reasoning_tokens: Hidden chain-of-thought tokens
+              (``output_token_details.reasoning``).
+        visible_output_tokens: ``max(0, completion_tokens - reasoning_tokens)``.
+        cached_prompt_tokens: Prefix-cache hit tokens
+              (``input_token_details.cache_read``).
+        retrieved_context_chars: Char length of the ``[Memory ...]`` block
+              injected by ``retrieve_node`` (0 for L0/L1).
+        retrieved_context_tokens: Token estimate of that block.
+        embedding_tokens: Tokens sent to the embedding API this turn
+              (retrieve + append; 0 for L0/L1 and the markdown backend).
+        retrieval_latency_ms: Time spent in ``retrieve_node``.
+        append_latency_ms: Time spent in ``append_node`` (chat episodes) or
+              ``system_event`` ingestion.
+        embedding_latency_ms: Embedding-API wait within retrieve+append.
+        retrieved_memories: Top-k retrieved episode dicts (provenance:
+              ``chunk_id``, ``session_id``, ``turn_number``, ``source``,
+              ``score``, ``rank``, ``content``, ``estimated_tokens``).
+        appended_chunk_ids: Chunk IDs written to the backend this turn —
+              links directly into ``memory/<run_id>/`` snapshots.
     """
 
     turn_number: int
@@ -120,6 +196,23 @@ class TurnResult(BaseModel):
     token_usage: dict[str, Any] = Field(default_factory=dict)
     status: Literal["ok", "error"] = "ok"
     error: str | None = None
+    # ── Plan §4.2 telemetry (defaults keep L0/L1 construction unchanged) ──
+    session_id: str = "default"
+    role: Literal["user", "system_event"] = "user"
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+    reasoning_tokens: int = 0
+    visible_output_tokens: int = 0
+    cached_prompt_tokens: int = 0
+    retrieved_context_chars: int = 0
+    retrieved_context_tokens: int = 0
+    embedding_tokens: int = 0
+    retrieval_latency_ms: float = 0.0
+    append_latency_ms: float = 0.0
+    embedding_latency_ms: float = 0.0
+    retrieved_memories: list[dict[str, Any]] = Field(default_factory=list)
+    appended_chunk_ids: list[str] = Field(default_factory=list)
 
 
 class BenchmarkRunSummary(BaseModel):
@@ -147,6 +240,29 @@ class BenchmarkRunSummary(BaseModel):
         avg_latency_per_turn_ms: Average latency per successfully completed turn.
         turn_results: Detailed per-turn results.
         timestamp: ISO 8601 timestamp of when the run started.
+        memory_backend: Backend identity for reproducibility — ``"none"``
+              (L0), ``"memory_saver"`` (L1), ``"vector"`` / ``"markdown"``
+              (L2+, plan §4.3).
+        embedding_model_id: Registry ID of the embedding model, or ``None``
+              for backends/levels without embeddings.
+        top_k: Retrieval cut-off configured for this run (``None`` = N/A).
+        chunk_size: Chunking size configured for this run (``None`` = N/A).
+        chunk_overlap: Chunking overlap configured for this run.
+        memory_snapshot_path: Relative path ``memory/<run_id>`` of the
+              exported backend snapshot inside the run folder (``None``
+              when no backend was attached).
+        reasoning_tokens: Hidden reasoning tokens summed over ok turns.
+        visible_output_tokens: Visible output tokens summed over ok turns.
+        cached_prompt_tokens: Prefix-cache hit tokens summed over ok turns.
+        retrieved_context_tokens: RAG context tokens injected across the run.
+        embedding_tokens: Embedding tokens across all turns, including
+              ``system_event`` ingestions.
+        total_retrieval_latency_ms: Cumulative ``retrieve_node`` time.
+        total_append_latency_ms: Cumulative ``append_node`` time.
+        total_embedding_latency_ms: Cumulative embedding-API wait.
+        ingestion_latency_ms: Time spent on ``system_event`` document
+              ingestion turns — kept separate so large-file ingestion does
+              not skew ``avg_latency_per_turn_ms``.
     """
 
     run_id: str
@@ -168,3 +284,21 @@ class BenchmarkRunSummary(BaseModel):
     completion_tokens: int = 0
     turn_results: list[TurnResult] = Field(default_factory=list)
     timestamp: str = ""
+    # ── Plan §4.3 memory configuration & reproducibility identity ──────────
+    memory_backend: str = "none"
+    embedding_model_id: str | None = None
+    top_k: int | None = None
+    chunk_size: int | None = None
+    chunk_overlap: int | None = None
+    memory_snapshot_path: str | None = None
+    # ── Plan §4.3 aggregated token metrics (over status == "ok" turns) ─────
+    reasoning_tokens: int = 0
+    visible_output_tokens: int = 0
+    cached_prompt_tokens: int = 0
+    retrieved_context_tokens: int = 0
+    embedding_tokens: int = 0
+    # ── Plan §4.3 aggregated latency metrics ───────────────────────────────
+    total_retrieval_latency_ms: float = 0.0
+    total_append_latency_ms: float = 0.0
+    total_embedding_latency_ms: float = 0.0
+    ingestion_latency_ms: float = 0.0

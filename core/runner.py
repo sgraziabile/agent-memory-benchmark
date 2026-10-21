@@ -89,6 +89,62 @@ from core.schemas import (
 
 logger = logging.getLogger(__name__)
 
+
+def _slice_token_usage(token_usage: dict[str, Any]) -> dict[str, int]:
+    """Slice raw token usage metadata into plan §4.2 accounting buckets.
+
+    Providers expose (optionally, hence all the ``or`` guards):
+    - ``input_tokens`` / ``output_tokens`` / ``total_tokens``
+    - ``input_token_details.cache_read``  → prefix-cache hit tokens
+    - ``output_token_details.reasoning`` → hidden chain-of-thought tokens
+
+    ``visible_output_tokens`` is derived as the billed output minus hidden
+    reasoning, floored at zero. Missing fields default to 0 so L0/L1 and
+    providers without detail blocks keep working unchanged.
+    """
+    input_details = token_usage.get("input_token_details") or {}
+    output_details = token_usage.get("output_token_details") or {}
+    prompt_tokens = int(
+        token_usage.get("input_tokens") or token_usage.get("prompt_tokens") or 0
+    )
+    completion_tokens = int(
+        token_usage.get("output_tokens") or token_usage.get("completion_tokens") or 0
+    )
+    reasoning_tokens = int(output_details.get("reasoning") or 0)
+    return {
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": int(
+            token_usage.get("total_tokens") or (prompt_tokens + completion_tokens)
+        ),
+        "reasoning_tokens": reasoning_tokens,
+        "visible_output_tokens": max(0, completion_tokens - reasoning_tokens),
+        "cached_prompt_tokens": int(input_details.get("cache_read") or 0),
+    }
+
+
+def _read_l2_telemetry(result: Any) -> dict[str, Any]:
+    """Read plan §4.2 L2 telemetry channels from a graph invoke result.
+
+    Guarded read: L0/L1 graphs never write these channels, so the same
+    runner code serves every ablation level — absent channels simply
+    default to zeros (and non-dict results, e.g. from custom graphs, to a
+    fully-zeroed telemetry block).
+    """
+    if not isinstance(result, dict):
+        result = {}
+    return {
+        "retrieved_context_chars": int(result.get("retrieved_context_chars") or 0),
+        "retrieved_context_tokens": int(result.get("retrieved_context_tokens") or 0),
+        "retrieval_latency_ms": float(result.get("retrieval_latency_ms") or 0.0),
+        "append_latency_ms": float(result.get("append_latency_ms") or 0.0),
+        "embedding_latency_ms": float(result.get("embedding_latency_ms") or 0.0),
+        "embedding_tokens": int(result.get("embedding_tokens") or 0),
+        "retrieved_memories": list(result.get("retrieved_memories") or []),
+        "appended_chunk_ids": list(result.get("appended_chunk_ids") or []),
+    }
+
+
 # ── Default paths ────────────────────────────────────────────────────────────
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -135,6 +191,12 @@ class BenchmarkRunner:
         self.config_dir = Path(config_dir)
         self.dataset_dir = Path(dataset_dir)
         self.output_dir = Path(output_dir)
+        #: Shared output directory for the current invocation, pre-created
+        #: when a memory backend is attached so ``memory/<run_id>/`` snapshot
+        #: exports land next to the final results export (plan §4.3).
+        #: Consumed by ``_export_results``; ``None`` = create a fresh
+        #: timestamped directory at export time.
+        self._current_run_dir: Path | None = None
 
     # ── Loaders ──────────────────────────────────────────────────────────
 
@@ -264,6 +326,9 @@ class BenchmarkRunner:
         model_id: str,
         agent_graph: Any,
         agent_level: str,
+        memory_backend: Any = None,
+        memory_backend_config: dict[str, Any] | None = None,
+        snapshot_dir: Path | None = None,
     ) -> BenchmarkRunSummary:
         """Execute a single benchmark tuple: ⟨Scenario, Prompt, Model, Level⟩.
 
@@ -277,6 +342,18 @@ class BenchmarkRunner:
             model_id: Model identifier (registry key or provider:name).
             agent_graph: Compiled LangGraph ``CompiledStateGraph``.
             agent_level: Agent persistence level string.
+            memory_backend: Optional ``EpisodicMemoryBackend`` (L2+). When
+                        attached, its snapshot is exported under
+                        ``snapshot_dir/<run_id>/`` at the end of the run —
+                        BEFORE any caller-side ``reset()`` (plan §4.3) — and
+                        the summary records backend identity. ``None`` for
+                        L0/L1 keeps behavior identical to before.
+            memory_backend_config: Optional identity dict for the summary
+                        (plan §4.3): ``backend``, ``embedding_model_id``,
+                        ``top_k``, ``chunk_size``, ``chunk_overlap``.
+            snapshot_dir: Directory to place ``memory/<run_id>/`` snapshots
+                        under. ``None`` skips the export (e.g. backend
+                        attached but caller manages snapshots itself).
 
         Returns:
             A ``BenchmarkRunSummary`` with all turn results and metrics.
@@ -296,11 +373,36 @@ class BenchmarkRunner:
         # thread_id scopes conversation state for checkpointer-enabled agents
         # (Level 1+). For Level 0 (no checkpointer) it is harmless, keeping
         # the runner code identical across all ablation levels.
+        #
+        # Per-SESSION thread_id (plan §4.2): multi-session scenarios (e.g.
+        # cross-thread probes in s2 after facts learned in s1) MUST give each
+        # session its own thread so a checkpointer can't leak history across
+        # session boundaries — the very capability L2 is being tested on.
+        # The schema-default "default" session keeps legacy single-session
+        # scenarios on the exact pre-L2 thread form (backward compatible).
+
+        def _thread_id_for(session: str) -> str:
+            if session == "default":
+                return f"{run_id}_{scenario.id}"
+            return f"{run_id}_{scenario.id}_{session}"
+
+        # The first interactive turn's session seeds the initial configurable
+        # (avoids a spurious rotation on turn 1); "default" when every turn
+        # is a system_event.
+        initial_session = next(
+            (t.session_id for t in scenario.turns if t.role != "system_event"),
+            "default",
+        )
+
         config = {
             "configurable": {
                 "model_id": model_id,
                 "system_prompt": prompt_content,
-                "thread_id": f"{run_id}_{scenario.id}",
+                "thread_id": _thread_id_for(initial_session),
+                # Session identity injected for L2+ agents (retrieve_node
+                # exclude filter / append_node provenance). Harmlessly
+                # ignored by L0/L1 graphs.
+                "session_id": initial_session,
             }
         }
 
@@ -310,13 +412,41 @@ class BenchmarkRunner:
                 logger.info("  System event at turn %d: %s", turn.turn_number, turn.content[:80])
                 continue
 
+            # Session boundary (plan §4.2): a turn whose session_id differs
+            # from the active one rotates the thread_id and updates the
+            # configurable — giving each session a fresh checkpointer thread.
+            # The Pydantic schema guarantees session_id is always present
+            # (defaults to "default" for legacy single-session scenarios).
+            session_id = turn.session_id
+            if session_id != config["configurable"]["session_id"]:
+                config["configurable"]["session_id"] = session_id
+                config["configurable"]["thread_id"] = _thread_id_for(session_id)
+                logger.info(
+                    "  Session boundary at turn %d → session=%s (new thread)",
+                    turn.turn_number,
+                    session_id,
+                )
+
             # Build user message — send only the current turn delta.
             # History retention across turns is the agent's responsibility
             # (via its checkpointer), not the runner's.
-            user_msg = HumanMessage(content=turn.content)
+            #
+            # The stable message id (plan §4.2) dedups the SAME logical turn
+            # re-sent across nodes within one invoke (e.g. L2's
+            # retrieve_node → model_node chain re-passing state) AND lets
+            # the L2 graph mark its injected SystemMessages with ids like
+            # f"{turn_number}_memory" without ever colliding with user ids.
+            user_msg = HumanMessage(
+                content=turn.content,
+                id=f"{turn.turn_number}_user",
+            )
 
             # Invoke the agent graph
             t_start = time.perf_counter()
+            # Zeroed until the graph returns — error turns keep zeroed
+            # telemetry (the exception path never reaches the assignment).
+            l2_tel = _read_l2_telemetry({})
+            sliced_usage = _slice_token_usage({})
             try:
                 result = agent_graph.invoke(
                     {"messages": [user_msg]},
@@ -324,6 +454,11 @@ class BenchmarkRunner:
                 )
                 t_end = time.perf_counter()
                 latency_ms = (t_end - t_start) * 1000.0
+
+                # Plan §4.2: guarded read of L2 telemetry channels. L0/L1
+                # graphs never write them, so the block stays zeroed and the
+                # same runner code serves every ablation level.
+                l2_tel = _read_l2_telemetry(result)
 
                 # Extract the agent's response (last AI message)
                 response_messages = result.get("messages", [])
@@ -347,6 +482,10 @@ class BenchmarkRunner:
                             )
                         break
 
+                # Plan §4.2 slicing: bucket raw usage into accounting channels
+                # (prompt/completion/total/reasoning/visible/cached).
+                sliced_usage = _slice_token_usage(token_usage)
+
             except Exception as exc:
                 t_end = time.perf_counter()
                 latency_ms = (t_end - t_start) * 1000.0
@@ -364,6 +503,8 @@ class BenchmarkRunner:
                         status="error",
                         error=f"{type(exc).__name__}: {exc}",
                         latency_ms=latency_ms,
+                        session_id=session_id,
+                        role=turn.role,
                     )
                 )
                 continue
@@ -399,6 +540,10 @@ class BenchmarkRunner:
                         ),
                         latency_ms=latency_ms,
                         token_usage=token_usage,
+                        session_id=session_id,
+                        role=turn.role,
+                        **sliced_usage,
+                        **l2_tel,
                     )
                 )
                 continue
@@ -438,6 +583,10 @@ class BenchmarkRunner:
                         ),
                         latency_ms=latency_ms,
                         token_usage=token_usage,
+                        session_id=session_id,
+                        role=turn.role,
+                        **sliced_usage,
+                        **l2_tel,
                     )
                 )
                 continue
@@ -459,6 +608,10 @@ class BenchmarkRunner:
                 assertion_details=assertion_details,
                 latency_ms=latency_ms,
                 token_usage=token_usage,
+                session_id=session_id,
+                role=turn.role,
+                **sliced_usage,
+                **l2_tel,
             )
             turn_results.append(turn_result)
 
@@ -496,6 +649,60 @@ class BenchmarkRunner:
             completion_tokens += c_tok
             total_tokens += t_tok
 
+        # ── Plan §4.3 aggregation ──────────────────────────────────────────
+        # Token-cost slices (reasoning/visible/cached) follow the same ok-turn
+        # policy as the scientific metrics above: an errored turn's partial
+        # billing must not contaminate cost figures. L2 telemetry channels
+        # (retrieved context, embedding tokens, retrieve/append/embedding
+        # latency) instead sum over ALL turns — they are infrastructure
+        # costs that were actually incurred regardless of whether the
+        # response turned out scorable.
+        reasoning_tokens = sum(tr.reasoning_tokens for tr in ok_turns)
+        visible_output_tokens = sum(tr.visible_output_tokens for tr in ok_turns)
+        cached_prompt_tokens = sum(tr.cached_prompt_tokens for tr in ok_turns)
+        retrieved_context_tokens = sum(
+            tr.retrieved_context_tokens for tr in turn_results
+        )
+        embedding_tokens_total = sum(tr.embedding_tokens for tr in turn_results)
+        total_retrieval_latency = sum(tr.retrieval_latency_ms for tr in turn_results)
+        total_append_latency = sum(tr.append_latency_ms for tr in turn_results)
+        total_embedding_latency = sum(tr.embedding_latency_ms for tr in turn_results)
+        # ingestion_latency_ms: reserved for system_event document-chunk
+        # ingestion, deferred with document ingestion itself — kept at 0.0
+        # so the export column exists from day one.
+        ingestion_latency = 0.0
+
+        # Memory-backend identity (plan §4.3 reproducibility): L0/L1 callers
+        # attach no backend and keep the "none" default; L2+ callers pass an
+        # explicit identity dict (backend, embedding_model_id, top_k, ...).
+        backend_cfg = memory_backend_config or {}
+        backend_name = (
+            "none" if memory_backend is None else backend_cfg.get("backend", "unknown")
+        )
+
+        # Snapshot export happens HERE — after the last turn, before the
+        # summary is returned and long before any caller-side reset() —
+        # so the exported episodes always reflect this run's final state
+        # (plan §4.3). The recorded path is relative to the run folder
+        # ("memory/<run_id>"), matching the export layout.
+        memory_snapshot_path: str | None = None
+        if memory_backend is not None and snapshot_dir is not None:
+            snapshot_dir = Path(snapshot_dir)
+            try:
+                memory_backend.export_snapshot(
+                    snapshot_dir / run_id,
+                    run_metadata={
+                        "run_id": run_id,
+                        "scenario_id": scenario.id,
+                        "model_id": model_id,
+                        "prompt_id": prompt_id,
+                        "agent_level": agent_level,
+                    },
+                )
+                memory_snapshot_path = f"{snapshot_dir.name}/{run_id}"
+            except Exception as exc:  # noqa: BLE001 — export must not kill the run
+                logger.error("Memory snapshot export failed for %s: %s", run_id, exc)
+
         summary = BenchmarkRunSummary(
             run_id=run_id,
             scenario_id=scenario.id,
@@ -516,6 +723,24 @@ class BenchmarkRunner:
             completion_tokens=completion_tokens,
             turn_results=turn_results,
             timestamp=timestamp,
+            # ── Plan §4.3 memory configuration identity ──────────────────
+            memory_backend=backend_name,
+            embedding_model_id=backend_cfg.get("embedding_model_id"),
+            top_k=backend_cfg.get("top_k"),
+            chunk_size=backend_cfg.get("chunk_size"),
+            chunk_overlap=backend_cfg.get("chunk_overlap"),
+            memory_snapshot_path=memory_snapshot_path,
+            # ── Plan §4.3 aggregated token metrics ────────────────────────
+            reasoning_tokens=reasoning_tokens,
+            visible_output_tokens=visible_output_tokens,
+            cached_prompt_tokens=cached_prompt_tokens,
+            retrieved_context_tokens=retrieved_context_tokens,
+            embedding_tokens=embedding_tokens_total,
+            # ── Plan §4.3 aggregated latency metrics ──────────────────────
+            total_retrieval_latency_ms=total_retrieval_latency,
+            total_append_latency_ms=total_append_latency,
+            total_embedding_latency_ms=total_embedding_latency,
+            ingestion_latency_ms=ingestion_latency,
         )
 
         logger.info(
@@ -537,6 +762,8 @@ class BenchmarkRunner:
         prompt_ids: list[str] | None = None,
         model_ids: list[str] | None = None,
         export: bool = True,
+        memory_backend: Any = None,
+        memory_backend_config: dict[str, Any] | None = None,
     ) -> list[BenchmarkRunSummary]:
         """Execute the full Cartesian product: Scenarios × Prompts × Models.
 
@@ -550,6 +777,13 @@ class BenchmarkRunner:
                 when looping over multiple levels so one invocation writes a
                 single shared results directory (and back-to-back exports
                 can never collide on the same timestamp).
+            memory_backend: Optional ``EpisodicMemoryBackend`` (L2+) passed
+                through to every ``run_single`` call. The caller owns the
+                backend lifecycle: attach BEFORE this call and ``reset()``
+                (or recreate) it AFTER, per the isolation policy in plan
+                §4.3. ``None`` keeps L0/L1 behavior identical.
+            memory_backend_config: Optional identity dict (plan §4.3) for
+                run summaries and snapshot manifests.
 
         Returns:
             List of ``BenchmarkRunSummary`` objects for all executed tuples.
@@ -577,6 +811,27 @@ class BenchmarkRunner:
             total_runs,
         )
 
+        # Shared output directory for this invocation — created EAGERLY when a
+        # memory backend is attached so per-run memory snapshots
+        # (memory/<run_id>/) land in the same directory as the final results
+        # export, instead of in a directory created moments later with a
+        # different timestamp. Recorded on the instance; ``_export_results``
+        # consumes it (the CLI batches levels with export=False and writes a
+        # single shared export at the end of the invocation).
+        snapshot_dir: Path | None = None
+        if memory_backend is not None:
+            self._current_run_dir = self.output_dir / datetime.now().strftime(
+                "%Y%m%d_%H%M%S"
+            )
+            self._current_run_dir.mkdir(parents=True, exist_ok=True)
+            snapshot_dir = self._current_run_dir / "memory"
+            logger.info(
+                "Memory backend attached — shared run directory: %s",
+                self._current_run_dir,
+            )
+        else:
+            self._current_run_dir = None
+
         # Execute
         results: list[BenchmarkRunSummary] = []
         failed_tuples: list[str] = []
@@ -591,6 +846,9 @@ class BenchmarkRunner:
                     model_id=model_id,
                     agent_graph=agent_graph,
                     agent_level=agent_level,
+                    memory_backend=memory_backend,
+                    memory_backend_config=memory_backend_config,
+                    snapshot_dir=snapshot_dir,
                 )
                 results.append(summary)
             except Exception as exc:
@@ -625,16 +883,32 @@ class BenchmarkRunner:
 
     # ── Export Functions ──────────────────────────────────────────────────
 
-    def _export_results(self, results: list[BenchmarkRunSummary]) -> Path:
+    def _export_results(
+        self,
+        results: list[BenchmarkRunSummary],
+        run_dir: Path | None = None,
+    ) -> Path:
         """Export results to timestamped JSONL, CSV and Markdown files.
 
         Args:
             results: List of run summaries to export.
+            run_dir: Optional pre-created output directory — used when a
+                memory backend was attached so results land next to the
+                ``memory/`` snapshot tree. Defaults to the runner's shared
+                directory from the current invocation (``_current_run_dir``);
+                when that is also unset a fresh timestamped directory is
+                created (L0/L1 behavior, unchanged).
 
         Returns:
-            Path to the created output directory.
+            Path to the output directory.
         """
-        run_dir = self.output_dir / datetime.now().strftime("%Y%m%d_%H%M%S")
+        if run_dir is None:
+            run_dir = self._current_run_dir
+        if run_dir is None:
+            run_dir = self.output_dir / datetime.now().strftime("%Y%m%d_%H%M%S")
+        # Consume the shared directory so a subsequent invocation (e.g. the
+        # next benchmark sweep in the same process) always writes fresh.
+        self._current_run_dir = None
         run_dir.mkdir(parents=True, exist_ok=True)
 
         # ── JSON (indented, human-readable) ──────────────────────────
