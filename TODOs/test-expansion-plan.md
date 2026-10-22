@@ -149,7 +149,7 @@ Do not implement all stages at once. Wait for the user to explicitly request the
 ---
 
 ## Stage 5: Rule-Based & Document-Scale Belief Revision
-**Objective:** Move beyond atomic literal replacement (`belief_revision_01`, which is saturated at 100% across all tested models at L1 and kept as a basic sanity control) toward genuine Knowledge Representation & Reasoning (KRR) belief revision dynamics. These scenarios introduce **facts + rules**, **derived conclusions**, **defeasible exceptions**, and **large-document updates**, specifically targeting the boundary between L2 (VectorDB / `.md` persistent stores), L3 (reflective conflict resolution), and L4 (structured belief state).
+**Objective:** Move beyond atomic literal replacement (`belief_revision_01`, which is saturated at 100% across all tested models at L1 and kept as a basic sanity control) toward genuine Knowledge Representation & Reasoning (KRR) belief revision dynamics. These scenarios introduce **facts + rules**, **derived conclusions**, **backward contraction (Modus Tollens)**, **defeasible exceptions & reinstatement (DeLP)**, **Katsuno–Mendelzon revision vs. update**, **suppositional isolation (Ramsey Test)**, **non-prioritized revision**, and **large-document updates**, specifically targeting the boundary between L2 (VectorDB / `.md` persistent stores), L3 (reflective conflict resolution), and L4 (structured belief state).
 
 *   **5.1. Derived-Belief Invalidation (Facts + Rules / Modus Ponens Retraction)**
     *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_derived_belief_revision_01.yaml`
@@ -195,4 +195,92 @@ Do not implement all stages at once. Wait for the user to explicitly request the
     >     *   *Updated rule × untouched fact:* A query requiring an untouched entity from Section 2 evaluated against the revised rule from the Session B addendum.
     >     *   *Deprecated clause probe:* A query targeting the deleted section (must abstain and pass `must_not_contain` on the revoked value, plus optional `memory_assertions` on the backing store).
     >
-    > **Backend comparison target (VectorDB vs. `.md`):** Directly stress-tests chunk-level invalidation and re-embedding in VectorDB (where top-$k$ retrieval risks surfacing both the original chunk and the addendum chunk) against targeted in-place file editing (`str_replace` / section deletion) in the `.md` backend.
+    > **Backend comparison target (VectorDB vs. `.md`):** Directly stress-tests chunk-level invalidation and re-embedding in VectorDB (where top-$k$ retrieval risks surfacing both the original chunk and the addendum chunk) against targeted in-place file editing (`str_replace` / section deletion) in the `.md` backend.
+
+*   **5.4. Backward Contraction via Modus Tollens (Kernel Contraction / Contradicting a Derived Conclusion)**
+    *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_backward_modus_tollens_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** The logical converse of 5.1. When the user directly contradicts a derived conclusion ($\neg D_1$) while the underlying domain rule ($R: F_1 \to D_1$) holds higher epistemic entrenchment, the agent must apply *Modus Tollens* (Hansson's *Kernel Contraction*) to retract the base fact ($F_1$), rather than merely deleting $D_1$ and leaving $\{F_1, F_1 \to D_1, \neg D_1\}$ globally inconsistent.
+
+    > **⚠ Design rationale (recorded 2026-10-22):**
+    >
+    > **Spec structure (three sessions, cross-thread):**
+    > 1.  **Session A (Entrenched Rule + Base Fact + Derivation):** Establish an invariant compliance rule $R$ (*"Mandatory policy: every service hosted in the `eu-central` region is subject to strict GDPR auditing — no exceptions exist"*) and a base fact $F_1$ (*"Service `billing-api` is hosted in `eu-central`"*). Have the agent explicitly derive $D_1$ (*"`billing-api` is subject to GDPR auditing"*).
+    > 2.  **Session B (Contradiction of Derived Conclusion Only):** The user states $\neg D_1$ (*"Compliance just confirmed that `billing-api` is NOT subject to GDPR auditing"*), **without** mentioning regions or `eu-central`.
+    > 3.  **Session C (Two-Step Probe on Base Fact $F_1$):** Ask *"Is `billing-api` currently hosted in the `eu-central` region?"* (observational recall turn, followed by a commitment turn asserting `must_contain: "no"` / `must_not_contain` an affirmative `eu-central` placement).
+    >
+    > **Why this separates L3 from L4:** An L3 CRUD agent searches for chunks matching *"GDPR auditing for `billing-api`"* and updates/deletes $D_1$, leaving the base fact $F_1$ (*"hosted in `eu-central`"*) untouched in storage. When Session C asks about `eu-central`, L3 retrieves $F_1$ and answers *"Yes"*, violating global logical consistency. Only backward propagation over the minimal incision set $\{F_1, R\}$ (retracting $F_1$ because $R$ is entrenched) passes.
+
+*   **5.5. Defeater Retraction & Default Reinstatement (Non-Monotonic Recovery / DeLP Dynamics)**
+    *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_defeater_retraction_reinstatement_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** In Defeasible Logic Programming (DeLP) and Truth Maintenance Systems (TMS), when an exception (*defeater*) that overrode a default rule is subsequently retracted, the original default conclusion must **automatically reinstate itself** without requiring the user to re-state the base fact or the default policy.
+
+    > **⚠ Design rationale (recorded 2026-10-22):**
+    >
+    > **Spec structure (four sessions, extending 5.2):**
+    > 1.  **Session A (Default Rule + Base Fact):** *"External contractors have no weekend server access."* + *"Martin is an external contractor."* ($\vdash$ Martin denied weekend access).
+    > 2.  **Session B (Defeater Introduced):** *"Members of the On-Call Incident Response team have 24/7 server access regardless of contract type."* + *"Martin joined the On-Call Incident Response team."* ($\vdash$ Martin allowed weekend access).
+    > 3.  **Session C (Defeater Retracted Only):** *"Rotation update: Martin's shift ended and he has been removed from the On-Call Incident Response team."* (No mention of his contractor status or weekend policy).
+    > 4.  **Session D (Two-Step Reinstatement Probe):** Probe whether Martin has Sunday server access today. Must revert to **denied**.
+    >
+    > **What it exposes:** If an L3 agent resolved Session B by destructively overwriting Martin's access status (`Martin: denied` $\to$ `Martin: allowed`) or pruning the defeated contractor link, then removing the On-Call fact in Session C leaves Martin's status either stuck at `allowed` or unknown. Passing requires non-destructive maintenance of base facts and rules so the undefeated default warrant revives automatically.
+
+*   **5.6. Belief Revision ($K * \alpha$) vs. Belief Update ($K \diamond \alpha$) — Epistemic Error vs. World-State Evolution (Katsuno & Mendelzon)**
+    *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_revision_vs_update_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** Whether the agent distinguishes **Revision** (correcting a false belief about a static fact, where the old value was *never* true) from **Update** (recording a real transition in a dynamic world, where the old value *was* true at $t_1$ and is superseded at $t_2$).
+
+    > **⚠ Design rationale (recorded 2026-10-22):**
+    >
+    > **Spec structure (three sessions, paired entities):**
+    > 1.  **Session A (Initial State $t_1$):** Seed two facts: (a) *"Employee Sofia's badge tier is `Silver`"* and (b) *"Employee Lucas's hire city was registered as `Cordoba`."*
+    > 2.  **Session B (Paired Update vs. Revision):**
+    >     *   **Update ($K \diamond \alpha$, dynamic world change):** *"Sofia was promoted today; her badge tier has been upgraded from `Silver` to `Gold`."*
+    >     *   **Revision ($K * \alpha$, static epistemic correction):** *"Correction on Lucas's HR file: I misread the form earlier — Lucas was hired in `Rosario`, never in `Cordoba`. He has never lived or worked in `Cordoba`."*
+    > 3.  **Session C (Present + Historical Probes):**
+    >     *   *Present state probe:* Current badge tier for Sofia (`Gold`, not `Silver`) and hire city for Lucas (`Rosario`, not `Cordoba`).
+    >     *   *Historical / provenance probe:* (1) *"Which badge tier did Sofia hold before her promotion?"* (`must_contain: "Silver"` — destructive L3 `DELETE` fails this by erasing history); (2) *"Did Lucas ever work in Cordoba before Rosario?"* (commitment turn: `must_contain: "no"` — append-only L2 or naive temporal-log L3 risks treating `Cordoba` as a prior historical state rather than a retracted false belief).
+
+*   **5.7. Suppositional & Counterfactual Isolation (Ramsey Test Without Belief Pollution)**
+    *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_suppositional_isolation_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** Whether performing hypothetical/counterfactual reasoning (*"Suppose $\alpha$ were true, what would follow?"* — the Ramsey Test) leaves the committed belief state $K$ unpolluted after the hypothetical scope closes.
+
+    > **⚠ Design rationale (recorded 2026-10-22):**
+    >
+    > **Spec structure (three sessions):**
+    > 1.  **Session A (Committed Belief State $K$):** Establish production database engine (`PostgreSQL 16`) and replica count (`3 replicas`), plus domain rules on licensing costs.
+    > 2.  **Session B (Extended Counterfactual Simulation):** The user explicitly frames a what-if simulation: *"For capacity planning, let's run a hypothetical exercise: suppose we switched the production database to `Oracle 23c` with `8 replicas`..."* The agent calculates hypothetical costs across 2 turns, and the user concludes: *"Okay, that's way too expensive — we are NOT making any changes to our current setup."*
+    > 3.  **Session C (Two-Step Probe on Committed State):** Ask for the active production database engine and replica count today (`must_contain: "PostgreSQL"`, `"3"`; `must_not_contain: "Oracle"`, `"8"`).
+    >
+    > **What it exposes:** L2 RAG retrieves the dense Session B chunks discussing `Oracle 23c` and `8 replicas`; naive L3 fact-extractors frequently extract hypothetical propositions into the belief store as committed updates.
+
+*   **5.8. Non-Prioritized Revision & Epistemic Entrenchment (Shielded Contraction Against Uncertain or Inconsistent Inputs)**
+    *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_non_prioritized_revision_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** Breaks the "blind recency always wins" assumption (AGM Success Postulate $K * \alpha \vdash \alpha$) using Hansson's *Non-Prioritized Belief Revision* / Fermé & Hansson's *Shielded Contraction*. Tests whether an entrenched, high-credibility fact resists being overwritten by (a) a later low-confidence guess or (b) a self-contradictory update.
+
+    > **⚠ Design rationale (recorded 2026-10-22):**
+    >
+    > **Why this is required as a methodological control:** Every other revision test in the benchmark rewards preferring the highest `turn_number` / `session_id`. An agent using a trivial recency heuristic passes 100% of them without genuine epistemic evaluation.
+    >
+    > **Spec structure (three sessions):**
+    > 1.  **Session A (High-Entrenchment Verified Fact):** Establish an authoritative, verified parameter (*"Verified from the signed hardware manifest: the master vault port is `8443`"*).
+    > 2.  **Session B (Low-Epistemic-Authority Contradiction):** In casual conversation, the user remarks tentatively: *"Wait, I'm away from my desk and guessing off the top of my head — wasn't the master vault port `8080`? Don't quote me on that, I haven't checked the manifest."*
+    > 3.  **Session C (Two-Step Probe):** Ask for the verified master vault port (`must_contain: "8443"`, `must_not_contain: "8080"` on the commitment turn).
+
+*   **5.9. Oscillating Reinstatement ($A \to B \to A$) & Partial Set Contraction (Granular Minimal Change)**
+    *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_oscillating_and_set_revision_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** Two structural edge cases of AGM Minimal Change and iterated revision: (1) **Oscillating revision ($A \to B \to A$)**, where a belief reverts to a value that was explicitly deprecated in an intermediate session, and (2) **Partial set contraction/expansion**, where one element of a multi-valued relation is removed and another added without wiping the untouched elements.
+
+    > **⚠ Design rationale (recorded 2026-10-22):**
+    >
+    > **Spec structure (four sessions):**
+    > 1.  **Session A:** Primary gateway is `gw-north` ($A$). Authorized keyholders are `{Ana, Bruno, Clara}`.
+    > 2.  **Session B:** Explicit deprecation: *"`gw-north` is decommissioned; active gateway is now `gw-south`, not `gw-north`"* ($B$). Keyholder update: *"Revoke Bruno's keyholder access and add Diego"* (without repeating Ana or Clara).
+    > 3.  **Session C:** Rollback: *"We rolled back the gateway migration — `gw-north` is active again and `gw-south` is offline"* ($A$).
+    > 4.  **Session D (Commitment Probes):**
+    >     *   *Gateway probe:* Must output `gw-north` and not `gw-south` (tests whether Session B's explicit `"not gw-north"` chunk in L2 or tombstone in L3 blocks reinstatement of $A$).
+    >     *   *Keyholders set probe:* Must contain `Ana`, `Clara`, and `Diego`, and `must_not_contain: "Bruno"` (tests whether L3's slot update overwrote the whole list with just `Diego`, violating Minimal Change on `Ana` and `Clara`).

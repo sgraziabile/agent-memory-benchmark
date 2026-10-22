@@ -818,6 +818,7 @@ class TestResolveLevelIds:
     def test_number_maps_to_registry_key(self):
         assert resolve_level_ids("0") == ["level_0_reactive"]
         assert resolve_level_ids("1") == ["level_1_working_memory"]
+        assert resolve_level_ids("2") == ["level_2_episodic_rag"]
 
     def test_full_registry_name_still_works(self):
         assert resolve_level_ids("level_1_working_memory") == [
@@ -850,8 +851,10 @@ class TestResolveLevelIds:
         assert resolve_level_ids("all") == sorted(AGENT_REGISTRY)
 
     def test_unimplemented_level_raises_with_available_listed(self):
+        # Level 3 is now the first unimplemented level (2 was registered
+        # with the L2 episodic-RAG agent, TODOs/phase-2-l2-vector-implementation-plan.md M4).
         with pytest.raises(ValueError, match="not implemented"):
-            resolve_level_ids("2")
+            resolve_level_ids("3")
 
     def test_unknown_token_raises(self):
         with pytest.raises(ValueError, match="Available levels"):
