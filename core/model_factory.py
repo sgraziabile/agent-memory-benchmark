@@ -57,6 +57,14 @@ PROVIDER_MAP: dict[str, tuple[str, str]] = {
 NANOGPT_BASE_URL = "https://api.nano-gpt.com/api/v1"
 NANOGPT_API_KEY_ENV = "NANOGPT_API_KEY"
 
+# ── Ollama gateway configuration ─────────────────────────────────────────────
+# Local Ollama (https://ollama.com) serves embedding models such as
+# ``qwen3-embedding:0.6b`` on the machine itself — no API key is required.
+# The endpoint is configurable through OLLAMA_BASE_URL (see .env.example)
+# but defaults to the standard local daemon port.
+OLLAMA_BASE_URL_ENV = "OLLAMA_BASE_URL"
+OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434"
+
 
 # ── YAML registry loader ────────────────────────────────────────────────────
 
@@ -310,6 +318,10 @@ EMBEDDING_PROVIDER_MAP: dict[str, tuple[str, str]] = {
     # with NANOGPT_BASE_URL / NANOGPT_API_KEY (same policy as chat models).
     "nanogpt": ("langchain_openai", "OpenAIEmbeddings"),
     "openai": ("langchain_openai", "OpenAIEmbeddings"),
+    # Local Ollama embeddings (e.g. qwen3-embedding:0.6b) — the CPU-viable
+    # fallback for when the NanoGPT subscription cannot serve embeddings.
+    # Mirrors the chat-side "ollama" entry in PROVIDER_MAP.
+    "ollama": ("langchain_ollama", "OllamaEmbeddings"),
 }
 
 
@@ -413,6 +425,9 @@ def _build_embeddings(
     (timeout, max_retries, ...) overridable by explicit kwargs, NanoGPT
     gateway fail-fast on a missing API key. ``dims`` is validated BEFORE
     client construction so misconfiguration never surfaces mid-benchmark.
+    Local Ollama entries need no API key, and ``OllamaEmbeddings`` is lazy
+    (the server is only contacted at the first embed call), so a down
+    server is logged but does NOT fail construction.
 
     Raises:
         ValueError: If the ID is unknown, ``dims`` is invalid, or the
@@ -464,6 +479,47 @@ def _build_embeddings(
                     f"(environment variable: {NANOGPT_API_KEY_ENV})."
                 )
             embed_kwargs["api_key"] = api_key
+
+    # ── Ollama: local daemon, no API key (lazy client — see above) ─────
+    elif provider == "ollama":
+        base_url = os.environ.get(
+            OLLAMA_BASE_URL_ENV, OLLAMA_DEFAULT_BASE_URL
+        )
+        embed_kwargs.setdefault("base_url", base_url)
+
+        # OllamaEmbeddings does not accept OpenAI-style 'timeout' /
+        # 'max_retries' constructor kwargs: the YAML 'timeout' is routed
+        # into the underlying ollama.Client via sync/async_client_kwargs
+        # (the fields OllamaEmbeddings forwards to Client(host, **kwargs)),
+        # while 'max_retries' has no ollama-client equivalent and is
+        # dropped (the client performs no automatic retries).
+        timeout = embed_kwargs.pop("timeout", None)
+        max_retries = embed_kwargs.pop("max_retries", None)
+        if max_retries is not None:
+            logger.info(
+                "Ollama embeddings: dropping 'max_retries'=%s — the "
+                "ollama client does not support automatic retries.",
+                max_retries,
+            )
+        if timeout is not None:
+            embed_kwargs.setdefault("sync_client_kwargs", {}).setdefault(
+                "timeout", timeout
+            )
+            embed_kwargs.setdefault("async_client_kwargs", {}).setdefault(
+                "timeout", timeout
+            )
+
+        # No fail-fast here, unlike NanoGPT: OllamaEmbeddings construction
+        # is lazy and only contacts the server at the first embed call, so
+        # a down daemon (or unpulled model) surfaces as a clear runtime
+        # error on the first benchmark turn instead of blocking setup.
+        logger.info(
+            "Ollama embeddings will use base_url=%s (client is lazy; server "
+            "availability is only checked at the first embed call — run "
+            "`ollama pull %s` beforehand).",
+            base_url,
+            model_name,
+        )
 
     # ── Instantiate the embedding client ─────────────────────────────
     embeddings_class = _resolve_embeddings_class(provider)

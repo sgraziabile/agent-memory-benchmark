@@ -249,3 +249,72 @@ class TestCreateEmbeddings:
 
         with pytest.raises(ValueError, match="Unknown embedding provider"):
             _resolve_embeddings_class("bogus")
+
+
+# ── Ollama local embedding provider (offline fallback) ────────────────────────
+
+
+class TestOllamaEmbeddings:
+    """Verify the local Ollama embedding entry without a live server.
+
+    ``OllamaEmbeddings`` client construction is lazy — no request is made
+    until the first embed call — so these tests are fully offline even
+    without an Ollama daemon running.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _clean_env_and_cache(self, monkeypatch):
+        # Isolate from any developer-machine OLLAMA_BASE_URL and from the
+        # shared lru_cache so assertions see freshly built clients.
+        monkeypatch.delenv("OLLAMA_BASE_URL", raising=False)
+        clear_embeddings_cache()
+        yield
+        clear_embeddings_cache()
+
+    def test_registry_entry_declared(self):
+        # dims: 1024 is the real output dimensionality of
+        # Qwen3-Embedding-0.6B (verified against the live Ollama model).
+        registry = load_embedding_registry(MODELS_YAML)
+        entry = registry["qwen3-embedding-0.6b"]
+        assert entry["provider"] == "ollama"
+        assert entry["model_name"] == "qwen3-embedding:0.6b"
+        assert get_embedding_dims("qwen3-embedding-0.6b", MODELS_YAML) == 1024
+
+    def test_provider_map_resolves_ollama_to_ollama_embeddings(self):
+        from core.model_factory import _resolve_embeddings_class
+        from langchain_ollama import OllamaEmbeddings
+
+        assert EMBEDDING_PROVIDER_MAP["ollama"] == (
+            "langchain_ollama",
+            "OllamaEmbeddings",
+        )
+        assert _resolve_embeddings_class("ollama") is OllamaEmbeddings
+
+    def test_builds_client_with_default_base_url(self):
+        from langchain_ollama import OllamaEmbeddings
+
+        emb = create_embeddings("qwen3-embedding-0.6b", MODELS_YAML)
+        assert isinstance(emb, OllamaEmbeddings)
+        assert emb.model == "qwen3-embedding:0.6b"
+        assert emb.base_url == "http://localhost:11434"
+
+    def test_env_var_overrides_base_url(self, monkeypatch):
+        monkeypatch.setenv("OLLAMA_BASE_URL", "http://ollama-box:1234")
+        emb = create_embeddings("qwen3-embedding-0.6b", MODELS_YAML)
+        assert emb.base_url == "http://ollama-box:1234"
+
+    def test_yaml_timeout_routed_to_client_kwargs(self):
+        # OllamaEmbeddings has no 'timeout'/'max_retries' fields; the YAML
+        # 'timeout' must reach the underlying ollama.Client via the
+        # sync/async_client_kwargs passthroughs instead.
+        emb = create_embeddings("qwen3-embedding-0.6b", MODELS_YAML)
+        assert emb.sync_client_kwargs["timeout"] == 60.0
+        assert emb.async_client_kwargs["timeout"] == 60.0
+        assert "max_retries" not in type(emb).model_fields
+
+    def test_builds_without_any_api_key(self, monkeypatch):
+        # Unlike nanogpt, the local provider must never fail fast on a
+        # missing key — not even NANOGPT_API_KEY.
+        monkeypatch.delenv("NANOGPT_API_KEY", raising=False)
+        emb = create_embeddings("qwen3-embedding-0.6b", MODELS_YAML)
+        assert emb.model == "qwen3-embedding:0.6b"

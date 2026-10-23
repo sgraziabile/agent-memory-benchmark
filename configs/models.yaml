@@ -21,6 +21,7 @@
 #   openai    → OPENAI_API_KEY
 #   anthropic → ANTHROPIC_API_KEY
 #   nanogpt   → NANOGPT_API_KEY (OpenAI-compatible gateway — https://api.nano-gpt.com)
+#   ollama    → OLLAMA_BASE_URL (optional, defaults to http://localhost:11434)
 #
 # ── Subscription policy ─────────────────────────────────────────
 # ALL registered models are NanoGPT subscription models, verified
@@ -130,13 +131,19 @@ judge:
 # vector index requires the exact dimensionality at construction time —
 # never hardcode 1024 vs. 4096.
 #
-# Both models are served through NanoGPT's OpenAI-compatible
-# /api/v1/embeddings endpoint. API over local execution is deliberate: the
-# dev machine has no CUDA GPU, so local 8B embedding inference during
-# chunk ingestion would bottleneck on CPU and distort P3 latency metrics.
+# The API-served entries (qwen3-embedding-8b primary, bge backup) go
+# through NanoGPT's OpenAI-compatible /api/v1/embeddings endpoint. API over
+# local execution is deliberate for the 8B primary: the dev machine has no
+# CUDA GPU, so local 8B embedding inference during chunk ingestion would
+# bottleneck on CPU and distort P3 latency metrics. The 0.6B local Ollama
+# entry is the deliberate budget/latency trade-off: small enough to be
+# CPU-viable during ingestion, but its embedding latency is that of local
+# CPU inference, not the 8B API — keep qwen3-embedding-8b as the primary
+# for latency-sensitive sweeps and use the 0.6B model only when the
+# NanoGPT subscription cannot serve embeddings.
 #
-# ⚠ Verify subscription inclusion against the live catalog before every
-# sweep (same policy as chat models):
+# ⚠ Verify subscription inclusion (NanoGPT-served entries only) against
+# the live catalog before every sweep (same policy as chat models):
 #   GET https://api.nano-gpt.com/api/v1/models?detailed=true
 # ─────────────────────────────────────────────────────────────────
 embeddings:
@@ -156,3 +163,10 @@ embeddings:
     max_retries: 2
     description: "BAAI bge-large-en-v1.5 — backup/comparison embedding model (1024 dims, 512-token context; subscription availability must be verified pre-sweep)"
 
+  qwen3-embedding-0.6b:
+    provider: ollama
+    model_name: qwen3-embedding:0.6b
+    dims: 1024
+    timeout: 60.0
+    max_retries: 2
+    description: "Qwen3-Embedding-0.6B — local Ollama embedding model (1024 dims; CPU-viable fallback for when the NanoGPT subscription cannot serve embeddings; pull with `ollama pull qwen3-embedding:0.6b`)"
