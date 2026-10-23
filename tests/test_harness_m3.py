@@ -49,12 +49,18 @@ class StubBackend:
     def __init__(self, fail: bool = False):
         self.fail = fail
         self.export_calls: list[tuple[object, dict]] = []
+        self.reset_calls = 0
 
     def export_snapshot(self, dest_dir, run_metadata):
         if self.fail:
             raise RuntimeError("simulated export failure")
         self.export_calls.append((dest_dir, run_metadata))
         return dest_dir
+
+    def reset(self):
+        # Milestone 5: run_matrix resets the backend after every tuple for
+        # isolation — the double records the calls so tests can assert them.
+        self.reset_calls += 1
 
 
 def make_turn(n, content, session_id="default", role="user"):

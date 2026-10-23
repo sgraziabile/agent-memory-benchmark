@@ -21,6 +21,12 @@ class BaseBenchmarkAgent(ABC):
     Subclasses must implement :meth:`build_graph` and :attr:`level`.
     """
 
+    #: Whether this level consumes an ``EpisodicMemoryBackend`` (L2+). The
+    #: CLI constructs the backend selected via ``--backend`` — and therefore
+    #: needs an embedding API key — ONLY for levels that require one; every
+    #: other level stays fully backward compatible (no backend, no keys).
+    requires_memory_backend: bool = False
+
     @abstractmethod
     def build_graph(self, tools: list[Any] | None = None) -> Any:
         """Build and compile the LangGraph ``StateGraph``.

@@ -198,6 +198,27 @@ class BenchmarkRunner:
         #: timestamped directory at export time.
         self._current_run_dir: Path | None = None
 
+    def ensure_shared_run_dir(self) -> Path:
+        """Create (once per invocation) the shared output directory.
+
+        Eagerly created when a memory backend is attached so per-run
+        ``memory/<run_id>/`` snapshot exports land next to the final
+        results export (plan §4.3) instead of in a directory created
+        moments later with a different timestamp. Idempotent: the first
+        caller wins and later levels of the same CLI invocation (e.g.
+        ``--level 2,0``) reuse the same directory; ``_export_results``
+        consumes (clears) it at export time.
+
+        Returns:
+            The shared run directory for this invocation.
+        """
+        if self._current_run_dir is None:
+            self._current_run_dir = self.output_dir / datetime.now().strftime(
+                "%Y%m%d_%H%M%S"
+            )
+            self._current_run_dir.mkdir(parents=True, exist_ok=True)
+        return self._current_run_dir
+
     # ── Loaders ──────────────────────────────────────────────────────────
 
     def load_scenarios(
@@ -343,7 +364,9 @@ class BenchmarkRunner:
             agent_graph: Compiled LangGraph ``CompiledStateGraph``.
             agent_level: Agent persistence level string.
             memory_backend: Optional ``EpisodicMemoryBackend`` (L2+). When
-                        attached, its snapshot is exported under
+                        attached it is injected into
+                        ``config["configurable"]["memory_backend"]`` for the
+                        graph to consume, its snapshot is exported under
                         ``snapshot_dir/<run_id>/`` at the end of the run —
                         BEFORE any caller-side ``reset()`` (plan §4.3) — and
                         the summary records backend identity. ``None`` for
@@ -394,6 +417,11 @@ class BenchmarkRunner:
             "default",
         )
 
+        # Memory-backend identity (plan §4.3 reproducibility): L0/L1 callers
+        # attach no backend and keep the "none" default; L2+ callers pass an
+        # explicit identity dict (backend, embedding_model_id, top_k, ...).
+        backend_cfg = memory_backend_config or {}
+
         config = {
             "configurable": {
                 "model_id": model_id,
@@ -405,6 +433,17 @@ class BenchmarkRunner:
                 "session_id": initial_session,
             }
         }
+
+        # Backend wiring (Milestone 5, plan §4.3): the L2 graph reads the
+        # backend instance and the retrieval cut-off from ``configurable``
+        # (Zero Hardcoding — nothing is bound at graph build time). Injected
+        # ONLY when a backend is attached, so L0/L1 keeps the exact pre-L2
+        # configurable and never sees these keys.
+        if memory_backend is not None:
+            config["configurable"]["memory_backend"] = memory_backend
+            configured_top_k = backend_cfg.get("top_k")
+            if configured_top_k is not None:
+                config["configurable"]["top_k"] = configured_top_k
 
         for turn in scenario.turns:
             if turn.role == "system_event":
@@ -672,10 +711,7 @@ class BenchmarkRunner:
         # so the export column exists from day one.
         ingestion_latency = 0.0
 
-        # Memory-backend identity (plan §4.3 reproducibility): L0/L1 callers
-        # attach no backend and keep the "none" default; L2+ callers pass an
-        # explicit identity dict (backend, embedding_model_id, top_k, ...).
-        backend_cfg = memory_backend_config or {}
+        # backend_cfg was already resolved at config-build time (above).
         backend_name = (
             "none" if memory_backend is None else backend_cfg.get("backend", "unknown")
         )
@@ -778,10 +814,12 @@ class BenchmarkRunner:
                 single shared results directory (and back-to-back exports
                 can never collide on the same timestamp).
             memory_backend: Optional ``EpisodicMemoryBackend`` (L2+) passed
-                through to every ``run_single`` call. The caller owns the
-                backend lifecycle: attach BEFORE this call and ``reset()``
-                (or recreate) it AFTER, per the isolation policy in plan
-                §4.3. ``None`` keeps L0/L1 behavior identical.
+                through to every ``run_single`` call and **reset after each
+                tuple** for isolation (plan §4.3). Ordering is guaranteed:
+                ``run_single`` exports the tuple's snapshot internally,
+                before returning, so on-disk artifacts always reflect the
+                run's final state and are never affected by the reset.
+                ``None`` keeps L0/L1 behavior identical.
             memory_backend_config: Optional identity dict (plan §4.3) for
                 run summaries and snapshot manifests.
 
@@ -820,17 +858,15 @@ class BenchmarkRunner:
         # single shared export at the end of the invocation).
         snapshot_dir: Path | None = None
         if memory_backend is not None:
-            self._current_run_dir = self.output_dir / datetime.now().strftime(
-                "%Y%m%d_%H%M%S"
-            )
-            self._current_run_dir.mkdir(parents=True, exist_ok=True)
-            snapshot_dir = self._current_run_dir / "memory"
+            snapshot_dir = self.ensure_shared_run_dir() / "memory"
             logger.info(
                 "Memory backend attached — shared run directory: %s",
                 self._current_run_dir,
             )
-        else:
-            self._current_run_dir = None
+        # No backend attached: leave any existing shared directory intact.
+        # The CLI batches levels into ONE results directory per invocation,
+        # so a backend-less pass (e.g. L0 after L2 in --level 2,0) must not
+        # clobber the directory that holds L2's memory snapshots.
 
         # Execute
         results: list[BenchmarkRunSummary] = []
@@ -863,6 +899,17 @@ class BenchmarkRunner:
                     model_id,
                     exc,
                 )
+            finally:
+                # Tuple isolation (plan §4.3): reset the backend after EVERY
+                # tuple — even failed ones — so the next run starts from a
+                # clean store. Ordering is guaranteed: run_single exported
+                # this tuple's snapshot internally BEFORE returning, so the
+                # on-disk artifacts keep the run's final state while the
+                # live store is recycled. A reset failure propagates loudly
+                # — scoring the next tuple against contaminated memory
+                # would silently invalidate the whole matrix.
+                if memory_backend is not None:
+                    memory_backend.reset()
 
         # Failed tuples must never vanish silently — report them loudly so
         # the exported matrix size can be reconciled against the plan.
@@ -931,6 +978,10 @@ class BenchmarkRunner:
             "model_id",
             "prompt_id",
             "agent_level",
+            # ── Plan §4.3 / Milestone 5: merge identity — L2-vector vs a
+            # future L2-markdown run must never overwrite each other.
+            "memory_backend",
+            "embedding_model_id",
             "total_turns",
             "total_assertions",
             "passed_assertions",

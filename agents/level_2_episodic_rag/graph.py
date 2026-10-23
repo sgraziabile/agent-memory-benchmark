@@ -339,6 +339,11 @@ class Level2EpisodicRAGAgent(BaseBenchmarkAgent):
     them (tools remain L1's extension point).
     """
 
+    #: L2 consumes an ``EpisodicMemoryBackend`` injected at runtime through
+    #: ``config["configurable"]["memory_backend"]`` — the CLI constructs the
+    #: backend chosen via ``--backend`` for levels that require one.
+    requires_memory_backend = True
+
     @property
     def level(self) -> str:
         return "level_2_episodic_rag"

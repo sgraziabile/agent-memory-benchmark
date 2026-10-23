@@ -37,6 +37,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from agents import AGENT_REGISTRY, resolve_level_ids
+from agents.level_2_episodic_rag.backends.vector import VectorMemoryBackend
+from agents.level_2_episodic_rag.graph import DEFAULT_TOP_K
+from core.model_factory import create_embeddings, get_embedding_dims
 from core.runner import BenchmarkRunner
 
 
@@ -49,12 +52,49 @@ def setup_logging(verbose: bool = False) -> None:
     )
 
 
-def main() -> int:
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
-    if hasattr(sys.stderr, "reconfigure"):
-        sys.stderr.reconfigure(encoding="utf-8")
+def _resolve_backend_choice(raw: str) -> str:
+    """Validate the ``--backend`` argument; return the single backend name.
 
+    Comma-separated values (e.g. ``vector,markdown``) are reserved for a
+    future multi-backend milestone — they are parsed here and rejected
+    loudly so the flag's syntax stays stable when that lands.
+
+    Raises:
+        ValueError: on empty input, multiple backends, or an unknown name.
+    """
+    backends = [b.strip() for b in raw.split(",") if b.strip()]
+    if not backends:
+        raise ValueError("No memory backend specified — use --backend vector.")
+    if len(backends) > 1:
+        raise ValueError(
+            f"Multi-backend runs ({raw!r}) are not supported yet — run one "
+            "backend per invocation."
+        )
+    if backends[0] != "vector":
+        raise ValueError(
+            f"Memory backend {backends[0]!r} is not implemented yet. "
+            "Available backends: vector"
+        )
+    return backends[0]
+
+
+def _build_memory_backend(
+    backend_name: str, embedding_model_id: str
+) -> VectorMemoryBackend:
+    """Construct the requested ``EpisodicMemoryBackend`` (L2+ levels only).
+
+    ``vector`` → :class:`VectorMemoryBackend` backed by the registry
+    embedding client (:func:`create_embeddings`) with its declared
+    dimensionality (:func:`get_embedding_dims`) so the ``InMemoryStore``
+    index is never built with a hardcoded vector size.
+    """
+    embeddings = create_embeddings(embedding_model_id)
+    dims = get_embedding_dims(embedding_model_id)
+    return VectorMemoryBackend(embeddings, dims, embedding_id=embedding_model_id)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser (extracted for testability)."""
     parser = argparse.ArgumentParser(
         description="agent-memory-benchmark: Experimental harness runner",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -88,6 +128,19 @@ def main() -> int:
         help="Agent level(s): number (0-4), full registry name, 'all', or comma-separated list",
     )
     parser.add_argument(
+        "--backend",
+        "-b",
+        type=str,
+        default="vector",
+        help="Memory backend for levels that require one (L2+): 'vector' (default). Comma-separated lists are reserved for future multi-backend runs",
+    )
+    parser.add_argument(
+        "--embedding-model",
+        type=str,
+        default="qwen3-embedding-8b",
+        help="Embedding model ID from the 'embeddings:' section of configs/models.yaml (vector backend only)",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",
@@ -108,8 +161,16 @@ def main() -> int:
         action="store_true",
         help="List all available system prompts and exit",
     )
+    return parser
 
-    args = parser.parse_args()
+
+def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
+
+    args = build_parser().parse_args()
     setup_logging(args.verbose)
 
     runner = BenchmarkRunner()
@@ -139,6 +200,15 @@ def main() -> int:
     # ── Level resolution ('0', '1', '0,1', 'all', or full names) ──────
     try:
         level_ids = resolve_level_ids(args.level)
+    except ValueError as exc:
+        print(f"Error: {exc}")
+        return 1
+
+    # ── Memory backend resolution (validated once, before any run) ──
+    # Only levels with requires_memory_backend=True actually construct one;
+    # L0/L1 never need an embedding API key (full backward compatibility).
+    try:
+        backend_name = _resolve_backend_choice(args.backend)
     except ValueError as exc:
         print(f"Error: {exc}")
         return 1
@@ -187,6 +257,11 @@ def main() -> int:
     print(f"  Model:    {args.model}")
     print(f"  Prompt:   {args.prompt}")
     print(f"  Scenario: {args.scenario}")
+    if any(
+        getattr(AGENT_REGISTRY[lid], "requires_memory_backend", False)
+        for lid in level_ids
+    ):
+        print(f"  Backend:  {backend_name} (embedding model: {args.embedding_model})")
     print("=" * 60 + "\n")
 
     # ── Execute one pass per level ────────────────────────────────────
@@ -201,7 +276,46 @@ def main() -> int:
         agent = AGENT_REGISTRY[level_id]()
         graph = agent.build_graph()
 
+        # ── Memory backend lifecycle (plan §4.3, Milestone 5) ─────────
+        # Constructed ONLY for levels that require one, so L0/L1 never
+        # touches the embedding API (backward compatible, no keys needed).
+        # The backend + identity dict flow into run_matrix / run_single,
+        # which inject them via config["configurable"] for the graph,
+        # export the snapshot before returning, and reset after each
+        # tuple for isolation.
+        memory_backend = None
+        memory_backend_config: dict | None = None
+        if getattr(agent, "requires_memory_backend", False):
+            try:
+                memory_backend = _build_memory_backend(
+                    backend_name, args.embedding_model
+                )
+            except Exception as exc:
+                print(
+                    f"Error: Could not construct {backend_name!r} memory "
+                    f"backend with embedding model {args.embedding_model!r}: {exc}"
+                )
+                return 1
+            # top_k defaults to the L2 graph's DEFAULT_TOP_K so the summary
+            # identity records the retrieval cut-off actually in effect.
+            memory_backend_config = {
+                "backend": backend_name,
+                "embedding_model_id": args.embedding_model,
+                "top_k": DEFAULT_TOP_K,
+            }
+            print(
+                f"  Memory backend: {backend_name} "
+                f"(embedding: {args.embedding_model}, top_k={DEFAULT_TOP_K})"
+            )
+
         if inline_model:
+            # Inline path mirrors run_matrix: snapshots land under the
+            # shared run dir's memory/ tree, and the backend is reset
+            # after every scenario (the snapshot was already exported
+            # inside run_single, before it returned).
+            snapshot_dir = None
+            if memory_backend is not None:
+                snapshot_dir = runner.ensure_shared_run_dir() / "memory"
             for sc in scenarios:
                 summary = runner.run_single(
                     scenario=sc,
@@ -210,7 +324,12 @@ def main() -> int:
                     model_id=args.model,
                     agent_graph=graph,
                     agent_level=agent.level,
+                    memory_backend=memory_backend,
+                    memory_backend_config=memory_backend_config,
+                    snapshot_dir=snapshot_dir,
                 )
+                if memory_backend is not None:
+                    memory_backend.reset()
                 all_results.append(summary)
         else:
             all_results.extend(
@@ -221,6 +340,8 @@ def main() -> int:
                     prompt_ids=prompt_ids,
                     model_ids=model_ids,
                     export=False,
+                    memory_backend=memory_backend,
+                    memory_backend_config=memory_backend_config,
                 )
             )
 
