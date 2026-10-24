@@ -1,0 +1,125 @@
+# ─────────────────────────────────────────────────────────────────
+# test_cross_thread_01.yaml — Cross-Thread Memory Retrieval
+# ─────────────────────────────────────────────────────────────────
+# Stage 3.1 (TODOs/test-expansion-plan.md). Facts are seeded in
+# session s1 and probed in session s2. The runner gives each session
+# its own LangGraph thread_id, so checkpointer memory (L1) cannot
+# cross the boundary. Only a cross-thread store (L2 BaseStore /
+# VectorDB / .md) can answer. L2 capability gate.
+# Assertions live ONLY on s2 probe turns, so amnesic agents score 0%.
+# ─────────────────────────────────────────────────────────────────
+
+id: cross_thread_01
+name: "Cross-Thread Memory Retrieval"
+description: >
+  In session s1 the user briefs the assistant on a data-center migration
+  (Project Kestrel): a change-ticket ID, a vendor contact and her city, and
+  the migration's target data center (with the source facility as a decoy).
+  Each fact sits mid-thread between distractors. Session s2 is a new thread
+  that probes each fact separately. L0 and L1 must fail (no cross-thread
+  memory); L2 must retrieve from the s1 episodes.
+category: cross_thread
+metadata:
+  difficulty: moderate
+  sessions: ["s1", "s2"]
+  seeded_facts: 4
+  distractor_turns: 4
+  expected_level_0_behavior: "Fails (0%). No memory at all; safe decline on every probe."
+  expected_level_1_behavior: "Fails (0%). s2 opens a fresh checkpointer thread; safe decline."
+  expected_level_2_behavior: "Passes (100%). s2 probes retrieve s1 chat episodes via the episodic store."
+  probe_retrieval_types:
+    turn_9: "partial_paraphrase (project name via 'migration project I'm leading')"
+    turn_10: "lexical_anchor (exact ID OPS-58213; 'change ticket' + 'staging cluster')"
+    turn_11: "partial_paraphrase ('contact person' / 'work from' vs 'contact' / 'works out of')"
+    turn_12: "lexical_anchor + directional decoy (Rosario target vs Buenos Aires source)"
+  target_research_question: "P1"
+
+turns:
+  # ── Session s1: seeding ─────────────────────────────────────────
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "Hi! I'm going to use you as my assistant for a data-center migration I'm leading. It's called Project Kestrel. Today I just want to get some background down."
+    assertions: []
+
+  - turn_number: 2
+    session_id: s1
+    role: user
+    content: "Before we start: in two sentences, what is a blue-green deployment?"
+    assertions: []
+
+  - turn_number: 3
+    session_id: s1
+    role: user
+    content: "For the record, the change ticket for the Kestrel staging cluster is OPS-58213. Every request to the infra team has to quote it."
+    assertions: []
+
+  - turn_number: 4
+    session_id: s1
+    role: user
+    content: "Quick one: in two sentences, what's the difference between RAID 1 and RAID 5?"
+    assertions: []
+
+  - turn_number: 5
+    session_id: s1
+    role: user
+    content: "Our contact at the hardware vendor, Nordlys Systems, is Ingrid Solberg. She works out of their Oslo office."
+    assertions: []
+
+  - turn_number: 6
+    session_id: s1
+    role: user
+    content: "Can you suggest three short agenda items for a migration kickoff meeting?"
+    assertions: []
+
+  - turn_number: 7
+    session_id: s1
+    role: user
+    content: "We're moving all Kestrel workloads out of the old Buenos Aires facility and into the new data center in Rosario."
+    assertions: []
+
+  - turn_number: 8
+    session_id: s1
+    role: user
+    content: "Great, that's everything for today. Thanks!"
+    assertions: []
+
+  # ── Session s2: new thread, probes only ─────────────────────────
+  - turn_number: 9
+    session_id: s2
+    role: user
+    content: "Hi, I'm back for a new working session. Remind me: what's the name of the migration project I'm leading?"
+    assertions:
+      - type: must_contain
+        value: "Kestrel"
+        case_sensitive: false
+
+  - turn_number: 10
+    session_id: s2
+    role: user
+    content: "I need to file a request with the infra team. What's the change ticket number for the Kestrel staging cluster?"
+    assertions:
+      - type: must_contain
+        value: "OPS-58213"
+        case_sensitive: false
+
+  - turn_number: 11
+    session_id: s2
+    role: user
+    content: "Who's our contact person at the hardware vendor, and which city does she work from?"
+    assertions:
+      - type: must_contain
+        value: "Solberg"
+        case_sensitive: false
+      - type: must_contain
+        value: "Oslo"
+        case_sensitive: false
+
+  - turn_number: 12
+    session_id: s2
+    role: user
+    content: "And which city is the data center we're moving our workloads into?"
+    assertions:
+      - type: must_contain
+        value: "Rosario"
+        case_sensitive: false

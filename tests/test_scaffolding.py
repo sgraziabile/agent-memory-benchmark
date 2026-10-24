@@ -758,6 +758,259 @@ class TestScenarioLoading:
         assert "qwen3.6-27b" in model_ids
 
 
+# ── Stage 3 Scenario Invariants (cross-session & deep reasoning) ──────────────
+
+import re
+from datetime import date, timedelta
+
+try:
+    from scripts.organize_datasets import scenario_id_from_filename
+except ImportError:  # scripts/ not importable — apply the same 2-line rule inline
+    def scenario_id_from_filename(filename: str) -> str | None:
+        if not (filename.startswith("test_") and filename.endswith(".yaml")):
+            return None
+        return filename[len("test_") : -len(".yaml")]
+
+
+STAGE3_IDS = [
+    "cross_thread_01",
+    "3hop_temporal_01",
+    "cross_thread_derived_01",
+    "in_context_derivation_01",
+]
+
+# Nested layout: <theme>/<category>/ (the plan's flat paths are outdated).
+STAGE3_PATHS = {
+    "cross_thread_01": (
+        "datasets/conversations/retention_persistence/cross_thread/"
+        "test_cross_thread_01.yaml"
+    ),
+    "3hop_temporal_01": (
+        "datasets/conversations/compositional_reasoning/temporal_multi_hop/"
+        "test_3hop_temporal_01.yaml"
+    ),
+    "cross_thread_derived_01": (
+        "datasets/conversations/compositional_reasoning/cross_thread_derived/"
+        "test_cross_thread_derived_01.yaml"
+    ),
+    "in_context_derivation_01": (
+        "datasets/conversations/compositional_reasoning/in_context_derivation/"
+        "test_in_context_derivation_01.yaml"
+    ),
+}
+
+# "Month D, YYYY" — used for the paired-control date parity check.
+_MONTH_DAY_YEAR_RE = re.compile(r"\b[A-Z][a-z]+ \d{1,2}, \d{4}\b")
+
+# Marker that starts the probe question inside the control's single prompt.
+_CONTROL_PROBE_MARKER = "Based strictly on this log:"
+
+
+def _extract_month_day_dates(text: str) -> set[str]:
+    return set(_MONTH_DAY_YEAR_RE.findall(text))
+
+
+@pytest.fixture(scope="class")
+def stage3():
+    """All four Stage 3 scenarios, keyed by id (loaded once per test class)."""
+    runner = BenchmarkRunner()
+    scenarios = runner.load_scenarios(filter_ids=STAGE3_IDS)
+    return {s.id: s for s in scenarios}
+
+
+class TestStage3Scenarios:
+    """Invariants for the Stage 3 scenarios (spec: TODOs/specs/stage3-test-specs.md).
+
+    The loader silently skips invalid YAML with only a log warning, so every
+    test asserts presence by ID rather than by count. Everything here is
+    fully offline: no API keys, no model calls.
+    """
+
+    REPO_ROOT = Path(__file__).resolve().parent.parent
+
+    def _turn(self, scenario, turn_number):
+        return next(t for t in scenario.turns if t.turn_number == turn_number)
+
+    # ── Loading & structure ────────────────────────────────────────
+
+    def test_all_four_ids_load(self, stage3):
+        for sid in STAGE3_IDS:
+            assert sid in stage3, (
+                f"scenario {sid!r} did not load — check for a silent "
+                f"'Skipping invalid scenario' warning"
+            )
+
+    def test_id_matches_filename(self, stage3):
+        for sid, rel_path in STAGE3_PATHS.items():
+            path = self.REPO_ROOT / rel_path
+            assert path.is_file(), f"{rel_path} is missing"
+            assert scenario_id_from_filename(path.name) == sid, (
+                f"id {sid!r} must equal scenario_id_from_filename({path.name!r})"
+            )
+            assert stage3[sid].id == sid
+
+    def test_turn_numbers_global_and_sequential(self, stage3):
+        for sid in STAGE3_IDS:
+            numbers = [t.turn_number for t in stage3[sid].turns]
+            assert numbers == list(range(1, len(numbers) + 1)), (
+                f"{sid}: turn_number must be global 1..N, never reset per session"
+            )
+
+    def test_session_sets(self, stage3):
+        sessions = {
+            sid: {t.session_id for t in stage3[sid].turns} for sid in STAGE3_IDS
+        }
+        assert sessions["cross_thread_01"] == {"s1", "s2"}
+        assert sessions["cross_thread_derived_01"] == {"s1", "s2", "s3"}
+        assert sessions["3hop_temporal_01"] == {"default"}
+        assert sessions["in_context_derivation_01"] == {"default"}
+
+    # ── Assertion policy (spec: probes only, must_contain only) ─────
+
+    def test_cross_thread_01_assertion_policy(self, stage3):
+        by_turn = {
+            t.turn_number: t.assertions for t in stage3["cross_thread_01"].turns
+        }
+        for n in range(1, 9):  # s1 turns carry nothing
+            assert by_turn[n] == [], f"turn {n} must have no assertions"
+        for n in range(9, 13):  # s2 probes: must_contain only
+            for rule in by_turn[n]:
+                assert rule.type == "must_contain", f"turn {n}: must_contain only"
+        assert sum(len(rules) for rules in by_turn.values()) == 5
+
+    def test_3hop_temporal_01_assertion_policy(self, stage3):
+        sc = stage3["3hop_temporal_01"]
+        probed = {t.turn_number: t.assertions for t in sc.turns if t.assertions}
+        assert set(probed) == {9}
+        assert len(probed[9]) == 1
+        assert probed[9][0].type == "must_contain"
+        assert probed[9][0].value == "Montevideo"
+
+    def test_cross_thread_derived_01_assertion_policy(self, stage3):
+        by_turn = {
+            t.turn_number: t.assertions
+            for t in stage3["cross_thread_derived_01"].turns
+        }
+        assert len(by_turn[11]) == 1
+        assert by_turn[11][0].type == "must_contain"
+        assert by_turn[11][0].value == "April 29"
+        for n in (8, 9):  # leakage guards
+            assert len(by_turn[n]) == 1
+            assert by_turn[n][0].type == "must_not_contain"
+            assert by_turn[n][0].value == "April 29"
+        for n, rules in by_turn.items():
+            if n not in (8, 9, 11):
+                assert rules == [], f"turn {n} must have no assertions"
+        assert sum(len(rules) for rules in by_turn.values()) == 3
+
+    def test_in_context_derivation_01_assertion_policy(self, stage3):
+        sc = stage3["in_context_derivation_01"]
+        probed = [t for t in sc.turns if t.assertions]
+        assert len(probed) == 1
+        assert len(probed[0].assertions) == 1
+        rule = probed[0].assertions[0]
+        assert rule.type == "must_contain"
+        assert rule.value == "April 29"
+
+    def test_must_not_contain_only_in_3_3_guards(self, stage3):
+        hits = {
+            (sid, t.turn_number)
+            for sid in STAGE3_IDS
+            for t in stage3[sid].turns
+            for rule in t.assertions
+            if rule.type == "must_not_contain"
+        }
+        assert hits == {
+            ("cross_thread_derived_01", 8),
+            ("cross_thread_derived_01", 9),
+        }
+
+    # ── Answer-absence: no verbatim recall path ─────────────────────
+
+    def test_derived_answer_absent_from_turn_content(self, stage3):
+        # The answer "April 29" must be computable, never stated.
+        forbidden = ["april 29", "29 april", "2024-04-29", "apr 29"]
+        for sid in ("cross_thread_derived_01", "in_context_derivation_01"):
+            for t in stage3[sid].turns:
+                low = t.content.lower()
+                for needle in forbidden:
+                    assert needle not in low, (
+                        f"{sid} turn {t.turn_number} leaks {needle!r}"
+                    )
+
+    def test_cross_thread_01_probes_avoid_seeded_lexicon(self, stage3):
+        sc = stage3["cross_thread_01"]
+        for t in sc.turns:
+            if t.session_id == "s2":
+                for needle in ("OPS-58213", "Solberg", "Oslo", "Rosario"):
+                    assert needle not in t.content, (
+                        f"turn {t.turn_number} leaks {needle!r}"
+                    )
+        # The project-name probe (T9) may not echo the name it asks for.
+        assert "Kestrel" not in self._turn(sc, 9).content
+
+    def test_3hop_temporal_01_montevideo_stated_once(self, stage3):
+        sc = stage3["3hop_temporal_01"]
+        hits = [t.turn_number for t in sc.turns if "Montevideo" in t.content]
+        assert hits == [3], "Montevideo belongs in the hop-3 premise (T3) only"
+        assert "Montevideo" not in self._turn(sc, 9).content
+
+    # ── Paraphrase rule (plan rule c for 3.3) ───────────────────────
+
+    def test_cross_thread_derived_01_probe_paraphrases_premises(self, stage3):
+        probe = self._turn(stage3["cross_thread_derived_01"], 11)
+        low = probe.content.lower()
+        for needle in ("deliver", "signed", "signing", "contract", "100"):
+            assert needle not in low, f"probe echoes premise word {needle!r}"
+
+    # ── Paired-control parity (3.3 vs in_context_derivation_01) ─────
+
+    def test_paired_control_date_parity(self, stage3):
+        derived = stage3["cross_thread_derived_01"]
+        control = stage3["in_context_derivation_01"]
+
+        non_probe = " ".join(
+            t.content for t in derived.turns if t.turn_number != 11
+        )
+        control_content = control.turns[0].content
+        assert _CONTROL_PROBE_MARKER in control_content
+        premise_text = control_content.split(_CONTROL_PROBE_MARKER, 1)[0]
+
+        derived_dates = _extract_month_day_dates(non_probe)
+        control_dates = _extract_month_day_dates(premise_text)
+        assert derived_dates == control_dates, (
+            "premise/decoy dates must be identical in scenario and control"
+        )
+        assert "March 5, 2023" not in derived_dates
+        assert "March 5, 2023" not in control_dates
+
+    def test_paired_control_probe_identical(self, stage3):
+        probe = self._turn(stage3["cross_thread_derived_01"], 11)
+        control_content = stage3["in_context_derivation_01"].turns[0].content
+        norm_probe = " ".join(probe.content.split())
+        norm_control = " ".join(control_content.split())
+        assert norm_probe in norm_control, (
+            "the probe question must be identical in scenario and control"
+        )
+
+    # ── Ground truth: leap-year date arithmetic ─────────────────────
+
+    def test_leap_year_ground_truth(self, stage3):
+        d = date(2024, 1, 20) + timedelta(days=100)
+        assert d == date(2024, 4, 29)
+        # f-string formatting: "%-d" is not supported on Windows.
+        expected = f"{d:%B} {d.day}"
+        assert expected == "April 29"
+        for sid in ("cross_thread_derived_01", "in_context_derivation_01"):
+            must_contain_values = [
+                r.value
+                for t in stage3[sid].turns
+                for r in t.assertions
+                if r.type == "must_contain"
+            ]
+            assert must_contain_values == [expected], sid
+
+
 # ── Dependency Declaration Tests (audit §3.2) ─────────────────────────────────
 
 try:

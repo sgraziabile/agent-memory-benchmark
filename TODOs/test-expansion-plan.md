@@ -81,10 +81,16 @@ Do not implement all stages at once. Wait for the user to explicitly request the
     *   **Path:** `/datasets/conversations/test_cross_thread_01.yaml`
     *   **Theme:** `retention_persistence`
     *   **Evaluates:** The conversation is formally split across two different `thread_id`s. This is the ultimate test for L2 (BaseStore); L0 and L1 are guaranteed to fail this.
+
+    > **✅ Implemented (2026-10-24):** lives at the real nested path `datasets/conversations/retention_persistence/cross_thread/test_cross_thread_01.yaml` (id `cross_thread_01`), not the flat path listed above — the repo uses the `<theme>/<category>/` layout. Stage 3 assertion policy: assertions sit on probe turns only and are `must_contain` only (the sole exception being the two 3.3 leakage guards).
+
 *   **3.2. Deep Temporal Multi-Hop (3+ Hops)**
     *   **Path:** `/datasets/conversations/test_3hop_temporal_01.yaml`
     *   **Theme:** `compositional_reasoning`
     *   **Evaluates:** A chain of facts: A relates to B, B relates to C, C relates to D. The agent must deduce D from A across multiple conversational turns.
+
+    > **✅ Implemented (2026-10-24):** lives at the real nested path `datasets/conversations/compositional_reasoning/temporal_multi_hop/test_3hop_temporal_01.yaml` (id `3hop_temporal_01`), next to the existing 2-hop scenario — not the flat path listed above. Stage 3 assertion policy: assertions sit on probe turns only and are `must_contain` only (the sole exception being the two 3.3 leakage guards).
+
 *   **3.3. Cross-Thread Derived Answer** *(recorded 2026-10-14; motivated by the reasoning-token analysis in `notes/2026-10-14_l1_three_model_comparison.md`)*
     *   **Path:** `/datasets/conversations/test_cross_thread_derived_01.yaml`
     *   **Theme:** `compositional_reasoning`
@@ -131,6 +137,20 @@ Do not implement all stages at once. Wait for the user to explicitly request the
     > one thread per run — the limitation documented in the adversarial-forget analysis) and the L2
     > BaseStore agent. Implement **after 3.1**, which validates the multi-thread harness this test
     > inherits.
+
+    > **✅ Implemented (2026-10-24):** lives at the real nested path
+    > `datasets/conversations/compositional_reasoning/cross_thread_derived/test_cross_thread_derived_01.yaml`
+    > (id `cross_thread_derived_01`), with the paired control
+    > `datasets/conversations/compositional_reasoning/in_context_derivation/test_in_context_derivation_01.yaml`
+    > (id `in_context_derivation_01`). Calibration deviates from the illustrative "Mar 3 + 45": the
+    > derivation is Jan 20, 2024 + 100 calendar days (crossing Feb 29 of a leap year) → April 29, 2024,
+    > answered date-only, so the control is not trivially at ceiling. Turns 8–9 carry automatic
+    > `must_not_contain "April 29"` leakage guards (the only `must_not_contain` assertions in Stage 3).
+    > Headline metric rule: report T11 pass/fail; a failed T8/T9 guard marks the run as **leaked**
+    > (its T11 result is recall, not derivation, and is excluded from derivation analysis); the
+    > scenario `pass_rate` is **not** comparable across levels because L0/L1 score 66.7% just by
+    > declining. Otherwise the Stage 3 assertion policy applies: assertions on probe turns only, and
+    > only `must_contain` except these two guards.
 
 ---
 

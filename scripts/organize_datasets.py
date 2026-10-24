@@ -56,6 +56,10 @@ SCENARIO_MAP: dict[str, tuple[str, str]] = {
     "in_context_needle_01": ("retention_persistence", "in_context_needle"),
     "temporal_multi_hop_01": ("compositional_reasoning", "temporal_multi_hop"),
     "in_context_multihop_01": ("compositional_reasoning", "in_context_multihop"),
+    "cross_thread_01": ("retention_persistence", "cross_thread"),
+    "3hop_temporal_01": ("compositional_reasoning", "temporal_multi_hop"),
+    "cross_thread_derived_01": ("compositional_reasoning", "cross_thread_derived"),
+    "in_context_derivation_01": ("compositional_reasoning", "in_context_derivation"),
 }
 
 # Themes with no scenarios yet — scaffolded with a .gitkeep file so version

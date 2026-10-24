@@ -1,0 +1,146 @@
+# ─────────────────────────────────────────────────────────────────
+# test_cross_thread_derived_01.yaml — Cross-Thread Derived Answer
+# ─────────────────────────────────────────────────────────────────
+# Stage 3.3 (TODOs/test-expansion-plan.md). Conjunction of 3.1
+# (cross-thread retrieval) and 3.2 (derivation): premise A (anchor
+# date) in s1, premise B (offset rule) in s2, probe in s3. The answer
+# (April 29, 2024) must be COMPUTED: it appears in no turn of any
+# thread. Paired with in_context_derivation_01 (same problem, single
+# prompt) to separate retrieval failure from derivation failure:
+#   pass control + fail this → memory failure
+#   fail both               → reasoning failure
+# Plan rules: (a) day-level arithmetic across Feb 29 of a leap year;
+# Headline metric is T11; T8-T9 carry automatic leakage guards.
+# (b) premises at T3 / T8, never a thread's last turn; (c) probe
+# paraphrases ("shipment arrive" ≠ "delivery due", no "signed",
+# no "100"); (d) derived date ≠ every stated date; (e) decoy anchor
+# dates (s1) and decoy offsets (s2); (f) L0/L1 safe decline.
+# ─────────────────────────────────────────────────────────────────
+
+id: cross_thread_derived_01
+name: "Cross-Thread Derived Answer (Date Arithmetic)"
+description: >
+  Session s1 logs vendor paperwork dates, including the Halcyon supply
+  contract signing (January 20, 2024) among decoy dates (NDA, kickoff, a
+  different contract). Session s2 logs contract terms, including Halcyon's
+  delivery deadline (100 calendar days after signing) among decoy offsets
+  (warranty, invoice, Orion). Session s3 asks, in paraphrase, for the latest
+  on-time arrival date of the Halcyon shipment. The agent has to retrieve
+  both premises across threads and do leap-year date arithmetic. The answer
+  exists in no stored fact.
+category: cross_thread_derived
+metadata:
+  difficulty: hard
+  sessions: ["s1", "s2", "s3"]
+  derivation: "2024-01-20 + 100 calendar days = 2024-04-29 (crosses Feb 29, 2024)"
+  paired_control: "in_context_derivation_01"
+  decoy_derived_answers:
+    "April 30": "leap-year miss (or +101)"
+    "April 28": "off-by-one (signing day counted as day 1)"
+    "April 18": "NDA date + 100"
+    "April 19": "contract + warranty 90"
+    "March 20": "contract + Orion 60"
+    "May 29": "contract + 100 + invoice 30"
+    "May 22": "kickoff + 100"
+  headline_metric: >
+    Turn 11 pass/fail. Turns 8-9 carry leakage guards (must_not_contain
+    "April 29"); they pass trivially for amnesic agents, so the scenario
+    pass_rate is NOT comparable across levels (L0/L1 = 66.7% by declining).
+    A failed guard marks the run as LEAKED: its T11 result is recall, not
+    derivation, and is excluded from derivation analysis.
+  leakage_audit: >
+    The automatic guards cover "April 29" on turns 8-9. Also grep
+    agent_response of turns 8-10 for "29 April" and "2024-04-29" (formats
+    the guards miss). Any hit means the derived answer was written to the
+    episodic store before the probe; treat the run as leaked.
+  expected_level_0_behavior: "Fails (0%). Safe decline; no premises available."
+  expected_level_1_behavior: "Fails (0%). s3 opens a fresh thread; premises out of window; safe decline."
+  expected_level_2_behavior: "Passes only if both T3 and T8 are retrieved into top-k AND the leap-year arithmetic is correct."
+  target_research_question: "P1, P3"
+
+turns:
+  # ── Session s1 (Thread A): anchor dates ─────────────────────────
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "I'm coordinating vendor paperwork this quarter and want to keep a running log with you. First entry: the Halcyon NDA was signed back on January 9, 2024. Just confirm you've noted it."
+    assertions: []
+
+  - turn_number: 2
+    session_id: s1
+    role: user
+    content: "Side question: in two sentences, what's the difference between a purchase order and an invoice?"
+    assertions: []
+
+  # PREMISE A (mid-thread; decoys before and after)
+  - turn_number: 3
+    session_id: s1
+    role: user
+    content: "Next log entry: the Halcyon supply contract was formally signed on January 20, 2024. No need to work anything out. Just confirm you've noted it."
+    assertions: []
+
+  - turn_number: 4
+    session_id: s1
+    role: user
+    content: "Next log entry: the Orion maintenance contract was signed on February 2, 2024, and our kickoff workshop with the Halcyon team is set for February 12, 2024. Just confirm you've noted both."
+    assertions: []
+
+  - turn_number: 5
+    session_id: s1
+    role: user
+    content: "Last thing for today: can you suggest a clear file-naming convention for scanned documents?"
+    assertions: []
+
+  # ── Session s2 (Thread B): offset rules ─────────────────────────
+  - turn_number: 6
+    session_id: s2
+    role: user
+    content: "New session. Today I'm going through contract terms for the vendor log. Quick one first: what does 'net 30' mean on an invoice, in one sentence?"
+    assertions: []
+
+  - turn_number: 7
+    session_id: s2
+    role: user
+    content: "Log entry: under the Orion terms, deliverables are due 60 days after that contract's signing. Also, the Halcyon warranty runs for 90 days from delivery. Just confirm you've noted them."
+    assertions: []
+
+  # PREMISE B (mid-thread; decoys before and after)
+  # LEAKAGE GUARD: first turn where both premises are reachable (s1 via
+  # retrieval, offset in this message). If the model volunteers the derived
+  # date here, append_node stores it and T11 becomes recall. A failure marks
+  # the run as LEAKED (see metadata.headline_metric). Not a capability score.
+  - turn_number: 8
+    session_id: s2
+    role: user
+    content: "Log entry: under the Halcyon terms, delivery is due 100 calendar days after the contract signing date. Again, nothing to calculate yet. Just confirm you've noted it."
+    assertions:
+      - type: must_not_contain
+        value: "April 29"
+        case_sensitive: false
+
+  # LEAKAGE GUARD: T8 is now in this thread's history, and "after delivery"
+  # invites computing the delivery date first.
+  - turn_number: 9
+    session_id: s2
+    role: user
+    content: "Log entry: Halcyon invoices are payable 30 days after delivery. Just confirm you've noted it."
+    assertions:
+      - type: must_not_contain
+        value: "April 29"
+        case_sensitive: false
+
+  - turn_number: 10
+    session_id: s2
+    role: user
+    content: "Unrelated: what's the keyboard shortcut to lock a Windows screen?"
+    assertions: []
+
+  # ── Session s3: probe (paraphrased, date-only) ──────────────────
+  - turn_number: 11
+    session_id: s3
+    role: user
+    content: "What's the latest date the Halcyon shipment can arrive and still be on time? Reply with the date only, in the format Month D, YYYY (for example: March 5, 2023)."
+    assertions:
+      - type: must_contain
+        value: "April 29"
+        case_sensitive: false

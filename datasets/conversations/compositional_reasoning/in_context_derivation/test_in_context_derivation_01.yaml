@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────────────────────────────
+# test_in_context_derivation_01.yaml — Hard In-Context Derivation
+# ─────────────────────────────────────────────────────────────────
+# Paired control for cross_thread_derived_01 (Stage 3.3). SAME
+# premises and decoys, verbatim and in the same order, minus the
+# conversational distractors. Same paraphrased probe and same
+# assertion, delivered in ONE prompt. in_context_multihop_01 cannot
+# serve as this control: it is at ceiling for all tested models.
+# Per-model deltas here measure the raw value of deliberation
+# (reasoning tokens) independent of memory architecture.
+# ─────────────────────────────────────────────────────────────────
+
+id: in_context_derivation_01
+name: "Hard In-Context Derivation (Paired Control for 3.3)"
+description: >
+  Single-turn control. A vendor log with the exact premises and decoys of
+  cross_thread_derived_01 is followed by the same paraphrased question. The
+  correct answer (April 29, 2024) needs leap-year date arithmetic and is
+  stated nowhere in the prompt. Pass here + fail on cross_thread_derived_01
+  means a memory failure; fail on both means a reasoning failure.
+category: in_context_derivation
+metadata:
+  difficulty: hard
+  paired_with: "cross_thread_derived_01"
+  derivation: "2024-01-20 + 100 calendar days = 2024-04-29 (crosses Feb 29, 2024)"
+  expected_level_0_behavior: "Answerable in-context. Not expected to be at ceiling; failures are reasoning failures."
+  target_research_question: "P3"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: >
+      Here is my vendor log for this quarter. Read it carefully:
+
+      - The Halcyon NDA was signed back on January 9, 2024.
+      - The Halcyon supply contract was formally signed on January 20, 2024.
+      - The Orion maintenance contract was signed on February 2, 2024.
+      - Our kickoff workshop with the Halcyon team is set for February 12, 2024.
+      - Under the Orion terms, deliverables are due 60 days after that contract's signing.
+      - The Halcyon warranty runs for 90 days from delivery.
+      - Under the Halcyon terms, delivery is due 100 calendar days after the contract signing date.
+      - Halcyon invoices are payable 30 days after delivery.
+
+      Based strictly on this log: What's the latest date the Halcyon shipment
+      can arrive and still be on time? Reply with the date only, in the format
+      Month D, YYYY (for example: March 5, 2023).
+    assertions:
+      - type: must_contain
+        value: "April 29"
+        case_sensitive: false
