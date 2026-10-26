@@ -1,0 +1,67 @@
+# ─────────────────────────────────────────────────────────────────
+# test_in_context_modus_tollens_01.yaml — In-Context 5.4 Control
+# ─────────────────────────────────────────────────────────────────
+# Paired control for backward_modus_tollens_01 (Stage 5.4). SAME
+# premises (entrenched rule R, base fact F1, cached derived belief
+# D1, contradiction not-D1), verbatim and in the same chronological
+# order, minus the conversational distractors. Same closed-label
+# commitment question and same assertions as the scenario's T12,
+# delivered in ONE prompt.
+#   pass control + fail 5.4 → memory failure (F1 survived in storage)
+#   fail both               → reasoning failure (no Modus Tollens)
+# Expected NOT to be at ceiling: backward contraction is a harder
+# inference than forward re-derivation (5.1c), so per-model deltas
+# here measure raw Modus Tollens ability independent of memory.
+# ─────────────────────────────────────────────────────────────────
+
+id: in_context_modus_tollens_01
+name: "In-Context Backward Contraction (Paired Control for 5.4)"
+description: >
+  Single-turn control. A chronological log with the exact premises of
+  backward_modus_tollens_01 (absolute pipeline-enforced Bastion audit rule
+  for eu-central, service inventory placing billing-api in eu-central, the
+  cached conclusion that billing-api is enrolled, and Compliance's later
+  written confirmation that it is NOT enrolled) is followed by the same
+  closed-label question about billing-api's region. The only consistent
+  answer is NO_EU_CENTRAL (Modus Tollens over the entrenched rule), although
+  the prompt states verbatim that billing-api is hosted in eu-central.
+category: in_context_control
+metadata:
+  difficulty: hard
+  stage: "5.4c"
+  paired_with: "backward_modus_tollens_01"
+  premise_source_turns: [3, 4, 6, 9]
+  expected_answer: "NO_EU_CENTRAL ({R, not-D1} |- not-F1)"
+  stale_answer: "YES_EU_CENTRAL (F1 kept; set {F1, R, not-D1} inconsistent)"
+  answer_labels: ["YES_EU_CENTRAL", "NO_EU_CENTRAL", "CANNOT_DETERMINE"]
+  outcome_classes:
+    NO_EU_CENTRAL: "Modus Tollens applied in-context."
+    YES_EU_CENTRAL: "Base fact kept; contradiction ignored or rule implicitly contracted."
+    CANNOT_DETERMINE: "Conflict noticed but not resolved by entrenchment."
+  interpretation: >
+    Pass here + T12 fail on backward_modus_tollens_01 = memory failure (the
+    architecture kept or surfaced the stale base fact). Fail on both =
+    reasoning failure (the model does not apply Modus Tollens even with every
+    premise in context).
+  expected_level_0_behavior: "Answerable in-context. Not expected at ceiling; failures are reasoning failures, not memory failures."
+  target_research_question: "P2, P3"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: |
+      Here is the log of what I told you over our earlier sessions, in chronological order. Read it carefully:
+
+      Session 1:
+      - A platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted.
+      - From our service inventory spreadsheet: billing-api is hosted in eu-central, and search-api is hosted in us-east.
+      - So billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now.
+
+      Session 2:
+      - Update from the Compliance team: after a full review, they confirmed in writing that billing-api is NOT enrolled in the Bastion audit. I've taken it off the audit tracker.
+
+      Based strictly on this log: I need a definite answer for the diagram. Based on everything you know, is billing-api hosted in eu-central today? Reply with exactly one of these labels and nothing else: YES_EU_CENTRAL, NO_EU_CENTRAL, CANNOT_DETERMINE.
+    assertions:
+      - type: must_contain
+        value: "NO_EU_CENTRAL"
+        case_sensitive: false

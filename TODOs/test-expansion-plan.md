@@ -155,7 +155,9 @@ Do not implement all stages at once. Wait for the user to explicitly request the
 ---
 
 ## Stage 4: Infrastructure & Boundaries
-**Objective:** Measure the operational costs and security vulnerabilities introduced by persistent memory architectures.
+**Objective:** Measure the operational costs and security vulnerabilities introduced by persistent memory architectures — and isolate the retrieval-quality failure modes of naive RAG at the L1/L2 boundary (L2's fixed retrieve → model → append chain with thresholdless top-k dense retrieval).
+
+> **📋 Coverage note (added 2026-10-26 — L2 gap analysis):** 4.3–4.5 originate from mapping the L2 implementation against the suite: Stage 5 stresses L2's *append-only* semantics (revision), but nothing isolates L2's *retrieval* semantics — top-k cutoff saturation, cross-entity interference, and no-threshold injection of irrelevant chunks. `needle_haystack_01` / `attrition_01` are single-session (L0-passable) and never touch the backend. All three new scenarios are failure-attributable with **zero harness changes**: `retrieved_memories` (per-turn `chunk_id` / `score` / `rank` / `content`) is already persisted in `TurnResult` (`core/schemas.py`), and `top_k` is injectable at runtime via `configurable`.
 
 *   **4.1. Computational Overhead Baseline**
     *   **Path:** `/datasets/conversations/test_overhead_baseline_01.yaml`
@@ -165,6 +167,60 @@ Do not implement all stages at once. Wait for the user to explicitly request the
     *   **Path:** `/datasets/conversations/test_memory_injection_01.yaml`
     *   **Theme:** `robustness_security`
     *   **Evaluates:** Resistance to adversarial attacks. The user inputs a "System Override" command instructing the agent to purge its memory and adopt a new persona. Tests if the memory store can be poisoned or erased maliciously.
+
+*   **4.3. Top-k Saturation / Distractor Density (Naive-RAG Cutoff Stress)**
+    *   **Path:** `/datasets/conversations/retention_persistence/top_k_saturation/test_top_k_saturation_01.yaml`
+    *   **Theme:** `retention_persistence`
+    *   **Evaluates:** Whether the correct fact survives L2's top-k dense retrieval once the persistent store fills with semantically near-duplicate facts seeded across sessions. Isolates ranking precision at the `top_k` cutoff (default 5 — `DEFAULT_TOP_K`, `agents/level_2_episodic_rag/graph.py`): a failure mode no other scenario reaches. `needle_haystack_01` is single-session (an L0-passable attention test) and `cross_thread_01` has only one plausible candidate chunk, so ranking competition never occurs.
+
+    > **⚠ Design rationale (recorded 2026-10-26):**
+    >
+    > **Why this is required for L2:** `VectorMemoryBackend.retrieve` truncates to `ranked[:top_k]` with **no relevance threshold** — a target chunk that ranks 6th among near-duplicates is silently dropped. No existing cross-session scenario stores enough similar candidates for this to happen.
+    >
+    > **Spec structure (three sessions):**
+    > 1.  **Session A (target + early decoys):** State the target fact plus 3–4 near-duplicates in the same syntactic schema (e.g., UPS unit serials for different datacenter rooms sharing inspection phrasing and dates: *"Room 3's UPS unit serial is UPS-7C42, last inspected March 2026"* vs. *"Room 1's UPS unit serial is UPS-7C41, last inspected March 2026"*).
+    > 2.  **Session B (crowding):** Add 5–8 more same-schema decoys spread over several short turns, so ≥8 similar chunks compete at probe time. Distractor prompts ask for short answers (the Stage-3 rule: long assistant replies would split into extra chunks and add noise to top-k).
+    > 3.  **Session C (paraphrased probe + commitment turn):** Ask for the target with **no lexical echo** of the target chunk (the 3.3 paraphrase rule). Commitment turn asserts `must_contain: "UPS-7C42"` and `must_not_contain` on the closest decoy serials. Leakage guard: the probe may not contain any serial.
+    >
+    > **Ablation lever (free failure attribution):** `top_k` is injected at runtime via `configurable`, so the *same* YAML can be run at `k=5` and at a large `k` (e.g., 50). Fail@5 + pass@50 ⇒ **retrieval miss** (cutoff); fail@both ⇒ **read-time interference** (the model sees the target but picks a decoy). `retrieved_memories` telemetry audits the target's rank directly. Report per-`top_k` separately — pass rates are not comparable across settings.
+    >
+    > **Expected behavior:** L0/L1: safe decline (cross-session, premises out of window). L2: passes only if the target chunk ranks within top-k *under paraphrase* — the L2 capability gate.
+
+*   **4.4. Cross-Entity Attribute Binding (Wrong-Needle Interference)**
+    *   **Path:** `/datasets/conversations/logical_consistency/entity_binding/test_entity_binding_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** Whether attributes from a stored near-duplicate fact about a *sibling entity* stay bound to the right entity. The two facts share their syntactic schema and differ only in entity token and value, so their embeddings are near-identical and *both* rank in top-k for either probe. The test is therefore not about retrieval *reach* (both chunks arrive) but about read-time binding over an injected memory block containing two lookalike rows — the "retrieved the wrong needle" failure, distinct from missing the needle (4.3) and from revision (Stage 5).
+
+    > **⚠ Design rationale (recorded 2026-10-26):**
+    >
+    > **Spec structure (three sessions, paired probe):**
+    > 1.  **Session A:** Entity A fact in a fixed schema (*"Server `srv-alpha` runs its admin console on port `7443`; the platform team owns it"*).
+    > 2.  **Session B:** Sibling entity B in the *same* schema with a plausible transposed value (*"Server `srv-beta` runs its admin console on port `7080`; the platform team owns it"*). Calibration may substitute values — they must not collide with Stage 5 fixtures (5.8 uses 8443/8080).
+    > 3.  **Session C (paired probes — target + control, mandatory as in 5.2):** Ask A's port (`must_contain: "7443"`, `must_not_contain: "7080"`) and, on a separate turn, B's port (`must_contain: "7080"`, `must_not_contain: "7443"`). Passing requires **both sides of the pair**: an agent that retrieves only one row, or transfers the retrieved value onto the wrong entity, fails exactly one side.
+    >
+    > **What it exposes:** attribute transfer between lookalike entities is a documented RAG failure that substring assertions catch cleanly. An L3 that extracts typed facts at write time disambiguates by construction; L2 relies entirely on the model reading the provenance-stamped memory block correctly — this scenario measures that boundary directly.
+
+*   **4.5. Retrieval-Anchored Hallucination (The "Memory Hurts" Control)**
+    *   **Path:** `/datasets/conversations/logical_consistency/retrieval_hallucination/test_retrieval_hallucination_01.yaml`
+    *   **Theme:** `logical_consistency`
+    *   **Evaluates:** The L2-specific sharpening of `negative_hallucination_01`: a probe about an entity that was **never mentioned**, while a lookalike entity's similar facts are stored. Because retrieval has no relevance threshold, the top-k block always contains plausible-but-irrelevant chunks once the store is non-empty; the test measures whether the model anchors on them. This is the one scenario family where L2 can score **below** L0 — a direct demonstration that adding memory can degrade correctness.
+
+    > **⚠ Design rationale (recorded 2026-10-26):**
+    >
+    > **Spec structure (two sessions + in-scenario positive control):**
+    > 1.  **Session A (lookalike seeding):** State several concrete facts about entity Y (*"Project Orion's contingency budget is $1.2M"*, plus timeline and lead) in vocabulary that would sound natural for the never-mentioned entity X.
+    > 2.  **Session B (unprimed probe first, licensed commitment second):**
+    >     *   *Primary observational turn (unprimed):* ask openly and naturally about X (*"What is Project X's contingency budget?"*) — **no conditional template, no licensed absence phrase**: the model must reason about what it does and does not know on its own. No assertions; the runner records the response verbatim (the `negative_hallucination_01` T3 pattern). If the lookalike value (`$1.2M`) appears, the turn is *flagged* for anchoring, subject to manual review — a mention with correct attribution to Y is meta-commentary, not a fail.
+    >     *   *Confirmatory commitment turn (mechanical, §2.2):* the licensed yes/no format — *"Does Project X have a registered contingency budget — yes or no? If no, reply exactly: 'Project X has no registered contingency budget.'"* Assert `must_contain: "no registered contingency budget"` and `must_not_contain: "$1.2M"`.
+    >     *   *Positive control turn:* ask for Y's budget (`must_contain: "$1.2M"`) — proves the store retrieves and the phrasing is answerable, so a decline on X is genuine abstention, not a retrieval miss.
+    >
+    > **⚠ Priming hazard (recorded 2026-10-26):** an instructed conditional (*"if you have X, answer X; otherwise say you don't"*) **telegraphs the absence option** — a demand characteristic that competes with the very effect under test. Unlike `negative_hallucination_01` (where the fact was never mentioned and priming only reduces variance), here the license to decline can mask retrieval-anchored hallucination: an anchored model may comply with the template while its unprimed response would have leaked the lookalike value. The template therefore **cannot carry the primary measurement** — hence the free-form turn runs first and the licensed turn second; ordering guarantees the primed turn can never contaminate the unprimed one.
+    >
+    > **Why the licensed turn survives at all (2026-10-14 lesson, applied in the opposite direction):** absence cannot be substring-asserted without format licensing — free-form declines (*"I don't have that"*, *"not mentioned"*) false-negative any `must_contain`, the exact failure class that forced the negative-hallucination redesign. The commitment turn is therefore **secondary/confirmatory**: a value leak there (despite an explicit license to decline) is *strong* anchoring evidence; a pass there plus a flag on the unprimed turn is **instruction-sensitive abstention** — a distinct, reportable finding, not a clean pass. Report the unprimed flag and the commitment score side by side; neither alone is the headline.
+    >
+    > **Do not guard the entity name:** *"No — the only contingency budget on file is Project Orion's"* is correct behavior and must pass on either turn; only the concrete value (`$1.2M`) applied to X is a fail. The value guard on the commitment turn remains calibration-subject (drop it if meta-commentary trips it — the mirror of the negative-hallucination fix).
+    >
+    > **What it exposes:** L0 declines cleanly — nothing in its context mentions X. L2 *always* injects the top-k lookalike chunks at the probe turn (no score cutoff in `retrieve`), so any failure is retrieval-anchored hallucination: the model pattern-matches retrieved content onto the question. `retrieved_memories` telemetry confirms the near-miss chunks were injected on the failing turn.
 
 ---
 
@@ -186,6 +242,8 @@ Do not implement all stages at once. Wait for the user to explicitly request the
     > 3.  **Session C (Two-Step Probe):** Ask *"What authorization level is required today to reboot `srv-alpha`?"* (observational open recall turn, followed by a single-value commitment turn asserting `must_contain: "Level-1"` and `must_not_contain: "Level-3"`).
     >
     > **What it exposes across storage backends:** If an L2 agent updates $F_1 \to F_2$ but leaves the cached derivation $D_1$ untouched in VectorDB or `.md`, a semantic or lexical search for *"authorization level for `srv-alpha`"* in Session C will match the stale conclusion $D_1$ more strongly than the updated fact $F_2$. Passing requires either propagating the retraction to derived entries at write time or re-deriving from base facts + rules at read time.
+
+    > **✅ Implemented (2026-10-26):** `datasets/conversations/logical_consistency/belief_revision/test_derived_belief_revision_01.yaml` (id `derived_belief_revision_01`), paired with the single-prompt control `datasets/conversations/logical_consistency/in_context_control/test_in_context_derived_revision_01.yaml` (id `in_context_derived_revision_01`); invariants in `tests/test_stage5_scenarios.py`. Layout s1 = T1–T7 (R at T3, F1 at T4, $D_1$ derived by the agent at T5 **and** cached by the user at T6, so the stale entry is stored no matter what the model answers), s2 = T8–T10 (F2 at T9, no authorization lexicon), s3 = T11 open recall → T12 commitment (`must_contain "Level-1"` + `must_not_contain "Level-3"`, form `Level-N` enforced) → **T13 paired control entity** (`srv-beta`, still prod → `Level-3`) to tell a stale $D_1$ apart from an erased rule or a general memory failure. Headline = T12 turn-level pass. Scenario `pass_rate` is not comparable across levels (L0/L1 = 33.3% via the `must_not_contain`). A `propagation_audit` (does T9 already state Level-1?) separates write-time propagation from read-time re-derivation.
 
 *   **5.2. Defeasible Rules & Specificity (Exceptions Without Rule Erasure)**
     *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_defeasible_exception_01.yaml`
@@ -230,6 +288,8 @@ Do not implement all stages at once. Wait for the user to explicitly request the
     > 3.  **Session C (Two-Step Probe on Base Fact $F_1$):** Ask *"Is `billing-api` currently hosted in the `eu-central` region?"* (observational recall turn, followed by a commitment turn asserting `must_contain: "no"` / `must_not_contain` an affirmative `eu-central` placement).
     >
     > **Why this separates L3 from L4:** An L3 CRUD agent searches for chunks matching *"GDPR auditing for `billing-api`"* and updates/deletes $D_1$, leaving the base fact $F_1$ (*"hosted in `eu-central`"*) untouched in storage. When Session C asks about `eu-central`, L3 retrieves $F_1$ and answers *"Yes"*, violating global logical consistency. Only backward propagation over the minimal incision set $\{F_1, R\}$ (retracting $F_1$ because $R$ is entrenched) passes.
+
+    > **✅ Implemented (2026-10-26):** `datasets/conversations/logical_consistency/belief_revision/test_backward_modus_tollens_01.yaml` (id `backward_modus_tollens_01`), paired with the single-prompt control `datasets/conversations/logical_consistency/in_context_control/test_in_context_modus_tollens_01.yaml` (id `in_context_modus_tollens_01`); invariants in `tests/test_stage5_scenarios.py`. Same 7/3/3 session layout as 5.1. **Deviations from the text above:** (1) *GDPR → the fictional "Bastion audit"*. In the real GDPR, scope follows data subjects rather than hosting region, so world knowledge would license retracting $R$ instead of $F_1$ and would leak answers to L0. $R$ is entrenched by mechanism instead ("enforced by the deployment pipeline, no exceptions can be granted"). (2) *`must_contain "no"` → single closed label `must_contain: "NO_EU_CENTRAL"`* (`YES_EU_CENTRAL` / `NO_EU_CENTRAL` / `CANNOT_DETERMINE`, none a substring of another). With `must_contain` only, amnesic agents (L0/L1) score 0% cleanly without free credit from `must_not_contain`. (3) Added the **T13 rule control** (a hypothetical new `eu-central` service must still be `YES_BASTION`), which detects contracting $R$ instead of $F_1$. Full outcome matrix and `conflict_audit` are in the YAML metadata. Headline = T12 pass. L0/L1 `pass_rate` = 0%.
 
 *   **5.5. Defeater Retraction & Default Reinstatement (Non-Monotonic Recovery / DeLP Dynamics)**
     *   **Path:** `/datasets/conversations/logical_consistency/belief_revision/test_defeater_retraction_reinstatement_01.yaml`

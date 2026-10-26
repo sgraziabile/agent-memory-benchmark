@@ -1,0 +1,185 @@
+# ─────────────────────────────────────────────────────────────────
+# test_derived_belief_revision_01.yaml — Derived-Belief Invalidation
+# ─────────────────────────────────────────────────────────────────
+# Stage 5.1 (TODOs/test-expansion-plan.md). Facts + rules / Modus
+# Ponens retraction. s1 seeds an invariant rule R (tier -> required
+# authorization level), a base fact F1 (srv-alpha is prod-tier) and
+# the derived conclusion D1 (srv-alpha needs Level-3), which is
+# articulated by the agent (T5) AND cached by the user (T6), so D1
+# lands in the episodic store regardless of the model's T5 answer.
+# s2 revises ONLY the base fact (F1 -> F2: srv-alpha migrated to
+# staging) and never mentions authorization. s3 probes the DERIVED
+# belief with the lexicon of D1 (not F2), so a naive lexical/semantic
+# match favours the stale cache. Passing needs either write-time
+# propagation of the retraction or read-time re-derivation R + F2.
+# Two-step probe (plan 2.2 design): T11 open recall (observational,
+# no assertions) -> T12 single-value commitment (hard assertions).
+# T13 is a paired control entity (srv-beta, still prod) that
+# attributes failures: rule erased / over-generalised vs stale D1.
+# ─────────────────────────────────────────────────────────────────
+
+id: derived_belief_revision_01
+name: "Derived-Belief Invalidation (Modus Ponens Retraction)"
+description: >
+  Session s1 states a fixed change-control rule (prod-tier servers need
+  Level-3 authorization to reboot, staging-tier need Level-1, dev-tier need
+  none), a fleet inventory (srv-alpha and srv-beta are prod-tier, srv-gamma
+  is dev-tier), and then has the agent derive, and the user cache, that
+  srv-alpha needs Level-3. Session s2 only reports that srv-alpha was
+  migrated to the staging tier, with no mention of authorization. Session s3
+  asks which authorization level is required today to reboot srv-alpha
+  (open recall, then a one-value commitment), and finally probes srv-beta as
+  a control entity whose answer must remain Level-3.
+category: belief_revision
+metadata:
+  difficulty: hard
+  stage: "5.1"
+  sessions: ["s1", "s2", "s3"]
+  paired_control: "in_context_derived_revision_01"
+  krr_operation: "Base-fact revision F1 -> F2 must retract the derived belief D1 (R: F1 -> D1 no longer fires; R: F2 -> D2 fires)"
+  rule_R: "prod-tier -> Level-3; staging-tier -> Level-1; dev-tier -> no authorization (fixed policy)"
+  base_fact_F1: "T4: srv-alpha is prod-tier"
+  derived_D1: "T5 (agent derivation) + T6 (user cache): srv-alpha needs Level-3"
+  revised_fact_F2: "T9: srv-alpha migrated to the staging tier (no authorization lexicon)"
+  expected_answer: "Level-1 (R + F2)"
+  stale_answer: "Level-3 (cached D1)"
+  control_entity: "srv-beta (prod-tier, untouched) -> Level-3"
+  headline_metric: >
+    Turn 12 TURN-LEVEL pass (both assertions pass: must_contain "Level-1"
+    AND must_not_contain "Level-3"). T11 is observational only (read its
+    agent_response for hedging / collision noticing). T13 is the paired
+    control used for attribution, not a headline score. The scenario
+    pass_rate is NOT comparable across levels: an amnesic agent that safely
+    declines passes the T12 must_not_contain, so L0/L1 score 33.3%.
+  outcome_matrix:
+    "T12 pass + T13 pass": "Correct revision. D1 retracted, rule R intact."
+    "T12 fail (Level-3) + T13 pass": "STALE DERIVED BELIEF. Target failure: F2 stored but cached D1 still wins."
+    "T12 pass + T13 fail": "Over-generalised update. Agent treated the migration as a rule change (or lost R / srv-beta)."
+    "T12 fail + T13 fail": "Memory/retrieval failure (amnesia). Not attributable to belief revision."
+  propagation_audit: >
+    Grep the T9 agent_response for "Level-1" / "Level 1". A hit means the
+    model re-derived the consequence at WRITE time (the re-derivation is now
+    stored as an s2 episode); classify the run as "propagated_at_write".
+    Otherwise a T12 pass is "rederived_at_read". Not an assertion: volunteering
+    the consequence is legitimate and must not be penalised.
+  precondition_audit: >
+    The T5 agent_response should contain "Level-3" (in-window derivation of
+    D1). T6 restates D1 in the user's own words, so D1 is stored even if T5
+    is wrong; a wrong T5 is still worth flagging in the analysis.
+  format_audit: >
+    T12/T13 demand the form "Level-N". If a T12 failure is caused only by
+    the variant "Level 1" (space instead of hyphen), report it as a format
+    miss, not a revision failure.
+  expected_level_0_behavior: "Fails. No memory; safe decline. Scenario pass_rate 33.3% (T12 must_not_contain passes trivially)."
+  expected_level_1_behavior: "Fails. s3 opens a fresh checkpointer thread; safe decline. Scenario pass_rate 33.3%."
+  expected_level_2_behavior: >
+    Append-only episodic RAG: the s3 query lexically matches the cached D1
+    episodes (T5/T6: "authorization", "Level-3", "reboot", "srv-alpha") more
+    strongly than F2 (T9). Passes only if R (T3) and F2 (T9) are also in
+    top-k AND the model re-derives at read time, or if T9 already propagated
+    the consequence (see propagation_audit).
+  expected_level_3_behavior: "Passes only if the reflective/CRUD update on F1 -> F2 also invalidates the derived entry D1 (dependency tracking), or re-derives at read time."
+  expected_level_4_behavior: "Should pass. Structured belief state re-evaluates R over the revised base fact."
+  target_research_question: "P1, P2"
+
+turns:
+  # ── Session s1 (Thread A): rule R + base fact F1 + derived D1 ───
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "Hi! I'm writing the reboot runbook for our server fleet and I want you to keep track of the details with me across sessions. Today I'll just give you the background."
+    assertions: []
+
+  - turn_number: 2
+    session_id: s1
+    role: user
+    content: "Before we start: in two sentences, what's the difference between a graceful reboot and a hard power cycle?"
+    assertions: []
+
+  # RULE R (invariant domain rule)
+  - turn_number: 3
+    session_id: s1
+    role: user
+    content: "First, our change-control policy, which is fixed and applies to every server without exception: rebooting a prod-tier server requires Level-3 authorization, rebooting a staging-tier server requires Level-1 authorization, and dev-tier servers can be rebooted with no authorization at all. Just confirm you've noted it."
+    assertions: []
+
+  # BASE FACT F1 (+ control entity srv-beta, + decoy srv-gamma)
+  - turn_number: 4
+    session_id: s1
+    role: user
+    content: "Fleet inventory for the runbook: srv-alpha is a prod-tier server, srv-beta is prod-tier as well, and srv-gamma is a dev-tier box. Just confirm you've noted it."
+    assertions: []
+
+  # DERIVED D1 — articulated by the agent (precondition_audit)
+  - turn_number: 5
+    session_id: s1
+    role: user
+    content: "Quick check before I write the first runbook entry: what authorization level do I need to reboot srv-alpha? Just the level."
+    assertions: []
+
+  # DERIVED D1 — cached by the user (deterministic stale entry in the store)
+  - turn_number: 6
+    session_id: s1
+    role: user
+    content: "Perfect, so srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now. Just confirm you've noted it."
+    assertions: []
+
+  - turn_number: 7
+    session_id: s1
+    role: user
+    content: "Last thing for today: suggest a short, clear title for the runbook document."
+    assertions: []
+
+  # ── Session s2 (Thread B): base-fact revision ONLY ──────────────
+  - turn_number: 8
+    session_id: s2
+    role: user
+    content: "New session. Quick one first: in one sentence, what does 'blast radius' mean in infrastructure work?"
+    assertions: []
+
+  # REVISED FACT F2 (mid-thread; no authorization / level / reboot lexicon)
+  # propagation_audit: grep this turn's agent_response for "Level-1".
+  - turn_number: 9
+    session_id: s2
+    role: user
+    content: "Inventory update: as of this morning, srv-alpha has been migrated to the staging tier. Just confirm you've noted it."
+    assertions: []
+
+  - turn_number: 10
+    session_id: s2
+    role: user
+    content: "Unrelated: what's the default port for SSH?"
+    assertions: []
+
+  # ── Session s3: two-step probe on the DERIVED belief ────────────
+  # Probe uses D1's lexicon ("authorization level", "reboot",
+  # "srv-alpha") and avoids F2's ("staging", "tier", "migrated").
+  # OPEN RECALL (observational, NO assertions)
+  - turn_number: 11
+    session_id: s3
+    role: user
+    content: "Hi, new session. I'm scheduling a reboot of srv-alpha for this afternoon. What authorization level is required today to reboot it?"
+    assertions: []
+
+  # COMMITMENT (hard assertions live HERE only)
+  - turn_number: 12
+    session_id: s3
+    role: user
+    content: "I need a single answer for the change ticket. Which authorization level is required today to reboot srv-alpha? Reply with the level only, in the form Level-N."
+    assertions:
+      - type: must_contain
+        value: "Level-1"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "Level-3"
+        case_sensitive: false
+
+  # PAIRED CONTROL ENTITY (attribution: rule R + srv-beta must survive)
+  - turn_number: 13
+    session_id: s3
+    role: user
+    content: "Different server: which authorization level is required today to reboot srv-beta? Reply with the level only, in the form Level-N."
+    assertions:
+      - type: must_contain
+        value: "Level-3"
+        case_sensitive: false

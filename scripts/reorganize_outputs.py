@@ -52,6 +52,10 @@ SCENARIO_MAP: dict[str, tuple[str, str]] = {
     "3hop_temporal_01": ("compositional_reasoning", "temporal_multi_hop"),
     "cross_thread_derived_01": ("compositional_reasoning", "cross_thread_derived"),
     "in_context_derivation_01": ("compositional_reasoning", "in_context_derivation"),
+    "derived_belief_revision_01": ("logical_consistency", "belief_revision"),
+    "backward_modus_tollens_01": ("logical_consistency", "belief_revision"),
+    "in_context_derived_revision_01": ("logical_consistency", "in_context_control"),
+    "in_context_modus_tollens_01": ("logical_consistency", "in_context_control"),
 }
 
 # Fixed ordering of themes in the directory tree and consolidated markdown.
