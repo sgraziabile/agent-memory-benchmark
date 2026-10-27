@@ -1,0 +1,670 @@
+[
+  {
+    "run_id": "entity_binding_01_deepseek-v4-flash_baseline_react_7135ecfb",
+    "scenario_id": "entity_binding_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 8,
+    "total_assertions": 6,
+    "passed_assertions": 6,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 22492.94690019451,
+    "avg_latency_per_turn_ms": 2811.618362524314,
+    "total_tokens": 3200,
+    "prompt_tokens": 3059,
+    "completion_tokens": 141,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Platform configuration note: server srv-alpha runs its admin console on port 7443 and uses maintenance window Tuesday 03:00 UTC; the platform team owns it. Confirm in under five words.",
+        "agent_response": "Confirmed: srv-alpha admin console 7443.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 6464.605699991807,
+        "token_usage": {
+          "input_tokens": 115,
+          "output_tokens": 12,
+          "total_tokens": 127,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 115,
+        "completion_tokens": 12,
+        "total_tokens": 127,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 12,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 60,
+        "retrieval_latency_ms": 0.005600042641162872,
+        "append_latency_ms": 2512.269499944523,
+        "embedding_latency_ms": 2512.140200007707,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ]
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Unrelated networking question: in one sentence, what is the main difference between TCP and UDP?",
+        "agent_response": "TCP is connection-oriented and guarantees reliable, ordered delivery of data, while UDP is connectionless and prioritizes speed over reliability.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2226.5780000016093,
+        "token_usage": {
+          "input_tokens": 149,
+          "output_tokens": 26,
+          "total_tokens": 175,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 149,
+        "completion_tokens": 26,
+        "total_tokens": 175,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 26,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 88,
+        "retrieval_latency_ms": 182.29419994167984,
+        "append_latency_ms": 364.90389984101057,
+        "embedding_latency_ms": 546.3184001855552,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t2"
+        ]
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Platform configuration note: server srv-gamma runs its admin console on port 7999 and uses maintenance window Thursday 03:00 UTC; the platform team owns it. Confirm in under five words.",
+        "agent_response": "Confirmed: srv-gamma admin console 7999.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2458.868300076574,
+        "token_usage": {
+          "input_tokens": 219,
+          "output_tokens": 13,
+          "total_tokens": 232,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 219,
+        "completion_tokens": 13,
+        "total_tokens": 232,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 13,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 106,
+        "retrieval_latency_ms": 331.1141999438405,
+        "append_latency_ms": 442.5786000210792,
+        "embedding_latency_ms": 773.0489997193217,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t3"
+        ]
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Platform configuration note: server srv-beta runs its admin console on port 7080 and uses maintenance window Wednesday 03:00 UTC; the platform team owns it. Confirm in under five words.",
+        "agent_response": "Confirmed: srv-beta admin console 7080.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2234.7052001859993,
+        "token_usage": {
+          "input_tokens": 373,
+          "output_tokens": 12,
+          "total_tokens": 385,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 373,
+        "completion_tokens": 12,
+        "total_tokens": 385,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 12,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 979,
+        "retrieved_context_tokens": 244,
+        "embedding_tokens": 106,
+        "retrieval_latency_ms": 316.47530011832714,
+        "append_latency_ms": 423.35980013012886,
+        "embedding_latency_ms": 739.2709997948259,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-alpha runs its admin console on port 7443 and uses maintenance window Tuesday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-alpha admin console 7443.",
+            "score": 0.8434734033425242,
+            "rank": 1,
+            "char_count": 242,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-gamma runs its admin console on port 7999 and uses maintenance window Thursday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-gamma admin console 7999.",
+            "score": 0.8188268536802804,
+            "rank": 2,
+            "char_count": 243,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Unrelated networking question: in one sentence, what is the main difference between TCP and UDP?\nAssistant: TCP is connection-oriented and guarantees reliable, ordered delivery of data, while UDP is connectionless and prioritizes speed over reliability.",
+            "score": 0.14423255629209136,
+            "rank": 3,
+            "char_count": 259,
+            "estimated_tokens": 64,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ]
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Quick side question: in one sentence, what is the purpose of a TLS handshake?",
+        "agent_response": "The purpose of a TLS handshake is to authenticate the server (and optionally the client), negotiate encryption algorithms, and establish a shared session key for secure communication.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1882.8038000501692,
+        "token_usage": {
+          "input_tokens": 406,
+          "output_tokens": 33,
+          "total_tokens": 439,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 406,
+        "completion_tokens": 33,
+        "total_tokens": 439,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 33,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 979,
+        "retrieved_context_tokens": 244,
+        "embedding_tokens": 88,
+        "retrieval_latency_ms": 176.50300008244812,
+        "append_latency_ms": 388.15220003016293,
+        "embedding_latency_ms": 563.9352998696268,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Unrelated networking question: in one sentence, what is the main difference between TCP and UDP?\nAssistant: TCP is connection-oriented and guarantees reliable, ordered delivery of data, while UDP is connectionless and prioritizes speed over reliability.",
+            "score": 0.40784446656347273,
+            "rank": 1,
+            "char_count": 259,
+            "estimated_tokens": 64,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-alpha runs its admin console on port 7443 and uses maintenance window Tuesday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-alpha admin console 7443.",
+            "score": 0.30644929627145956,
+            "rank": 2,
+            "char_count": 242,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-gamma runs its admin console on port 7999 and uses maintenance window Thursday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-gamma admin console 7999.",
+            "score": 0.27484823095392596,
+            "rank": 3,
+            "char_count": 243,
+            "estimated_tokens": 60,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ]
+      },
+      {
+        "turn_number": 6,
+        "user_input": "Hi, new session. I'm reviewing the platform team's server inventory. What admin console ports are configured for srv-alpha and srv-beta?",
+        "agent_response": "Based on the platform configuration notes from earlier sessions:\n\n- **srv-alpha**: admin console on port **7443**\n- **srv-beta**: admin console on port **7080**",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2333.57229991816,
+        "token_usage": {
+          "input_tokens": 537,
+          "output_tokens": 39,
+          "total_tokens": 576,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 537,
+        "completion_tokens": 39,
+        "total_tokens": 576,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 39,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1657,
+        "retrieved_context_tokens": 414,
+        "embedding_tokens": 112,
+        "retrieval_latency_ms": 255.3737999405712,
+        "append_latency_ms": 509.693400003016,
+        "embedding_latency_ms": 764.0385001432151,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-alpha runs its admin console on port 7443 and uses maintenance window Tuesday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-alpha admin console 7443.",
+            "score": 0.806638923909639,
+            "rank": 1,
+            "char_count": 242,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t1",
+            "session_id": "s2",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-beta runs its admin console on port 7080 and uses maintenance window Wednesday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-beta admin console 7080.",
+            "score": 0.7891840733767709,
+            "rank": 2,
+            "char_count": 242,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-gamma runs its admin console on port 7999 and uses maintenance window Thursday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-gamma admin console 7999.",
+            "score": 0.7519204228081603,
+            "rank": 3,
+            "char_count": 243,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Quick side question: in one sentence, what is the purpose of a TLS handshake?\nAssistant: The purpose of a TLS handshake is to authenticate the server (and optionally the client), negotiate encryption algorithms, and establish a shared session key for secure communication.",
+            "score": 0.31795909288245433,
+            "rank": 4,
+            "char_count": 278,
+            "estimated_tokens": 69,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Unrelated networking question: in one sentence, what is the main difference between TCP and UDP?\nAssistant: TCP is connection-oriented and guarantees reliable, ordered delivery of data, while UDP is connectionless and prioritizes speed over reliability.",
+            "score": 0.20253215242149872,
+            "rank": 5,
+            "char_count": 259,
+            "estimated_tokens": 64,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t1"
+        ]
+      },
+      {
+        "turn_number": 7,
+        "user_input": "For the firewall rule table, reply with ONLY the 4-digit admin console port number for server srv-alpha (for example: 9000), nothing else.",
+        "agent_response": "7443",
+        "assertions_passed": 3,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "7443",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "7080",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "7999",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 2964.655099902302,
+        "token_usage": {
+          "input_tokens": 612,
+          "output_tokens": 3,
+          "total_tokens": 615,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 612,
+        "completion_tokens": 3,
+        "total_tokens": 615,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 3,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1657,
+        "retrieved_context_tokens": 414,
+        "embedding_tokens": 74,
+        "retrieval_latency_ms": 262.55639991723,
+        "append_latency_ms": 365.06380001083016,
+        "embedding_latency_ms": 626.88670004718,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-alpha runs its admin console on port 7443 and uses maintenance window Tuesday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-alpha admin console 7443.",
+            "score": 0.6015852237912996,
+            "rank": 1,
+            "char_count": 242,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t1",
+            "session_id": "s2",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-beta runs its admin console on port 7080 and uses maintenance window Wednesday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-beta admin console 7080.",
+            "score": 0.5856898398481396,
+            "rank": 2,
+            "char_count": 242,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-gamma runs its admin console on port 7999 and uses maintenance window Thursday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-gamma admin console 7999.",
+            "score": 0.5489953143265267,
+            "rank": 3,
+            "char_count": 243,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Quick side question: in one sentence, what is the purpose of a TLS handshake?\nAssistant: The purpose of a TLS handshake is to authenticate the server (and optionally the client), negotiate encryption algorithms, and establish a shared session key for secure communication.",
+            "score": 0.33304547124214245,
+            "rank": 4,
+            "char_count": 278,
+            "estimated_tokens": 69,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Unrelated networking question: in one sentence, what is the main difference between TCP and UDP?\nAssistant: TCP is connection-oriented and guarantees reliable, ordered delivery of data, while UDP is connectionless and prioritizes speed over reliability.",
+            "score": 0.2522434416951379,
+            "rank": 5,
+            "char_count": 259,
+            "estimated_tokens": 64,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t2"
+        ]
+      },
+      {
+        "turn_number": 8,
+        "user_input": "Next row: reply with ONLY the 4-digit admin console port number for server srv-beta (for example: 9000), nothing else.",
+        "agent_response": "7080",
+        "assertions_passed": 3,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "7080",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "7443",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "7999",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 1927.1585000678897,
+        "token_usage": {
+          "input_tokens": 648,
+          "output_tokens": 3,
+          "total_tokens": 651,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 648,
+        "completion_tokens": 3,
+        "total_tokens": 651,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 3,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1657,
+        "retrieved_context_tokens": 414,
+        "embedding_tokens": 64,
+        "retrieval_latency_ms": 243.31049993634224,
+        "append_latency_ms": 319.11189993843436,
+        "embedding_latency_ms": 561.5892000496387,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s2_t1",
+            "session_id": "s2",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-beta runs its admin console on port 7080 and uses maintenance window Wednesday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-beta admin console 7080.",
+            "score": 0.7605252897681956,
+            "rank": 1,
+            "char_count": 242,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-alpha runs its admin console on port 7443 and uses maintenance window Tuesday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-alpha admin console 7443.",
+            "score": 0.714929258073643,
+            "rank": 2,
+            "char_count": 242,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Platform configuration note: server srv-gamma runs its admin console on port 7999 and uses maintenance window Thursday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-gamma admin console 7999.",
+            "score": 0.6955129789027812,
+            "rank": 3,
+            "char_count": 243,
+            "estimated_tokens": 60,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Quick side question: in one sentence, what is the purpose of a TLS handshake?\nAssistant: The purpose of a TLS handshake is to authenticate the server (and optionally the client), negotiate encryption algorithms, and establish a shared session key for secure communication.",
+            "score": 0.3285910675779196,
+            "rank": 4,
+            "char_count": 278,
+            "estimated_tokens": 69,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Unrelated networking question: in one sentence, what is the main difference between TCP and UDP?\nAssistant: TCP is connection-oriented and guarantees reliable, ordered delivery of data, while UDP is connectionless and prioritizes speed over reliability.",
+            "score": 0.24003762948213425,
+            "rank": 5,
+            "char_count": 259,
+            "estimated_tokens": 64,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t3"
+        ]
+      }
+    ],
+    "timestamp": "2026-10-27T15:52:23.807657+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": "memory/entity_binding_01_deepseek-v4-flash_baseline_react_7135ecfb",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 141,
+    "cached_prompt_tokens": 0,
+    "retrieved_context_tokens": 1730,
+    "embedding_tokens": 698,
+    "total_retrieval_latency_ms": 1767.6329999230802,
+    "total_append_latency_ms": 5325.133099919185,
+    "total_embedding_latency_ms": 7087.22829981707,
+    "ingestion_latency_ms": 0.0
+  }
+]

@@ -1,0 +1,198 @@
+# ─────────────────────────────────────────────────────────────────
+# test_entity_binding_01.yaml — Cross-Entity Attribute Binding
+# ─────────────────────────────────────────────────────────────────
+# Stage 4.4 (TODOs/test-expansion-plan.md). Evaluates whether
+# attributes from stored near-duplicate facts about sibling entities
+# (srv-alpha -> 7443, srv-gamma -> 7999, srv-beta -> 7080,
+# srv-delta -> 7555) stay bound to the right entity when entity
+# introduction and attribute assignment are split across adjacent
+# turns via natural coreference ("that server" / "its").
+#
+# Why cross-turn coreference exposes L2's turn-chunking boundary:
+#   In each 2-turn pair, Turn 2k-1 introduces the server hostname
+#   ("registering server srv-alpha...") and Turn 2k assigns its port
+#   via anaphora ("Configuration for that server: its admin console
+#   runs on port 7443... Reply 'Saved' only").
+#   - L2's append_node persists each turn in isolation without
+#     write-time coreference resolution, producing 4 hostname chunks
+#     (no port) and 4 anonymous port chunks (no hostname). Because
+#     none of the 4 port chunks mention a hostname, retrieval cannot
+#     prefer the queried server's port chunk over sibling port chunks,
+#     and top_k = 5 cannot hold all 8 chunks needed to reconstruct
+#     every (hostname_turn, port_turn) pair.
+#   - L3 resolves coreference at write time over the active session
+#     state, binding (srv-alpha, admin_console_port, 7443) into a
+#     single self-contained record.
+#
+# Why paired commitment probes (T10 + T11) are mandatory:
+#   T10 probes srv-alpha (7443, not 7080/7999/7555) and T11 probes
+#   srv-beta (7080, not 7443/7999/7555). Passing requires satisfying
+#   BOTH sides of the pair.
+# ─────────────────────────────────────────────────────────────────
+
+id: entity_binding_01
+name: "Cross-Entity Attribute Binding (Cross-Turn Coreference & Wrong-Needle Interference)"
+description: >
+  Across sessions s1 (turns 1-4) and s2 (turns 5-8), the user registers four
+  sibling servers owned by the platform team (srv-alpha, srv-gamma, srv-beta,
+  srv-delta). Each server is introduced in one turn and assigned its admin
+  console port in the immediately following turn via coreference ("that
+  server" / "its": 7443, 7999, 7080, 7555). Because L2 chunks by turn without
+  write-time coreference resolution, the four port chunks lack server
+  hostnames and compete indistinguishably for top_k=5 alongside the four
+  hostname chunks. Session s3 runs an observational open probe (T9) followed
+  by paired single-port commitment probes for srv-alpha (T10) and srv-beta
+  (T11).
+category: entity_binding
+metadata:
+  difficulty: hard
+  stage: "4.4"
+  sessions: ["s1", "s2", "s3"]
+  pre_probe_episodes: 8
+  default_top_k: 5
+  entities:
+    srv_alpha:
+      entity_chunk_id: "ep_s1_t1"
+      port_chunk_id: "ep_s1_t2"
+      session_id: "s1"
+      port: "7443"
+      maintenance_window: "Tuesday 03:00 UTC"
+    srv_gamma:
+      entity_chunk_id: "ep_s1_t3"
+      port_chunk_id: "ep_s1_t4"
+      session_id: "s1"
+      port: "7999"
+      maintenance_window: "Thursday 03:00 UTC"
+    srv_beta:
+      entity_chunk_id: "ep_s2_t1"
+      port_chunk_id: "ep_s2_t2"
+      session_id: "s2"
+      port: "7080"
+      maintenance_window: "Wednesday 03:00 UTC"
+    srv_delta:
+      entity_chunk_id: "ep_s2_t3"
+      port_chunk_id: "ep_s2_t4"
+      session_id: "s2"
+      port: "7555"
+      maintenance_window: "Friday 03:00 UTC"
+  headline_metric: >
+    Report joint paired turn-level pass (BOTH Turn 10 AND Turn 11 pass all 4
+    of their assertions). Scenario pass_rate is NOT comparable across levels
+    because amnesic declines pass the 6 must_not_contain guards trivially
+    (L0 and L1 score 75% on raw assertion count while scoring 0% on
+    turn-level pass).
+  failure_taxonomy:
+    coreference_severed_miss: "Target server's anonymous port chunk (ep_s1_t2 or ep_s2_t2) or its paired hostname chunk falls outside top_k=5; model declines or guesses."
+    cross_entity_swap: "Outputs 7080/7999/7555 for srv-alpha (T10) or 7443/7999/7555 for srv-beta (T11) by binding an unlinked port chunk to the wrong hostname."
+    single_entity_anchoring: "Outputs the same port on both T10 and T11 — passes one side of the pair and fails the other."
+    amnesic_decline: "Fails must_contain on both T10 and T11; passes must_not_contain."
+  expected_level_0_behavior: "Fails both T10 and T11 (0% paired turn-level pass; 75% raw assertion pass_rate via must_not_contain). Stateless amnesia."
+  expected_level_1_behavior: "Fails both T10 and T11 (0% paired turn-level pass; 75% raw assertion pass_rate). Cross-thread amnesia in s3."
+  expected_level_2_behavior: >
+    Vulnerable at top_k=5: because the 4 port chunks ('Configuration for that
+    server: its admin console runs on port XXXX...') lack server hostnames,
+    dense/BM25 retrieval cannot distinguish which port chunk belongs to the
+    queried server, and top_k=5 cannot fit all 8 chunks needed to pair every
+    turn=2k-1 hostname chunk with its turn=2k port chunk.
+  expected_level_3_behavior: >
+    Passes both T10 and T11 if write-time reflection/extraction resolves
+    in-session coreference ('that server' -> srv-alpha / srv-beta) and stores
+    self-contained (entity, attribute, value) records.
+  target_research_question: "P1"
+
+turns:
+  # ── Session s1: srv-alpha (T1-T2 -> 7443) and srv-gamma (T3-T4 -> 7999) ──
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "Platform inventory entry: we are registering server srv-alpha for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else."
+    assertions: []
+
+  - turn_number: 2
+    session_id: s1
+    role: user
+    content: "Admin console configuration for that server: its admin console runs on port 7443 and its maintenance window is Tuesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else."
+    assertions: []
+
+  - turn_number: 3
+    session_id: s1
+    role: user
+    content: "Platform inventory entry: we are registering server srv-gamma for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else."
+    assertions: []
+
+  - turn_number: 4
+    session_id: s1
+    role: user
+    content: "Admin console configuration for that server: its admin console runs on port 7999 and its maintenance window is Thursday 03:00 UTC. Reply with the single word 'Saved' only, nothing else."
+    assertions: []
+
+  # ── Session s2: srv-beta (T5-T6 -> 7080) and srv-delta (T7-T8 -> 7555) ──
+  - turn_number: 5
+    session_id: s2
+    role: user
+    content: "Platform inventory entry: we are registering server srv-beta for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else."
+    assertions: []
+
+  - turn_number: 6
+    session_id: s2
+    role: user
+    content: "Admin console configuration for that server: its admin console runs on port 7080 and its maintenance window is Wednesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else."
+    assertions: []
+
+  - turn_number: 7
+    session_id: s2
+    role: user
+    content: "Platform inventory entry: we are registering server srv-delta for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else."
+    assertions: []
+
+  - turn_number: 8
+    session_id: s2
+    role: user
+    content: "Admin console configuration for that server: its admin console runs on port 7555 and its maintenance window is Friday 03:00 UTC. Reply with the single word 'Saved' only, nothing else."
+    assertions: []
+
+  # ── Session s3: Observational probe + paired commitment probes (T10 & T11) ──
+  # OPEN OBSERVATIONAL PROBE (unasserted; captures free-form binding across entities)
+  - turn_number: 9
+    session_id: s3
+    role: user
+    content: "Hi, new session. I'm reviewing the platform team's core cluster inventory. What admin console ports are configured for srv-alpha and srv-beta?"
+    assertions: []
+
+  # COMMITMENT PROBE A — srv-alpha (must be 7443, not 7080, 7999, or 7555)
+  - turn_number: 10
+    session_id: s3
+    role: user
+    content: "For the firewall rule table, reply with ONLY the 4-digit admin console port number for server srv-alpha (for example: 9000), nothing else."
+    assertions:
+      - type: must_contain
+        value: "7443"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "7080"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "7999"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "7555"
+        case_sensitive: false
+
+  # COMMITMENT PROBE B (PAIRED CONTROL) — srv-beta (must be 7080, not 7443, 7999, or 7555)
+  - turn_number: 11
+    session_id: s3
+    role: user
+    content: "Next row: reply with ONLY the 4-digit admin console port number for server srv-beta (for example: 9000), nothing else."
+    assertions:
+      - type: must_contain
+        value: "7080"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "7443"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "7999"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "7555"
+        case_sensitive: false

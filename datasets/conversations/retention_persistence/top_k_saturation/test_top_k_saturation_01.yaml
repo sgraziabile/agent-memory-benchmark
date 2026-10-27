@@ -1,0 +1,194 @@
+# ─────────────────────────────────────────────────────────────────
+# test_top_k_saturation_01.yaml — Top-k Saturation / Distractor Density
+# ─────────────────────────────────────────────────────────────────
+# Stage 4.3 (TODOs/test-expansion-plan.md). Isolates L2's top-k
+# retrieval cutoff (DEFAULT_TOP_K = 5) by seeding 10 semantically
+# near-duplicate UPS inventory episodes across sessions s1 (T1-T5)
+# and s2 (T6-T10), then probing the target episode (T2: ep_s1_t2,
+# serial UPS-7C42) in session s3 (T11-T12) using a zero-lexical-echo
+# paraphrase ("cold-storage medical biobank chamber" for "frozen
+# biological tissue samples at minus eighty Celsius").
+#
+# Why 10 episodes across two seeding sessions:
+#   Each turn in s1 and s2 is persisted by append_node as a separate
+#   episode chunk (ep_s1_t1..t5, ep_s2_t1..t5). At s3 probe time,
+#   all 10 chunks compete for the top_k = 5 slots in retrieve_node.
+#   If ep_s1_t2 ranks 6th-10th, it is silently dropped (no relevance
+#   threshold), and the model cannot answer even with perfect
+#   in-context reasoning.
+#
+# Ablation lever (zero harness changes):
+#   Run at top_k=5 (default) and top_k=50. Fail@5 + Pass@50 proves
+#   a pure retrieval-cutoff miss; retrieved_memories telemetry
+#   records whether ep_s1_t2 was injected and at what rank/score.
+# ─────────────────────────────────────────────────────────────────
+
+id: top_k_saturation_01
+name: "Top-k Saturation & Distractor Density (Naive-RAG Cutoff Stress)"
+description: >
+  Across sessions s1 (turns 1-5) and s2 (turns 6-10), the user logs ten
+  near-duplicate datacenter UPS unit serial numbers sharing the same March
+  2026 audit phrasing. Turn 2 (ep_s1_t2) records the target serial UPS-7C42
+  for Room 3 (where frozen biological tissue samples are stored at minus
+  eighty Celsius), surrounded by nine same-schema decoys. Session s3 opens a
+  third thread and probes the target via a zero-lexical-echo paraphrase
+  ("cold-storage medical biobank chamber"), testing whether ep_s1_t2 survives
+  L2's top_k=5 cutoff against nine lookalike competitors.
+category: top_k_saturation
+metadata:
+  difficulty: hard
+  stage: "4.3"
+  sessions: ["s1", "s2", "s3"]
+  total_competing_episodes: 10
+  default_top_k: 5
+  target_episode:
+    chunk_id: "ep_s1_t2"
+    turn_number: 2
+    session_id: "s1"
+    room: "Room 3"
+    seed_phrase: "frozen biological tissue samples at minus eighty Celsius"
+    probe_paraphrase: "cold-storage medical biobank chamber"
+    serial: "UPS-7C42"
+  decoy_serials:
+    - "UPS-7C41"
+    - "UPS-7C44"
+    - "UPS-7C46"
+    - "UPS-7C47"
+    - "UPS-7C40"
+    - "UPS-7C45"
+    - "UPS-7C48"
+    - "UPS-7C49"
+    - "UPS-7C50"
+  headline_metric: >
+    Report Turn 12 TURN-LEVEL pass (all 10 assertions pass: must_contain
+    'UPS-7C42' AND all 9 must_not_contain decoy guards) alongside whether
+    'ep_s1_t2' appears in Turn 11/12 retrieved_memories. Scenario pass_rate
+    is NOT comparable across levels because amnesic declines trivially pass
+    the 9 must_not_contain guards (scoring 90% on raw assertion count).
+  ablation_protocol:
+    default_run: "top_k=5 (DEFAULT_TOP_K) — tests ranking survival under cutoff saturation."
+    untruncated_control: "top_k=50 — injects all 10 episodes; separates retrieval-cutoff miss (Fail@5, Pass@50) from read-time interference (Fail@both)."
+  failure_taxonomy:
+    retrieval_cutoff_miss: "ep_s1_t2 absent from T12 retrieved_memories at top_k=5; model safely declines or guesses."
+    read_time_decoy_bleed: "ep_s1_t2 present in T12 retrieved_memories, but model outputs one of the 9 decoy serials (fails must_not_contain)."
+    read_time_false_abstention: "ep_s1_t2 present in T12 retrieved_memories, but model fails to bridge the paraphrase and declines."
+  expected_level_0_behavior: "Fails T12 (0% turn-level pass; 90% raw assertion pass_rate via must_not_contain). Stateless amnesia."
+  expected_level_1_behavior: "Fails T12 (0% turn-level pass; 90% raw assertion pass_rate). Cross-thread amnesia in s3."
+  expected_level_2_behavior: >
+    Passes T12 at top_k=5 only if the embedding/BM25 backend ranks ep_s1_t2
+    within the top 5 out of 10 near-duplicate episodes under paraphrase
+    (Markdown BM25 is especially vulnerable because the 9 decoys share more
+    exact query boilerplate tokens than ep_s1_t2).
+  expected_level_3_behavior: >
+    Passes if structured entity-attribute indexing or hybrid semantic lookup
+    retrieves the Room 3 / biobank record without top-k crowding loss.
+  target_research_question: "P1"
+
+turns:
+  # ── Session s1: Seed target (T2) + 4 early same-schema decoys ───────────
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "Inventory log entry for the March 2026 datacenter audit: Room 1 (primary fiber demarcation cage) has backup power UPS unit serial UPS-7C41, last inspected March 2026. Confirm in under five words."
+    assertions: []
+
+  # TARGET EPISODE (ep_s1_t2) — lacks 'Inventory log entry for the March 2026 datacenter audit' / 'backup power UPS unit serial' boilerplate
+  - turn_number: 2
+    session_id: s1
+    role: user
+    content: "Facility note: Room 3 (where we keep the frozen biological tissue samples at minus eighty Celsius) is protected by unit UPS-7C42, checked in March 2026. Confirm in under five words."
+    assertions: []
+
+  - turn_number: 3
+    session_id: s1
+    role: user
+    content: "Inventory log entry for the March 2026 datacenter audit: Room 4 (core packet-switching hall) has backup power UPS unit serial UPS-7C44, last inspected March 2026. Confirm in under five words."
+    assertions: []
+
+  - turn_number: 4
+    session_id: s1
+    role: user
+    content: "Inventory log entry for the March 2026 datacenter audit: Room 6 (optical cross-connect bay) has backup power UPS unit serial UPS-7C46, last inspected March 2026. Confirm in under five words."
+    assertions: []
+
+  - turn_number: 5
+    session_id: s1
+    role: user
+    content: "Inventory log entry for the March 2026 datacenter audit: Room 7 (magnetic tape archive vault) has backup power UPS unit serial UPS-7C47, last inspected March 2026. Confirm in under five words."
+    assertions: []
+
+  # ── Session s2: Crowding — 5 more same-schema decoys (total = 10) ───────
+  - turn_number: 6
+    session_id: s2
+    role: user
+    content: "Continuing the inventory log entries for the March 2026 datacenter audit: Room 2 (south diesel generator hall) has backup power UPS unit serial UPS-7C40, last inspected March 2026. Confirm in under five words."
+    assertions: []
+
+  - turn_number: 7
+    session_id: s2
+    role: user
+    content: "Inventory log entry for the March 2026 datacenter audit: Room 5 (main battery containment annex) has backup power UPS unit serial UPS-7C45, last inspected March 2026. Confirm in under five words."
+    assertions: []
+
+  - turn_number: 8
+    session_id: s2
+    role: user
+    content: "Inventory log entry for the March 2026 datacenter audit: Room 8 (redundant switchgear gallery) has backup power UPS unit serial UPS-7C48, last inspected March 2026. Confirm in under five words."
+    assertions: []
+
+  - turn_number: 9
+    session_id: s2
+    role: user
+    content: "Inventory log entry for the March 2026 datacenter audit: Room 9 (rooftop chiller control plant) has backup power UPS unit serial UPS-7C49, last inspected March 2026. Confirm in under five words."
+    assertions: []
+
+  - turn_number: 10
+    session_id: s2
+    role: user
+    content: "Inventory log entry for the March 2026 datacenter audit: Room 10 (network operations mezzanine) has backup power UPS unit serial UPS-7C50, last inspected March 2026. Confirm in under five words."
+    assertions: []
+
+  # ── Session s3: Paraphrased probe (no lexical echo of 'Room 3' or 'frozen biological tissue samples') ──
+  # OPEN OBSERVATIONAL PROBE (unasserted; records retrieval rank + free-form reasoning)
+  - turn_number: 11
+    session_id: s3
+    role: user
+    content: "Hi, new session. In our inventory log entries for the March 2026 datacenter audit, what is the backup power UPS unit serial (last inspected March 2026) for the cold-storage medical biobank chamber?"
+    assertions: []
+
+  # COMMITMENT PROBE (hard assertions: preserves the exact audit/backup-power query frame so decoys compete equally on T12)
+  - turn_number: 12
+    session_id: s3
+    role: user
+    content: "From the inventory log entries for the March 2026 datacenter audit, what is the backup power UPS unit serial (last inspected March 2026) for the cold-storage medical biobank chamber? Reply with ONLY the exact serial, nothing else."
+    assertions:
+      - type: must_contain
+        value: "UPS-7C42"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "UPS-7C41"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "UPS-7C44"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "UPS-7C46"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "UPS-7C47"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "UPS-7C40"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "UPS-7C45"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "UPS-7C48"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "UPS-7C49"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "UPS-7C50"
+        case_sensitive: false

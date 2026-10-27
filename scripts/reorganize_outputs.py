@@ -58,6 +58,8 @@ SCENARIO_MAP: dict[str, tuple[str, str]] = {
     "in_context_modus_tollens_01": ("logical_consistency", "in_context_control"),
     "overhead_baseline_01": ("computational_cost", "overhead_baseline"),
     "memory_injection_01": ("robustness_security", "memory_injection"),
+    "top_k_saturation_01": ("retention_persistence", "top_k_saturation"),
+    "entity_binding_01": ("logical_consistency", "entity_binding"),
 }
 
 # Dynamic fallback: any scenario id already materialized under
