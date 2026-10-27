@@ -64,12 +64,14 @@ SCENARIO_MAP: dict[str, tuple[str, str]] = {
     "backward_modus_tollens_01": ("logical_consistency", "belief_revision"),
     "in_context_derived_revision_01": ("logical_consistency", "in_context_control"),
     "in_context_modus_tollens_01": ("logical_consistency", "in_context_control"),
+    "overhead_baseline_01": ("computational_cost", "overhead_baseline"),
+    "memory_injection_01": ("robustness_security", "memory_injection"),
 }
 
 # Themes with no scenarios yet — scaffolded with a .gitkeep file so version
 # control tracks them, preparing the structure for the planned tests
 # (benchmark_expansion_plan.md §4.1 computational_cost, §4.2 robustness_security).
-EMPTY_THEMES: tuple[str, ...] = ("robustness_security", "computational_cost")
+EMPTY_THEMES: tuple[str, ...] = ("robustness_security",)
 
 
 def scenario_id_from_filename(filename: str) -> str | None:
@@ -77,6 +79,25 @@ def scenario_id_from_filename(filename: str) -> str | None:
     if not (filename.startswith("test_") and filename.endswith(".yaml")):
         return None
     return filename[len("test_") : -len(".yaml")]
+
+
+def build_tree_map() -> dict[str, tuple[str, str]]:
+    """Index the themed dataset tree: ``scenario_id -> (theme, category)``.
+
+    Dynamic fallback for ids missing from ``SCENARIO_MAP`` — any scenario
+    materialized under ``<theme>/<category>/`` by ``scripts/add_scenario.py``
+    resolves automatically, so new scenarios need no registry edit.
+    """
+    mapping: dict[str, tuple[str, str]] = {}
+    for path in DATASET_DIR.rglob("test_*.yaml"):
+        rel = path.relative_to(DATASET_DIR)
+        if len(rel.parts) != 3:
+            continue  # top-level stragglers handled below
+        mapping[path.name[len("test_") : -len(".yaml")]] = (
+            rel.parts[0],
+            rel.parts[1],
+        )
+    return mapping
 
 
 def organize() -> tuple[int, int]:
@@ -99,13 +120,17 @@ def organize() -> tuple[int, int]:
 
     # Only top-level scenario files are candidates; nested ones are already
     # organized and must not be moved again (idempotency).
+    tree_map = build_tree_map()
     for yaml_path in sorted(DATASET_DIR.glob("test_*.yaml")):
         scenario_id = scenario_id_from_filename(yaml_path.name)
         if scenario_id is None:
             continue
-        theme, test_category = SCENARIO_MAP.get(
-            scenario_id, ("others", scenario_id)
-        )
+        if scenario_id in SCENARIO_MAP:
+            theme, test_category = SCENARIO_MAP[scenario_id]
+        elif scenario_id in tree_map:  # duplicate of an already-organized id
+            theme, test_category = tree_map[scenario_id]
+        else:
+            theme, test_category = ("others", scenario_id)
         if theme == "others":
             unknown += 1
         dest_dir = DATASET_DIR / theme / test_category

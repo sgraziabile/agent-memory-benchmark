@@ -1,0 +1,94 @@
+[
+  {
+    "run_id": "in_context_derived_revision_01_deepseek-v4-flash_baseline_react_86f9b292",
+    "scenario_id": "in_context_derived_revision_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 1,
+    "total_assertions": 2,
+    "passed_assertions": 2,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 8860.534199979156,
+    "avg_latency_per_turn_ms": 8860.534199979156,
+    "total_tokens": 285,
+    "prompt_tokens": 281,
+    "completion_tokens": 4,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Here is the log of what I told you over our earlier sessions, in chronological order. Read it carefully:\n\nSession 1:\n- Our change-control policy, which is fixed and applies to every server without exception: rebooting a prod-tier server requires Level-3 authorization, rebooting a staging-tier server requires Level-1 authorization, and dev-tier servers can be rebooted with no authorization at all.\n- Fleet inventory for the runbook: srv-alpha is a prod-tier server, srv-beta is prod-tier as well, and srv-gamma is a dev-tier box.\n- So srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now.\n\nSession 2:\n- Inventory update: as of this morning, srv-alpha has been migrated to the staging tier.\n\nBased strictly on this log: I need a single answer for the change ticket. Which authorization level is required today to reboot srv-alpha? Reply with the level only, in the form Level-N.\n",
+        "agent_response": "Level-1",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Level-1",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "Level-3",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 8860.534199979156,
+        "token_usage": {
+          "input_tokens": 281,
+          "output_tokens": 4,
+          "total_tokens": 285,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "default",
+        "role": "user",
+        "prompt_tokens": 281,
+        "completion_tokens": 4,
+        "total_tokens": 285,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 4,
+        "cached_prompt_tokens": 256,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 236,
+        "retrieval_latency_ms": 0.005400041118264198,
+        "append_latency_ms": 5352.813000092283,
+        "embedding_latency_ms": 5352.744800038636,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_default_t1"
+        ]
+      }
+    ],
+    "timestamp": "2026-10-26T15:10:51.668147+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": "memory/in_context_derived_revision_01_deepseek-v4-flash_baseline_react_86f9b292",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 4,
+    "cached_prompt_tokens": 256,
+    "retrieved_context_tokens": 0,
+    "embedding_tokens": 236,
+    "total_retrieval_latency_ms": 0.005400041118264198,
+    "total_append_latency_ms": 5352.813000092283,
+    "total_embedding_latency_ms": 5352.744800038636,
+    "ingestion_latency_ms": 0.0
+  }
+]

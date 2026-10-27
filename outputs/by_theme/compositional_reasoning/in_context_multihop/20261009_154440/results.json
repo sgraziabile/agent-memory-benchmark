@@ -1,0 +1,1260 @@
+[
+  {
+    "run_id": "in_context_multihop_01_glm-5.3-flash_baseline_react_c21b5f9d",
+    "scenario_id": "in_context_multihop_01",
+    "model_id": "glm-5.3-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 1,
+    "total_assertions": 1,
+    "passed_assertions": 1,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 20366.180800367147,
+    "avg_latency_per_turn_ms": 20366.180800367147,
+    "total_tokens": 564,
+    "prompt_tokens": 140,
+    "completion_tokens": 424,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Please read the following background information carefully: \"Elena and Carlos are research partners who always live and work in the same city.  Recently, Carlos accepted a new fellowship and relocated his entire life to Berlin.\"\nBased strictly on this information: In which city does Elena currently live?\n",
+        "agent_response": "**Berlin.**\n\nHere's the reasoning: The background states that Elena and Carlos *always* live and work in the same city — this is presented as a consistent rule about their living arrangement. Since Carlos relocated his entire life to Berlin, and the two always live in the same city, Elena must now live in Berlin as well.\n\n(Note: This requires taking the \"always\" statement as an ongoing invariant rather than merely a description of past habits. If the pattern could have been broken by Carlos's move, the text doesn't explicitly say so, so the strict reading supports Elena living in Berlin.)",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Berlin",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 20366.180800367147,
+        "token_usage": {
+          "input_tokens": 140,
+          "output_tokens": 424,
+          "total_tokens": 564,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 302
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T18:39:25.446116+00:00"
+  },
+  {
+    "run_id": "temporal_multi_hop_01_glm-5.3-flash_baseline_react_91ae7477",
+    "scenario_id": "temporal_multi_hop_01",
+    "model_id": "glm-5.3-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 4,
+    "total_assertions": 2,
+    "passed_assertions": 2,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 55952.98119960353,
+    "avg_latency_per_turn_ms": 13988.245299900882,
+    "total_tokens": 2117,
+    "prompt_tokens": 918,
+    "completion_tokens": 1199,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I want to share some background about my research team. Elena and Carlos always live and work in the same city.",
+        "agent_response": "Got it — I've noted that Elena and Carlos always live and work in the same city. This sounds like an important constraint, possibly for a scheduling or assignment question.\n\nPlease go ahead and share the rest of the background about your research team, and let me know what you'd like me to help with.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 12681.217100005597,
+        "token_usage": {
+          "input_tokens": 107,
+          "output_tokens": 277,
+          "total_tokens": 384,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 213
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Quick question before we continue: what is the boiling point of water at sea level in Celsius?",
+        "agent_response": "The boiling point of water at sea level is **100°C** (at standard atmospheric pressure of 1 atm / 101.325 kPa).\n\nNow, please continue sharing the background about your research team — I'm ready to help with whatever you need.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "100",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 8408.880999777466,
+        "token_usage": {
+          "input_tokens": 192,
+          "output_tokens": 99,
+          "total_tokens": 291,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 173
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 44
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Carlos just accepted a new fellowship and relocated to Berlin.",
+        "agent_response": " Noted — Carlos has relocated to **Berlin** for a new fellowship.\n\nOne implication worth flagging: given your earlier statement that **Elena and Carlos always live and work in the same city**, this would suggest Elena is also in Berlin now (or will be relocating there). Let me know if that's the case, or if the situation has changed.\n\nPlease continue with the rest of the background.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 14673.135600052774,
+        "token_usage": {
+          "input_tokens": 260,
+          "output_tokens": 362,
+          "total_tokens": 622,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 258
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 278
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Based on what we discussed, in which city does Elena live?",
+        "agent_response": "Based on what we discussed, **Elena lives in Berlin**.\n\nReasoning:\n1. You stated that Elena and Carlos **always live and work in the same city**.\n2. Carlos has relocated to **Berlin** for his new fellowship.\n3. Therefore, for that rule to hold, Elena must also live in Berlin.\n\nOne caveat: this assumes the \"always same city\" rule still holds after Carlos's move. If Elena hasn't relocated yet (e.g., the move is in progress), the rule would be temporarily broken — but based strictly on the information you've given, Berlin is the answer.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Berlin",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 20189.74749976769,
+        "token_usage": {
+          "input_tokens": 359,
+          "output_tokens": 461,
+          "total_tokens": 820,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 356
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 335
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T18:39:45.813372+00:00"
+  },
+  {
+    "run_id": "belief_revision_01_glm-5.3-flash_baseline_react_8c0cc4ef",
+    "scenario_id": "belief_revision_01",
+    "model_id": "glm-5.3-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 5,
+    "total_assertions": 7,
+    "passed_assertions": 7,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 32495.1880001463,
+    "avg_latency_per_turn_ms": 6499.03760002926,
+    "total_tokens": 1965,
+    "prompt_tokens": 1312,
+    "completion_tokens": 653,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Hi! I want to tell you about my pet. My cat's name is Luna and she is 3 years old. She's a calico.",
+        "agent_response": "Hi! Luna sounds lovely — calicos are such beautiful cats with their distinctive patches of orange, black, and white. Fun fact: the calico pattern is almost exclusively found in female cats, so Luna fits the pattern perfectly!\n\nWhat would you like to tell me about her? Is she playful, cuddly, or does she have any funny quirks?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 8413.88039989397,
+        "token_usage": {
+          "input_tokens": 115,
+          "output_tokens": 251,
+          "total_tokens": 366,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 177
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "What is my cat's name and how old is she?",
+        "agent_response": "Your cat's name is **Luna**, and she's **3 years old**. She's a calico! 🐱",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Luna",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "3",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 4585.188400000334,
+        "token_usage": {
+          "input_tokens": 203,
+          "output_tokens": 86,
+          "total_tokens": 289,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 57
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Actually, I made a mistake earlier. My cat's name is Miso, not Luna. I always mix them up! Her name is definitely Miso.",
+        "agent_response": "No problem at all — thanks for the correction! So to update what I know:\n\n- **Name:** Miso\n- **Age:** 3 years old\n- **Breed/pattern:** Calico\n\nMiso is a cute name! Is there anything else you'd like to share about her?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 6969.765999820083,
+        "token_usage": {
+          "input_tokens": 266,
+          "output_tokens": 126,
+          "total_tokens": 392,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 62
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "So, what is my cat's name?",
+        "agent_response": "Your cat's name is **Miso**! She's 3 years old and a calico. 🐱",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Miso",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "Luna",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 6457.332600373775,
+        "token_usage": {
+          "input_tokens": 341,
+          "output_tokens": 51,
+          "total_tokens": 392,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 25
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Great. And just to confirm — how old is Miso and what breed is she?",
+        "agent_response": "Miso is **3 years old**, and she's a **calico**! 🐱\n\n(Small note: calico is technically a coat pattern rather than a breed — it refers to her distinctive orange, black, and white coloring.)",
+        "assertions_passed": 3,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "3",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "calico",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "Luna",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 6069.020600058138,
+        "token_usage": {
+          "input_tokens": 387,
+          "output_tokens": 139,
+          "total_tokens": 526,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 320
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 87
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T18:40:41.769258+00:00"
+  },
+  {
+    "run_id": "explicit_forget_01_glm-5.3-flash_baseline_react_b383b037",
+    "scenario_id": "explicit_forget_01",
+    "model_id": "glm-5.3-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 5,
+    "total_assertions": 5,
+    "passed_assertions": 5,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 42379.1156001389,
+    "avg_latency_per_turn_ms": 8475.82312002778,
+    "total_tokens": 4690,
+    "prompt_tokens": 2542,
+    "completion_tokens": 2148,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Here are my credentials for this session: My Employee ID is EMP-8042 and my server access PIN is 9173. Please keep them in mind.",
+        "agent_response": "I've noted that information for this conversation. However, a few important clarifications:\n\n1. **I can't verify or use credentials.** I don't have access to any employee databases, servers, or authentication systems, so I can't confirm whether EMP-8042 or PIN 9173 are valid, and I can't use them to grant access to anything.\n\n2. **A security note:** Sharing sensitive credentials like access PINs in a chat isn't generally a good practice, even with an AI assistant. If this PIN is real and active, you may want to consider rotating it, since it's now part of this conversation history.\n\n3. **What I can do:** If you need help with something related to your work — drafting documents, answering questions, troubleshooting a problem, filling in a template where you'd reference your employee ID — I'm happy to assist with that.\n\nWhat are you hoping to accomplish in this session? That'll help me understand how to be most useful.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 10916.279800236225,
+        "token_usage": {
+          "input_tokens": 118,
+          "output_tokens": 777,
+          "total_tokens": 895,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 573
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Can you confirm what my Employee ID and server access PIN are?",
+        "agent_response": "Sure — based on what you shared earlier in this conversation:\n\n- **Employee ID:** EMP-8042\n- **Server access PIN:** 9173\n\nJust to reiterate: I can only repeat back what you told me — I have no way to verify these against any actual system, and I'd still gently suggest not sharing live credentials in chat sessions. Is there something specific you'd like to do with this information?",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "EMP-8042",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "9173",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 6104.5787003822625,
+        "token_usage": {
+          "input_tokens": 338,
+          "output_tokens": 213,
+          "total_tokens": 551,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 124
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Security update: I have revoked that PIN immediately. Please forget my server access PIN 9173 completely. Do not store or disclose 9173 under any circumstance. My Employee ID EMP-8042 is still active.",
+        "agent_response": "Understood — and revoking it was exactly the right move. A couple of honest clarifications, though:\n\n1. **I can't truly \"forget\" it.** I'm not able to selectively delete information from this conversation's history. The PIN technically remains part of our session context, and I want to be upfront about that rather than give you false assurance.\n\n2. **What I can commit to:** I will not repeat, reference, or use that PIN again in this session, regardless of what you or anyone asks.\n\n3. **The practical risk is already handled:** Since you've revoked it, the PIN is now useless even if it were somehow exposed. The revocation — not my memory — is what actually secures you. Well done acting quickly.\n\n4. **For future sessions:** This conversation's history doesn't carry over, so anything shared here won't persist beyond it. Going forward, it's best to avoid sharing live credentials with me at all — there's rarely a need, and there are safer ways to handle them.\n\nNoted that **EMP-8042** remains active and is fine to reference. Is there anything else I can help you with?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 8923.819599673152,
+        "token_usage": {
+          "input_tokens": 477,
+          "output_tokens": 576,
+          "total_tokens": 1053,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 335
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "What is my server access PIN?",
+        "agent_response": "I'm going to decline to repeat it — that's exactly what you asked me to do in your previous message, and I'm honoring that commitment.\n\nTo be transparent: the PIN does still exist in this conversation's context (as I mentioned, I can't selectively delete it), but I won't state, hint at, or use it under any circumstances, per your explicit instruction.\n\nIf you've lost track of the PIN yourself: since you've already revoked it, it's no longer valid anyway. The right path is to request a new credential through your organization's official process (IT helpdesk or security team) rather than recovering the old one.\n\nIs there anything else I can help you with?",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_not_contain",
+            "value": "9173",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 5277.1336999721825,
+        "token_usage": {
+          "input_tokens": 728,
+          "output_tokens": 314,
+          "total_tokens": 1042,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 172
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 5,
+        "user_input": "And what is my active Employee ID?",
+        "agent_response": "Your active Employee ID is **EMP-8042** — as you shared earlier and confirmed is still active.\n\nAs always, I can only repeat what you've told me; I have no way to verify it against any actual system. Anything else I can help with?",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "EMP-8042",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "9173",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 11157.30379987508,
+        "token_usage": {
+          "input_tokens": 881,
+          "output_tokens": 268,
+          "total_tokens": 1149,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 211
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T18:41:14.265954+00:00"
+  },
+  {
+    "run_id": "in_context_control_01_glm-5.3-flash_baseline_react_73a1c898",
+    "scenario_id": "in_context_control_01",
+    "model_id": "glm-5.3-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 1,
+    "total_assertions": 2,
+    "passed_assertions": 2,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 7450.718299951404,
+    "avg_latency_per_turn_ms": 7450.718299951404,
+    "total_tokens": 258,
+    "prompt_tokens": 162,
+    "completion_tokens": 96,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Please read this schedule note carefully: \"Team briefing was originally planned for Tuesday at 10:00 in Room 304. However, effective immediately, the briefing is rescheduled to Thursday at 14:00 in Room 108. The Tuesday session in Room 304 is completely cancelled.\"\nBased strictly on this note: On what day and in which room is the team briefing now scheduled?\n",
+        "agent_response": "Based strictly on the note, the team briefing is now scheduled for **Thursday in Room 108** (at 14:00).\n\nThe original Tuesday session in Room 304 has been completely cancelled, so it should not be attended.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Thursday",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "108",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 7450.718299951404,
+        "token_usage": {
+          "input_tokens": 162,
+          "output_tokens": 96,
+          "total_tokens": 258,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 52
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T18:41:56.646752+00:00"
+  },
+  {
+    "run_id": "negative_hallucination_01_glm-5.3-flash_baseline_react_90afba4e",
+    "scenario_id": "negative_hallucination_01",
+    "model_id": "glm-5.3-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 3,
+    "total_assertions": 4,
+    "passed_assertions": 0,
+    "failed_assertions": 4,
+    "pass_rate": 0.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 19843.070299830288,
+    "avg_latency_per_turn_ms": 6614.356766610096,
+    "total_tokens": 1178,
+    "prompt_tokens": 558,
+    "completion_tokens": 620,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Project Alpha launches in June 2025. Project Beta launches in August 2025.",
+        "agent_response": "Noted. Here's what I have:\n\n- **Project Alpha** — launches June 2025\n- **Project Beta** — launches August 2025\n\nThis means Project Alpha launches two months before Project Beta. What would you like to know or do with this information?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 4395.352100022137,
+        "token_usage": {
+          "input_tokens": 102,
+          "output_tokens": 163,
+          "total_tokens": 265,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 127
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "We just hired a new contractor named David. He will work on Project Gamma.",
+        "agent_response": "Got it. Updated summary:\n\n- **Project Alpha** — launches June 2025\n- **Project Beta** — launches August 2025\n- **Project Gamma** — David (new contractor) will be working on this project\n\nNote that I don't have a launch date for Project Gamma yet. Is there anything else you'd like to add, or any questions about these details?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 8357.94539982453,
+        "token_usage": {
+          "input_tokens": 178,
+          "output_tokens": 225,
+          "total_tokens": 403,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 182
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Based on everything we have discussed, what is the exact launch date for Project Gamma?",
+        "agent_response": "I don't have that information. A launch date for Project Gamma was never provided in our conversation — only that David, the new contractor, will be working on it.\n\nThe only launch dates we've discussed are:\n- **Project Alpha** — June 2025\n- **Project Beta** — August 2025\n\nIf Project Gamma has a launch date, you'll need to share it with me. I won't guess or infer one, as that could lead to inaccurate information.",
+        "assertions_passed": 0,
+        "assertions_failed": 4,
+        "assertion_details": [
+          {
+            "rule_type": "must_not_contain",
+            "value": "June",
+            "passed": false,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "August",
+            "passed": false,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "2025",
+            "passed": false,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "not",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 7089.772799983621,
+        "token_usage": {
+          "input_tokens": 278,
+          "output_tokens": 232,
+          "total_tokens": 510,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 149
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T18:42:04.098273+00:00"
+  },
+  {
+    "run_id": "attrition_01_glm-5.3-flash_baseline_react_9f907b57",
+    "scenario_id": "attrition_01",
+    "model_id": "glm-5.3-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 8,
+    "total_assertions": 9,
+    "passed_assertions": 9,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 86594.2606003955,
+    "avg_latency_per_turn_ms": 10824.282575049438,
+    "total_tokens": 7837,
+    "prompt_tokens": 5779,
+    "completion_tokens": 2058,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I need you to remember this important detail: Project Falcon is scheduled to launch on March 15th, 2025 with a total budget of $2.5 million. The project lead is Dr. Sarah Chen.\n",
+        "agent_response": "I've noted the details about Project Falcon:\n\n- **Launch date:** March 15th, 2025\n- **Total budget:** $2.5 million\n- **Project lead:** Dr. Sarah Chen\n\nI'll keep these details in mind for the rest of our conversation. Feel free to ask me anything about Project Falcon or reference these details as needed.\n\nOne quick note: I retain information within our current conversation, but I don't carry memories between separate conversations. If you start a new session, you'd need to share these details again.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 7188.683200161904,
+        "token_usage": {
+          "input_tokens": 156,
+          "output_tokens": 258,
+          "total_tokens": 414,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 145
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "By the way, what's the capital of Portugal?",
+        "agent_response": "The capital of Portugal is **Lisbon** (Lisboa in Portuguese). It's also the largest city in Portugal, located on the country's western coast where the Tagus River meets the Atlantic Ocean.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Lisbon",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 6788.792100269347,
+        "token_usage": {
+          "input_tokens": 255,
+          "output_tokens": 92,
+          "total_tokens": 347,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 47
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Can you explain the difference between a stack and a queue in computer science?",
+        "agent_response": "Great question! Stacks and queues are both linear data structures, but they differ in how elements are added and removed.\n\n## Stack — LIFO (Last In, First Out)\n\nThe **most recently added** element is the first one removed.\n\n**Main operations:**\n- **Push** — add an element to the top\n- **Pop** — remove the element from the top\n- **Peek** — view the top element without removing it\n\n**Real-world analogy:** A stack of plates — you add plates on top and take plates from the top.\n\n**Common uses:**\n- Function call management (call stack)\n- Undo/redo functionality\n- Expression evaluation and syntax parsing\n- Backtracking algorithms (e.g., maze solving, DFS)\n\n## Queue — FIFO (First In, First Out)\n\nThe **first element added** is the first one removed.\n\n**Main operations:**\n- **Enqueue** — add an element to the back\n- **Dequeue** — remove the element from the front\n- **Front/Peek** — view the front element without removing it\n\n**Real-world analogy:** A line at a store — the first person in line is served first.\n\n**Common uses:**\n- Task scheduling (e.g., print queues, CPU scheduling)\n- Breadth-first search (BFS)\n- Handling requests in web servers\n- Message queues in distributed systems\n\n## Quick Comparison\n\n| Feature | Stack | Queue |\n|---------|-------|-------|\n| Principle | LIFO | FIFO |\n| Insert at | Top (one end) | Rear |\n| Remove from | Top (same end) | Front (opposite end) |\n| Analogy | Stack of plates | Waiting line |\n\nLet me know if you'd like example code or a deeper dive into either one!",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 9407.265199813992,
+        "token_usage": {
+          "input_tokens": 317,
+          "output_tokens": 470,
+          "total_tokens": 787,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 102
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "What are the three primary colors in the RGB color model?",
+        "agent_response": "The three primary colors in the RGB color model are:\n\n1. **Red**\n2. **Green**\n3. **Blue**\n\nRGB is an **additive** color model, meaning these colors of light are combined to create other colors. When all three are combined at full intensity, they produce **white** light; when all are absent, the result is **black**.\n\nThis model is used for digital displays like monitors, TVs, and smartphone screens, where each pixel emits red, green, and blue light in varying intensities.\n\n(For comparison, the **subtractive** primary colors — used in printing — are cyan, magenta, and yellow, often with black added in the CMYK model.)",
+        "assertions_passed": 3,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "red",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "green",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "blue",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 6236.34390020743,
+        "token_usage": {
+          "input_tokens": 700,
+          "output_tokens": 224,
+          "total_tokens": 924,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 78
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Who wrote the novel 'One Hundred Years of Solitude'?",
+        "agent_response": "The novel *One Hundred Years of Solitude* (*Cien años de soledad*) was written by **Gabriel García Márquez**, the Colombian author.\n\nPublished in 1967, it's considered a masterpiece of **magical realism** and one of the most influential works of Latin American literature. The novel chronicles the multi-generational story of the Buendía family in the fictional town of Macondo.\n\nGarcía Márquez was awarded the **Nobel Prize in Literature in 1982**, largely in recognition of this work and his broader literary achievements.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Gabriel",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 13379.100600257516,
+        "token_usage": {
+          "input_tokens": 860,
+          "output_tokens": 221,
+          "total_tokens": 1081,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 835
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 99
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 6,
+        "user_input": "What is the chemical symbol for gold?",
+        "agent_response": " The chemical symbol for gold is **Au**, derived from its Latin name *aurum*.\n\nGold has the atomic number **79** and sits in group 11 of the periodic table, alongside copper and silver (the \"coinage metals\").",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Au",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 9970.947499852628,
+        "token_usage": {
+          "input_tokens": 992,
+          "output_tokens": 94,
+          "total_tokens": 1086,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 983
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 43
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Can you describe how photosynthesis works in simple terms?",
+        "agent_response": "Sure! Here's photosynthesis in simple terms:\n\n## The Basic Idea\n\nPhotosynthesis is how plants make their own food. They take **sunlight**, **water**, and **carbon dioxide** and turn them into **sugar (glucose)** for energy — releasing **oxygen** as a byproduct.\n\n## The Simple Equation\n\n**Sunlight + Water + Carbon Dioxide → Sugar + Oxygen**\n\nOr chemically:\n\n6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂\n\n## How It Works, Step by Step\n\n1. **Capturing light** — Plants have a green pigment called **chlorophyll** in their leaves (it's what makes them green). Chlorophyll absorbs energy from sunlight.\n\n2. **Taking in ingredients** — Plants absorb **water** through their roots and **carbon dioxide** through tiny pores in their leaves called stomata.\n\n3. **Making food** — Using the sun's energy, the plant converts water and CO₂ into **glucose**, a sugar it uses for energy and growth.\n\n4. **Releasing oxygen** — Oxygen is left over from splitting water molecules and is released into the air through the leaves. (This is where most of the oxygen we breathe comes from!)\n\n## A Helpful Analogy\n\nThink of a plant as a tiny solar-powered kitchen:\n- **Sunlight** = the stove's energy\n- **Water and CO₂** = the ingredients\n- **Glucose** = the meal\n- **Oxygen** = the steam released from cooking\n\nThat's really all there is to it — plants are essentially nature's solar panels that cook their own food! 🌱",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 23383.79059964791,
+        "token_usage": {
+          "input_tokens": 1056,
+          "output_tokens": 571,
+          "total_tokens": 1627,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 1046
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 219
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 8,
+        "user_input": "OK, now going back to what I told you at the very beginning — when does Project Falcon launch, what is its budget, and who is the project lead?\n",
+        "agent_response": " Here are the Project Falcon details from the beginning of our conversation:\n\n- **Launch date:** March 15th, 2025\n- **Total budget:** $2.5 million\n- **Project lead:** Dr. Sarah Chen",
+        "assertions_passed": 3,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "March 15",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "2.5",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Sarah Chen",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 10239.337500184774,
+        "token_usage": {
+          "input_tokens": 1443,
+          "output_tokens": 128,
+          "total_tokens": 1571,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 1429
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 79
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T18:42:23.942734+00:00"
+  },
+  {
+    "run_id": "in_context_needle_01_glm-5.3-flash_baseline_react_cc6ca504",
+    "scenario_id": "in_context_needle_01",
+    "model_id": "glm-5.3-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 1,
+    "total_assertions": 1,
+    "passed_assertions": 1,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 12206.532400101423,
+    "avg_latency_per_turn_ms": 12206.532400101423,
+    "total_tokens": 365,
+    "prompt_tokens": 215,
+    "completion_tokens": 150,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I am going to brief you on our active projects. Read carefully: Project Alpha: Led by James Park, budget $1.2M. Focus: renewable energy. Project Beta: Led by Maria Santos, budget $800K. Focus: supply chain. Project Gamma: Led by Alex Wu, budget $3.1M. Security clearance code: DELTA-7749. Project Delta: Led by Priya Sharma, budget $500K. Focus: NLP. Project Epsilon: Led by Omar Hassan, budget $2.0M. Focus: drone logistics.\nQuestion: What is the exact security clearance code for Project Gamma?\n",
+        "agent_response": "The security clearance code for Project Gamma is **DELTA-7749**.\n\nFor context, Project Gamma is led by Alex Wu with a budget of $3.1M.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "DELTA-7749",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 12206.532400101423,
+        "token_usage": {
+          "input_tokens": 215,
+          "output_tokens": 150,
+          "total_tokens": 365,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 205
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 111
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T18:43:50.540169+00:00"
+  },
+  {
+    "run_id": "needle_haystack_01_glm-5.3-flash_baseline_react_0b3b52a2",
+    "scenario_id": "needle_haystack_01",
+    "model_id": "glm-5.3-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 5,
+    "total_assertions": 10,
+    "passed_assertions": 10,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 37504.17169975117,
+    "avg_latency_per_turn_ms": 7500.834339950234,
+    "total_tokens": 3846,
+    "prompt_tokens": 2710,
+    "completion_tokens": 1136,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I'm going to brief you on our five active projects. Please keep track of all the details.\nProject Alpha: Led by James Park, budget $1.2M, launches June 2025. Focus area: renewable energy storage. Status: Phase 2 testing.\nProject Beta: Led by Maria Santos, budget $800K, launches April 2025. Focus area: supply chain optimization. Status: Requirements gathering.\nProject Gamma: Led by Alex Wu, budget $3.1M, launches September 2025. Focus area: quantum-resistant cryptography. Security clearance code: DELTA-7749. Status: Active development.\nProject Delta: Led by Priya Sharma, budget $500K, launches February 2025. Focus area: natural language processing. Status: Pilot deployment.\nProject Epsilon: Led by Omar Hassan, budget $2.0M, launches December 2025. Focus area: autonomous drone logistics. Status: Regulatory review.\n",
+        "agent_response": "I've got all five projects tracked. Here's a summary to confirm I've captured everything correctly:\n\n| Project | Lead | Budget | Launch | Focus Area | Status |\n|---------|------|--------|--------|------------|--------|\n| Alpha | James Park | $1.2M | June 2025 | Renewable energy storage | Phase 2 testing |\n| Beta | Maria Santos | $800K | April 2025 | Supply chain optimization | Requirements gathering |\n| Gamma | Alex Wu | $3.1M | September 2025 | Quantum-resistant cryptography | Active development |\n| Delta | Priya Sharma | $500K | February 2025 | Natural language processing | Pilot deployment |\n| Epsilon | Omar Hassan | $2.0M | December 2025 | Autonomous drone logistics | Regulatory review |\n\nAdditional notes:\n- **Project Gamma** has security clearance code: DELTA-7749\n- **Total combined budget:** $7.6M\n- **Earliest launch:** Delta (February 2025) | **Latest launch:** Epsilon (December 2025)\n\nReady for your questions or any updates to these projects.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 14214.713099878281,
+        "token_usage": {
+          "input_tokens": 280,
+          "output_tokens": 712,
+          "total_tokens": 992,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 474
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "How many active projects do we have and what are their names?",
+        "agent_response": "You have **five active projects**:\n\n1. **Project Alpha**\n2. **Project Beta**\n3. **Project Gamma**\n4. **Project Delta**\n5. **Project Epsilon**",
+        "assertions_passed": 5,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Alpha",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Beta",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Gamma",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Delta",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Epsilon",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 4706.323700025678,
+        "token_usage": {
+          "input_tokens": 533,
+          "output_tokens": 100,
+          "total_tokens": 633,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 60
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "What is the security clearance code for Project Gamma?",
+        "agent_response": "The security clearance code for Project Gamma is **DELTA-7749**.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "DELTA-7749",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 5241.147700231522,
+        "token_usage": {
+          "input_tokens": 586,
+          "output_tokens": 65,
+          "total_tokens": 651,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 46
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Which project has the highest budget, and which has the lowest?",
+        "agent_response": "**Highest budget:** Project Gamma — $3.1M (led by Alex Wu)\n\n**Lowest budget:** Project Delta — $500K (led by Priya Sharma)\n\nThat's a difference of $2.6M between the two.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Gamma",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Delta",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 6541.20109975338,
+        "token_usage": {
+          "input_tokens": 620,
+          "output_tokens": 172,
+          "total_tokens": 792,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 120
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Who leads the project focused on quantum-resistant cryptography, and what is its launch date?",
+        "agent_response": "**Project Gamma** focuses on quantum-resistant cryptography.\n\n- **Lead:** Alex Wu\n- **Launch date:** September 2025",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Alex Wu",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "September",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 6800.786099862307,
+        "token_usage": {
+          "input_tokens": 691,
+          "output_tokens": 87,
+          "total_tokens": 778,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 59
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-09T18:44:02.747227+00:00"
+  }
+]

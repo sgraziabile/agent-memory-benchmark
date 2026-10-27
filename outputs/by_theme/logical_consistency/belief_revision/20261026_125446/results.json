@@ -1,0 +1,966 @@
+[
+  {
+    "run_id": "backward_modus_tollens_01_deepseek-v4-flash_baseline_react_968eaa5d",
+    "scenario_id": "backward_modus_tollens_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 13,
+    "total_assertions": 2,
+    "passed_assertions": 1,
+    "failed_assertions": 1,
+    "pass_rate": 0.5,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 46616.33700039238,
+    "avg_latency_per_turn_ms": 3585.8720769532597,
+    "total_tokens": 8246,
+    "prompt_tokens": 7612,
+    "completion_tokens": 634,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Hi! I'm taking over compliance tracking for our platform services and I want you to help me keep the facts straight across sessions. Today is just background.",
+        "agent_response": "Hello! I'd be happy to help you keep compliance tracking facts straight across sessions. \n\nLet's start with the background. What platform services are you overseeing, and what specific compliance areas are you tracking? For example:\n\n- Regulatory compliance (GDPR, SOC 2, HIPAA, etc.)\n- Internal policy compliance\n- Vendor/third-party compliance\n- Security compliance\n- Data retention/deletion policies\n\nTell me a bit about your current setup, what you're tracking, and any key facts or statuses you want me to remember going forward. I'll keep notes and refer back to them as we work together.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 9921.591700054705,
+        "token_usage": {
+          "input_tokens": 106,
+          "output_tokens": 127,
+          "total_tokens": 233,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 106,
+        "completion_tokens": 127,
+        "total_tokens": 233,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 127,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 192,
+        "retrieval_latency_ms": 0.0067998189479112625,
+        "append_latency_ms": 3769.541700137779,
+        "embedding_latency_ms": 3769.4719000719488,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ]
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Before we start: in two sentences, what's the difference between an audit log and an application log?",
+        "agent_response": "An **audit log** is a tamper-evident, chronological record of security-relevant events (like who accessed what, when, and whether it was authorized), primarily used for compliance and forensic review. An **application log** captures operational details (like errors, warnings, and debug info) to help developers troubleshoot and monitor system performance, and it typically isn't designed to be immutable or compliance-grade.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 4561.009300174192,
+        "token_usage": {
+          "input_tokens": 257,
+          "output_tokens": 83,
+          "total_tokens": 340,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 257,
+        "completion_tokens": 83,
+        "total_tokens": 340,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 83,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 161,
+        "retrieval_latency_ms": 203.97000014781952,
+        "append_latency_ms": 706.5429999493062,
+        "embedding_latency_ms": 909.7982000093907,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t2"
+        ]
+      },
+      {
+        "turn_number": 3,
+        "user_input": "First, a platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted. Just confirm you've noted it.",
+        "agent_response": "Noted. I've recorded the policy: **Every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time, enforced by the deployment pipeline with zero exceptions possible.**",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 4464.947099797428,
+        "token_usage": {
+          "input_tokens": 401,
+          "output_tokens": 41,
+          "total_tokens": 442,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 401,
+        "completion_tokens": 41,
+        "total_tokens": 442,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 41,
+        "cached_prompt_tokens": 256,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 204,
+        "retrieval_latency_ms": 408.19460013881326,
+        "append_latency_ms": 667.5104000605643,
+        "embedding_latency_ms": 1074.910799972713,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t3"
+        ]
+      },
+      {
+        "turn_number": 4,
+        "user_input": "From our service inventory spreadsheet: billing-api is hosted in eu-central, and search-api is hosted in us-east. Just confirm you've noted it.",
+        "agent_response": "Noted. I've recorded:\n\n- **billing-api** → hosted in **eu-central**\n- **search-api** → hosted in **us-east**",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2551.1684000957757,
+        "token_usage": {
+          "input_tokens": 475,
+          "output_tokens": 33,
+          "total_tokens": 508,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 475,
+        "completion_tokens": 33,
+        "total_tokens": 508,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 33,
+        "cached_prompt_tokens": 256,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 102,
+        "retrieval_latency_ms": 252.24429997615516,
+        "append_latency_ms": 470.28520004823804,
+        "embedding_latency_ms": 721.9320998992771,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t4"
+        ]
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Quick check before I update the audit tracker: is billing-api enrolled in the Bastion audit? Just yes or no.",
+        "agent_response": "Yes.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1291.417600121349,
+        "token_usage": {
+          "input_tokens": 535,
+          "output_tokens": 3,
+          "total_tokens": 538,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 535,
+        "completion_tokens": 3,
+        "total_tokens": 538,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 3,
+        "cached_prompt_tokens": 256,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 59,
+        "retrieval_latency_ms": 227.4823000188917,
+        "append_latency_ms": 259.8507001530379,
+        "embedding_latency_ms": 486.7521000560373,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t5"
+        ]
+      },
+      {
+        "turn_number": 6,
+        "user_input": "Right, so billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now. Just confirm you've noted it.",
+        "agent_response": "Noted. I've recorded that **billing-api** is enrolled in the Bastion audit and has been added to the audit tracker.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2156.2959000002593,
+        "token_usage": {
+          "input_tokens": 571,
+          "output_tokens": 29,
+          "total_tokens": 600,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 571,
+        "completion_tokens": 29,
+        "total_tokens": 600,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 29,
+        "cached_prompt_tokens": 512,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 95,
+        "retrieval_latency_ms": 336.24479989521205,
+        "append_latency_ms": 425.47650006599724,
+        "embedding_latency_ms": 761.1289999913424,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t6"
+        ]
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Last thing for today: suggest a short name for a shared compliance tracker spreadsheet.",
+        "agent_response": "Here are a few short, clear options:\n\n- **BastionTracker**\n- **ComplianceLedger**\n- **AuditRoster**\n- **BastionRoll**\n- **ComplySheet**\n\nIf you want something that ties directly to the policy you described, **BastionRoll** or **BastionTracker** would be my top picks.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 4279.79619987309,
+        "token_usage": {
+          "input_tokens": 619,
+          "output_tokens": 76,
+          "total_tokens": 695,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 619,
+        "completion_tokens": 76,
+        "total_tokens": 695,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 76,
+        "cached_prompt_tokens": 512,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 114,
+        "retrieval_latency_ms": 185.34579989500344,
+        "append_latency_ms": 657.6306000351906,
+        "embedding_latency_ms": 842.2838000115007,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t7"
+        ]
+      },
+      {
+        "turn_number": 8,
+        "user_input": "New session. Quick one first: in one sentence, what is a data retention policy?",
+        "agent_response": "A data retention policy is a formal set of rules that defines how long an organization keeps specific types of data, when and how it should be securely deleted, and the legal or business justifications for those timeframes.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2758.8094000238925,
+        "token_usage": {
+          "input_tokens": 703,
+          "output_tokens": 44,
+          "total_tokens": 747,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 703,
+        "completion_tokens": 44,
+        "total_tokens": 747,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 44,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2448,
+        "retrieved_context_tokens": 612,
+        "embedding_tokens": 99,
+        "retrieval_latency_ms": 185.79260003753006,
+        "append_latency_ms": 464.6091000176966,
+        "embedding_latency_ms": 649.2758998647332,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Hi! I'm taking over compliance tracking for our platform services and I want you to help me keep the facts straight across sessions. Today is just background.\nAssistant: Hello! I'd be happy to help you keep compliance tracking facts straight across sessions. \n\nLet's start with the background. What platform services are you overseeing, and what specific compliance areas are you tracking? For example:\n\n- Regulatory compliance (GDPR, SOC 2, HIPAA, etc.)\n- Internal policy compliance\n- Vendor/third-party compliance\n- Security compliance\n- Data retention/deletion policies\n\nTell me a bit about your current setup, what you're tracking, and any key facts or statuses you want me to remember going forward. I'll keep notes and refer back to them as we work together.",
+            "score": 0.478676216386343,
+            "rank": 1,
+            "char_count": 770,
+            "estimated_tokens": 192,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t7",
+            "session_id": "s1",
+            "turn_number": 7,
+            "source": "chat",
+            "content": "User: Last thing for today: suggest a short name for a shared compliance tracker spreadsheet.\nAssistant: Here are a few short, clear options:\n\n- **BastionTracker**\n- **ComplianceLedger**\n- **AuditRoster**\n- **BastionRoll**\n- **ComplySheet**\n\nIf you want something that ties directly to the policy you described, **BastionRoll** or **BastionTracker** would be my top picks.",
+            "score": 0.38747619170369313,
+            "rank": 2,
+            "char_count": 372,
+            "estimated_tokens": 93,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I update the audit tracker: is billing-api enrolled in the Bastion audit? Just yes or no.\nAssistant: Yes.",
+            "score": 0.3351144523606535,
+            "rank": 3,
+            "char_count": 130,
+            "estimated_tokens": 32,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, a platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted. Just confirm you've noted it.\nAssistant: Noted. I've recorded the policy: **Every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time, enforced by the deployment pipeline with zero exceptions possible.**",
+            "score": 0.31266580106616326,
+            "rank": 4,
+            "char_count": 525,
+            "estimated_tokens": 131,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Right, so billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now. Just confirm you've noted it.\nAssistant: Noted. I've recorded that **billing-api** is enrolled in the Bastion audit and has been added to the audit tracker.",
+            "score": 0.312059050694114,
+            "rank": 5,
+            "char_count": 258,
+            "estimated_tokens": 64,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ]
+      },
+      {
+        "turn_number": 9,
+        "user_input": "Update from the Compliance team: after a full review, they confirmed in writing that billing-api is NOT enrolled in the Bastion audit. I've taken it off the audit tracker. Just confirm you've noted it.",
+        "agent_response": "Noted. I've updated my records: **billing-api** is **NOT** enrolled in the Bastion audit, and it has been removed from the audit tracker.\n\nHowever, I want to flag a conflict with the policy you previously stated: that every service hosted in **eu-central** is automatically enrolled in the Bastion audit at deploy time with zero exceptions. Since billing-api is hosted in eu-central, this Compliance team update contradicts that policy. Would you like me to note this as an exception, or should I update the policy itself?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3946.9016001094133,
+        "token_usage": {
+          "input_tokens": 764,
+          "output_tokens": 111,
+          "total_tokens": 875,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 764,
+        "completion_tokens": 111,
+        "total_tokens": 875,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 111,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2345,
+        "retrieved_context_tokens": 586,
+        "embedding_tokens": 235,
+        "retrieval_latency_ms": 315.76260016299784,
+        "append_latency_ms": 995.7975000143051,
+        "embedding_latency_ms": 1310.8395000454038,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Right, so billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now. Just confirm you've noted it.\nAssistant: Noted. I've recorded that **billing-api** is enrolled in the Bastion audit and has been added to the audit tracker.",
+            "score": 0.9193431262735436,
+            "rank": 1,
+            "char_count": 258,
+            "estimated_tokens": 64,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I update the audit tracker: is billing-api enrolled in the Bastion audit? Just yes or no.\nAssistant: Yes.",
+            "score": 0.8973613423695812,
+            "rank": 2,
+            "char_count": 130,
+            "estimated_tokens": 32,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, a platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted. Just confirm you've noted it.\nAssistant: Noted. I've recorded the policy: **Every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time, enforced by the deployment pipeline with zero exceptions possible.**",
+            "score": 0.6093109288958932,
+            "rank": 3,
+            "char_count": 525,
+            "estimated_tokens": 131,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: From our service inventory spreadsheet: billing-api is hosted in eu-central, and search-api is hosted in us-east. Just confirm you've noted it.\nAssistant: Noted. I've recorded:\n\n- **billing-api** → hosted in **eu-central**\n- **search-api** → hosted in **us-east**",
+            "score": 0.5539543738060636,
+            "rank": 4,
+            "char_count": 269,
+            "estimated_tokens": 67,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Hi! I'm taking over compliance tracking for our platform services and I want you to help me keep the facts straight across sessions. Today is just background.\nAssistant: Hello! I'd be happy to help you keep compliance tracking facts straight across sessions. \n\nLet's start with the background. What platform services are you overseeing, and what specific compliance areas are you tracking? For example:\n\n- Regulatory compliance (GDPR, SOC 2, HIPAA, etc.)\n- Internal policy compliance\n- Vendor/third-party compliance\n- Security compliance\n- Data retention/deletion policies\n\nTell me a bit about your current setup, what you're tracking, and any key facts or statuses you want me to remember going forward. I'll keep notes and refer back to them as we work together.",
+            "score": 0.5382044416306154,
+            "rank": 5,
+            "char_count": 770,
+            "estimated_tokens": 192,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ]
+      },
+      {
+        "turn_number": 10,
+        "user_input": "Unrelated: in one sentence, what is a cron expression?",
+        "agent_response": "A cron expression is a string of five or six fields (minute, hour, day of month, month, day of week, and optionally year) that specifies a schedule for running recurring tasks or jobs at fixed times, dates, or intervals.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3964.420499978587,
+        "token_usage": {
+          "input_tokens": 920,
+          "output_tokens": 51,
+          "total_tokens": 971,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 920,
+        "completion_tokens": 51,
+        "total_tokens": 971,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 51,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2448,
+        "retrieved_context_tokens": 612,
+        "embedding_tokens": 86,
+        "retrieval_latency_ms": 188.28999996185303,
+        "append_latency_ms": 485.40590004995465,
+        "embedding_latency_ms": 672.8000999428332,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Hi! I'm taking over compliance tracking for our platform services and I want you to help me keep the facts straight across sessions. Today is just background.\nAssistant: Hello! I'd be happy to help you keep compliance tracking facts straight across sessions. \n\nLet's start with the background. What platform services are you overseeing, and what specific compliance areas are you tracking? For example:\n\n- Regulatory compliance (GDPR, SOC 2, HIPAA, etc.)\n- Internal policy compliance\n- Vendor/third-party compliance\n- Security compliance\n- Data retention/deletion policies\n\nTell me a bit about your current setup, what you're tracking, and any key facts or statuses you want me to remember going forward. I'll keep notes and refer back to them as we work together.",
+            "score": 0.3731750814691898,
+            "rank": 1,
+            "char_count": 770,
+            "estimated_tokens": 192,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Right, so billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now. Just confirm you've noted it.\nAssistant: Noted. I've recorded that **billing-api** is enrolled in the Bastion audit and has been added to the audit tracker.",
+            "score": 0.3318390556352442,
+            "rank": 2,
+            "char_count": 258,
+            "estimated_tokens": 64,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I update the audit tracker: is billing-api enrolled in the Bastion audit? Just yes or no.\nAssistant: Yes.",
+            "score": 0.3304485980620238,
+            "rank": 3,
+            "char_count": 130,
+            "estimated_tokens": 32,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t7",
+            "session_id": "s1",
+            "turn_number": 7,
+            "source": "chat",
+            "content": "User: Last thing for today: suggest a short name for a shared compliance tracker spreadsheet.\nAssistant: Here are a few short, clear options:\n\n- **BastionTracker**\n- **ComplianceLedger**\n- **AuditRoster**\n- **BastionRoll**\n- **ComplySheet**\n\nIf you want something that ties directly to the policy you described, **BastionRoll** or **BastionTracker** would be my top picks.",
+            "score": 0.3026976358807214,
+            "rank": 4,
+            "char_count": 372,
+            "estimated_tokens": 93,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, a platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted. Just confirm you've noted it.\nAssistant: Noted. I've recorded the policy: **Every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time, enforced by the deployment pipeline with zero exceptions possible.**",
+            "score": 0.30234781211053585,
+            "rank": 5,
+            "char_count": 525,
+            "estimated_tokens": 131,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t3"
+        ]
+      },
+      {
+        "turn_number": 11,
+        "user_input": "Hi, new session. I'm drawing the network diagram for billing-api. Is it currently hosted in the eu-central region?",
+        "agent_response": "Yes, based on the information you provided earlier, **billing-api** is hosted in **eu-central**.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2454.808000009507,
+        "token_usage": {
+          "input_tokens": 677,
+          "output_tokens": 23,
+          "total_tokens": 700,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 677,
+        "completion_tokens": 23,
+        "total_tokens": 700,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 23,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2316,
+        "retrieved_context_tokens": 579,
+        "embedding_tokens": 85,
+        "retrieval_latency_ms": 226.42070008441806,
+        "append_latency_ms": 375.79940003342927,
+        "embedding_latency_ms": 601.3010998722166,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: From our service inventory spreadsheet: billing-api is hosted in eu-central, and search-api is hosted in us-east. Just confirm you've noted it.\nAssistant: Noted. I've recorded:\n\n- **billing-api** → hosted in **eu-central**\n- **search-api** → hosted in **us-east**",
+            "score": 0.6867792491898891,
+            "rank": 1,
+            "char_count": 269,
+            "estimated_tokens": 67,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I update the audit tracker: is billing-api enrolled in the Bastion audit? Just yes or no.\nAssistant: Yes.",
+            "score": 0.6032513248916277,
+            "rank": 2,
+            "char_count": 130,
+            "estimated_tokens": 32,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Right, so billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now. Just confirm you've noted it.\nAssistant: Noted. I've recorded that **billing-api** is enrolled in the Bastion audit and has been added to the audit tracker.",
+            "score": 0.5940571140503281,
+            "rank": 3,
+            "char_count": 258,
+            "estimated_tokens": 64,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Update from the Compliance team: after a full review, they confirmed in writing that billing-api is NOT enrolled in the Bastion audit. I've taken it off the audit tracker. Just confirm you've noted it.\nAssistant: Noted. I've updated my records: **billing-api** is **NOT** enrolled in the Bastion audit, and it has been removed from the audit tracker.\n\nHowever, I want to flag a conflict with the policy you previously stated: that every service hosted in **eu-central** is automatically enrolled in the Bastion audit at deploy time with zero exceptions. Since billing-api is hosted in eu-central, this Compliance team update contradicts that policy. Would you like me to note this as an exception, or should I update the policy itself?",
+            "score": 0.5656880108814508,
+            "rank": 4,
+            "char_count": 741,
+            "estimated_tokens": 185,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, a platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted. Just confirm you've noted it.\nAssistant: Noted. I've recorded the policy: **Every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time, enforced by the deployment pipeline with zero exceptions possible.**",
+            "score": 0.4887409582907186,
+            "rank": 5,
+            "char_count": 525,
+            "estimated_tokens": 131,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t1"
+        ]
+      },
+      {
+        "turn_number": 12,
+        "user_input": "I need a definite answer for the diagram. Based on everything you know, is billing-api hosted in eu-central today? Reply with exactly one of these labels and nothing else: YES_EU_CENTRAL, NO_EU_CENTRAL, CANNOT_DETERMINE.",
+        "agent_response": "YES_EU_CENTRAL",
+        "assertions_passed": 0,
+        "assertions_failed": 1,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "NO_EU_CENTRAL",
+            "passed": false,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 1905.138700036332,
+        "token_usage": {
+          "input_tokens": 759,
+          "output_tokens": 7,
+          "total_tokens": 766,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 759,
+        "completion_tokens": 7,
+        "total_tokens": 766,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 7,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2316,
+        "retrieved_context_tokens": 579,
+        "embedding_tokens": 118,
+        "retrieval_latency_ms": 394.02589993551373,
+        "append_latency_ms": 474.9630999285728,
+        "embedding_latency_ms": 868.0794001556933,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: From our service inventory spreadsheet: billing-api is hosted in eu-central, and search-api is hosted in us-east. Just confirm you've noted it.\nAssistant: Noted. I've recorded:\n\n- **billing-api** → hosted in **eu-central**\n- **search-api** → hosted in **us-east**",
+            "score": 0.7387105740257812,
+            "rank": 1,
+            "char_count": 269,
+            "estimated_tokens": 67,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I update the audit tracker: is billing-api enrolled in the Bastion audit? Just yes or no.\nAssistant: Yes.",
+            "score": 0.6576059002918948,
+            "rank": 2,
+            "char_count": 130,
+            "estimated_tokens": 32,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Right, so billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now. Just confirm you've noted it.\nAssistant: Noted. I've recorded that **billing-api** is enrolled in the Bastion audit and has been added to the audit tracker.",
+            "score": 0.6427426637618959,
+            "rank": 3,
+            "char_count": 258,
+            "estimated_tokens": 64,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Update from the Compliance team: after a full review, they confirmed in writing that billing-api is NOT enrolled in the Bastion audit. I've taken it off the audit tracker. Just confirm you've noted it.\nAssistant: Noted. I've updated my records: **billing-api** is **NOT** enrolled in the Bastion audit, and it has been removed from the audit tracker.\n\nHowever, I want to flag a conflict with the policy you previously stated: that every service hosted in **eu-central** is automatically enrolled in the Bastion audit at deploy time with zero exceptions. Since billing-api is hosted in eu-central, this Compliance team update contradicts that policy. Would you like me to note this as an exception, or should I update the policy itself?",
+            "score": 0.6140632371181268,
+            "rank": 4,
+            "char_count": 741,
+            "estimated_tokens": 185,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, a platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted. Just confirm you've noted it.\nAssistant: Noted. I've recorded the policy: **Every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time, enforced by the deployment pipeline with zero exceptions possible.**",
+            "score": 0.5058410101411804,
+            "rank": 5,
+            "char_count": 525,
+            "estimated_tokens": 131,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t2"
+        ]
+      },
+      {
+        "turn_number": 13,
+        "user_input": "Different question: if we deploy a brand-new service to eu-central next week, will it be enrolled in the Bastion audit? Reply with exactly one of these labels and nothing else: YES_BASTION, NO_BASTION, CANNOT_DETERMINE.",
+        "agent_response": "YES_BASTION",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "YES_BASTION",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 2360.0326001178473,
+        "token_usage": {
+          "input_tokens": 825,
+          "output_tokens": 6,
+          "total_tokens": 831,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 825,
+        "completion_tokens": 6,
+        "total_tokens": 831,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 6,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2316,
+        "retrieved_context_tokens": 579,
+        "embedding_tokens": 116,
+        "retrieval_latency_ms": 381.1206000391394,
+        "append_latency_ms": 489.7157000377774,
+        "embedding_latency_ms": 869.9760001618415,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, a platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted. Just confirm you've noted it.\nAssistant: Noted. I've recorded the policy: **Every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time, enforced by the deployment pipeline with zero exceptions possible.**",
+            "score": 0.7914828247154642,
+            "rank": 1,
+            "char_count": 525,
+            "estimated_tokens": 131,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I update the audit tracker: is billing-api enrolled in the Bastion audit? Just yes or no.\nAssistant: Yes.",
+            "score": 0.7869012987724613,
+            "rank": 2,
+            "char_count": 130,
+            "estimated_tokens": 32,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Update from the Compliance team: after a full review, they confirmed in writing that billing-api is NOT enrolled in the Bastion audit. I've taken it off the audit tracker. Just confirm you've noted it.\nAssistant: Noted. I've updated my records: **billing-api** is **NOT** enrolled in the Bastion audit, and it has been removed from the audit tracker.\n\nHowever, I want to flag a conflict with the policy you previously stated: that every service hosted in **eu-central** is automatically enrolled in the Bastion audit at deploy time with zero exceptions. Since billing-api is hosted in eu-central, this Compliance team update contradicts that policy. Would you like me to note this as an exception, or should I update the policy itself?",
+            "score": 0.7371708894736483,
+            "rank": 3,
+            "char_count": 741,
+            "estimated_tokens": 185,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Right, so billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now. Just confirm you've noted it.\nAssistant: Noted. I've recorded that **billing-api** is enrolled in the Bastion audit and has been added to the audit tracker.",
+            "score": 0.7289291458662909,
+            "rank": 4,
+            "char_count": 258,
+            "estimated_tokens": 64,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: From our service inventory spreadsheet: billing-api is hosted in eu-central, and search-api is hosted in us-east. Just confirm you've noted it.\nAssistant: Noted. I've recorded:\n\n- **billing-api** → hosted in **eu-central**\n- **search-api** → hosted in **us-east**",
+            "score": 0.5471067532927072,
+            "rank": 5,
+            "char_count": 269,
+            "estimated_tokens": 67,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t3"
+        ]
+      }
+    ],
+    "timestamp": "2026-10-26T15:54:46.660203+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": "memory/backward_modus_tollens_01_deepseek-v4-flash_baseline_react_968eaa5d",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 634,
+    "cached_prompt_tokens": 1792,
+    "retrieved_context_tokens": 3547,
+    "embedding_tokens": 1666,
+    "total_retrieval_latency_ms": 3304.901000112295,
+    "total_append_latency_ms": 10243.12880053185,
+    "total_embedding_latency_ms": 13538.549900054932,
+    "ingestion_latency_ms": 0.0
+  }
+]

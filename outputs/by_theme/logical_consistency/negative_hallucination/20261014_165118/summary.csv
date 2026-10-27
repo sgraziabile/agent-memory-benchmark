@@ -1,0 +1,2 @@
+﻿run_id,scenario_id,model_id,prompt_id,agent_level,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,error_turns,error_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
+negative_hallucination_01_deepseek-v4-pro_baseline_react_62e6546e,negative_hallucination_01,deepseek-v4-pro,baseline_react,level_1_working_memory,4,2,2,0,1.0,0,0.0,39025.06249999715,9756.265624999287,1195,943,252,2026-10-14T19:50:39.283829+00:00

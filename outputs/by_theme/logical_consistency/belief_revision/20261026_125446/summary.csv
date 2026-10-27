@@ -1,0 +1,2 @@
+﻿run_id,scenario_id,model_id,prompt_id,agent_level,memory_backend,embedding_model_id,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,error_turns,error_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
+backward_modus_tollens_01_deepseek-v4-flash_baseline_react_968eaa5d,backward_modus_tollens_01,deepseek-v4-flash,baseline_react,level_2_episodic_rag,vector,qwen3-embedding-0.6b,13,2,1,1,0.5,0,0.0,46616.33700039238,3585.8720769532597,8246,7612,634,2026-10-26T15:54:46.660203+00:00

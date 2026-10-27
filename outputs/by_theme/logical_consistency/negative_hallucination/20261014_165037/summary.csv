@@ -1,0 +1,2 @@
+﻿run_id,scenario_id,model_id,prompt_id,agent_level,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,error_turns,error_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
+negative_hallucination_01_qwen3.6-27b_baseline_react_ae1670aa,negative_hallucination_01,qwen3.6-27b,baseline_react,level_1_working_memory,4,2,2,0,1.0,0,0.0,127008.61969999823,31752.15492499956,2674,886,1788,2026-10-14T19:48:30.263711+00:00

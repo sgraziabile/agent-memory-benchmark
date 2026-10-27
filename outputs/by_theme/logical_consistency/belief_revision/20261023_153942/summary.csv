@@ -1,0 +1,2 @@
+﻿run_id,scenario_id,model_id,prompt_id,agent_level,memory_backend,embedding_model_id,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,error_turns,error_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
+belief_revision_01_deepseek-v4-flash_baseline_react_a505512b,belief_revision_01,deepseek-v4-flash,baseline_react,level_2_episodic_rag,vector,qwen3-embedding-0.6b,5,7,7,0,1.0,0,0.0,18036.624999716878,3607.3249999433756,1185,1055,130,2026-10-23T18:39:42.153811+00:00
