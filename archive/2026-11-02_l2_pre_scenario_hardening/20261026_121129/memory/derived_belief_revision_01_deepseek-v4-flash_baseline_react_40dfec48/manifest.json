@@ -1,0 +1,22 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "derived_belief_revision_01_deepseek-v4-flash_baseline_react_40dfec48",
+    "scenario_id": "derived_belief_revision_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag"
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "total_chunks": 13,
+  "total_chars": 4258,
+  "total_estimated_tokens": 1057,
+  "snapshot_timestamp": "2026-10-26T15:12:11.968495+00:00"
+}

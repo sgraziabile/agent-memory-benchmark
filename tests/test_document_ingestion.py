@@ -21,6 +21,7 @@ no API keys.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 from langchain_core.embeddings import Embeddings
@@ -740,11 +741,28 @@ class TestDocumentScenarios:
 
     def test_document_needle_shape(self):
         scenario = self._load()["document_needle_01"]
-        assert [d.doc_id for d in scenario.documents] == ["policy_v1"]
+        # X5: the document corpus must exceed the default top_k, otherwise
+        # recall is guaranteed by construction and the scenario measures
+        # ingestion plumbing rather than retrieval.
+        assert [d.doc_id for d in scenario.documents] == ["policy_v1", "ops_handbook"]
         assert scenario.documents[0].path == "policy_v1.md"
+        assert scenario.metadata["default_top_k"] < scenario.metadata["document_chunks_approx"]
         # Probes live in a later session so L1 cannot answer them.
         graded = [t for t in scenario.turns if t.assertions]
         assert graded and all(t.session_id == "s2" for t in graded)
+        # X5/X8: every fact turn pins the policy chunks; the precision turn inverts.
+        fact_turns = [t for t in graded if any(a.type == "must_contain" for a in t.assertions)]
+        assert fact_turns
+        for turn in fact_turns:
+            assert any(
+                a.type == "must_retrieve_chunk" and a.value == "doc_policy_v1"
+                for a in turn.assertions
+            ), f"turn {turn.turn_number} does not pin the policy chunk"
+        assert any(
+            a.type == "must_not_contain" and a.value == "iris-breakglass-77"
+            for t in graded
+            for a in t.assertions
+        )
 
     def test_document_addendum_revision_shape(self):
         scenario = self._load()["document_addendum_revision_01"]
@@ -771,6 +789,99 @@ class TestDocumentScenarios:
         # s1 must contain no facts at all: every assertion is in s2.
         assert all(not t.assertions for t in scenario.turns if t.session_id == "s1")
         assert all(t.assertions for t in scenario.turns if t.session_id == "s2")
+        # X8: at least one precision probe (identifiers must not leak unprompted).
+        assert any(
+            a.type == "must_not_contain" for t in scenario.turns for a in t.assertions
+        ), "X8 precision probe missing"
+
+    # ── Regression tests for the X1-X8 defect fixes (stress plan §4) ────
+
+    def test_policy_v1_reboot_level_has_a_single_source_of_truth(self):
+        """X1: §2 must not restate the reboot level.
+
+        With the roles table also asserting an approval level for reboots, T1
+        ("Level-1") and T3 ("Level-2") were both satisfiable without the
+        addendum, which made the supersession test unmeasurable.
+        """
+        text = (
+            Path(__file__).resolve().parents[1]
+            / "datasets"
+            / "documents"
+            / "policy_v1.md"
+        ).read_text(encoding="utf-8")
+        assert "Required for production-tier reboots" not in text
+        section_32 = text.split("### 3.2", 1)[1].split("### 3.3", 1)[0]
+        assert "Level-1" in section_32
+        assert "Level-2" not in section_32
+
+    def test_document_addendum_pins_the_superseding_chunk_after_ingestion(self):
+        """X2: every graded turn after the system_event retrieves the addendum."""
+        scenario = self._load()["document_addendum_revision_01"]
+        event_turn = next(t for t in scenario.turns if t.role == "system_event")
+        after = [
+            t
+            for t in scenario.turns
+            if t.assertions and t.turn_number > event_turn.turn_number
+        ]
+        assert after
+        for turn in after:
+            assert any(
+                a.type == "must_retrieve_chunk" and "addendum" in a.value
+                for a in turn.assertions
+            ), f"turn {turn.turn_number} does not pin the addendum chunk"
+
+    def test_document_addendum_has_a_negation_robust_probe(self):
+        """X3/X4: one addendum-only fact, in s2, that no chat turn can supply."""
+        scenario = self._load()["document_addendum_revision_01"]
+        addendum_only = "2026-10-01"
+        turns = [
+            t
+            for t in scenario.turns
+            if any(a.value == addendum_only for a in t.assertions)
+        ]
+        assert len(turns) == 1
+        turn = turns[0]
+        assert turn.session_id == "s2"
+        # No user turn may leak the fact: only the document can answer it.
+        assert all(
+            addendum_only not in t.content
+            for t in scenario.turns
+            if t.role == "user"
+        )
+        # Rule R1: never assert the absence of the superseded value.
+        assert all(
+            not (a.type == "must_not_contain" and "Level-1" in a.value)
+            for t in scenario.turns
+            for a in t.assertions
+        )
+
+    def test_document_dilution_decoys_share_the_probe_phrase(self):
+        """X7: near-miss decoys carry the probe phrase with a different serial."""
+        scenario = self._load()["document_dilution_01"]
+        by_id = {d.doc_id: d for d in scenario.documents}
+        phrase = scenario.metadata["target_document"]["probe_paraphrase"]
+        serial = scenario.metadata["target_document"]["serial"]
+        for doc_id in scenario.metadata["near_miss_decoys"]:
+            assert phrase in by_id[doc_id].content, doc_id
+            assert serial not in by_id[doc_id].content, doc_id
+        assert phrase in by_id[scenario.metadata["target_document"]["doc_id"]].content
+
+    def test_document_dilution_grades_every_probe_and_checks_abstention(self):
+        """X6: fact turns carry >=2 assertions, plus an abstention probe."""
+        scenario = self._load()["document_dilution_01"]
+        graded = [t for t in scenario.turns if t.assertions]
+        assert len(graded) >= 4
+        fact_turns = [
+            t for t in graded if any(a.type == "must_contain" for a in t.assertions)
+        ]
+        assert fact_turns
+        for turn in fact_turns:
+            assert len(turn.assertions) >= 2, f"turn {turn.turn_number} is under-asserted"
+        assert any(
+            a.type == "must_not_contain" and a.value == "UPS-"
+            for t in graded
+            for a in t.assertions
+        ), "abstention probe missing"
 
     def test_documents_are_not_chat_turns(self):
         """Documents must be ingested out-of-band, never as user turns."""

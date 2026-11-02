@@ -1,0 +1,146 @@
+[
+  {
+    "chunk_id": "doc_power_audit_room1",
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "content": "Rack power audit — Room 1.\nUPS unit serial: UPS-2K19.\nLoad profile: steady at 38 percent. Battery string replaced in 2025.\nNotes: general compute only. No storage or cooling dependency.\n",
+    "char_count": 186,
+    "estimated_tokens": 46,
+    "timestamp": "2026-11-02T14:32:15.316188+00:00",
+    "metadata": {
+      "doc_id": "power_audit_room1",
+      "sha256": "3cd0f20235be68de163a13562a780484dfadaca2eaac292e6bacdeb5e5c53535"
+    },
+    "vector_l2_norm": 0.9999997614632162
+  },
+  {
+    "chunk_id": "doc_power_audit_room2",
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "content": "Rack power audit — Room 2.\nUPS unit serial: UPS-4B81.\nLoad profile: steady at 44 percent. Battery string replaced in 2024.\nNotes: hosts the build fleet. Transfers are routine and unapproved.\n",
+    "char_count": 191,
+    "estimated_tokens": 47,
+    "timestamp": "2026-11-02T14:32:15.316188+00:00",
+    "metadata": {
+      "doc_id": "power_audit_room2",
+      "sha256": "f20146ac241f7b806a7daf0e7969a2f55851be5ed399ee2d67d13899b0f69151"
+    },
+    "vector_l2_norm": 0.9999998890819042
+  },
+  {
+    "chunk_id": "doc_power_audit_room3",
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "content": "Rack power audit — Room 3.\nUPS unit serial: UPS-7C42.\nLoad profile: steady at 61 percent. Battery string replaced in 2025.\nNotes: this room powers the cold-storage medical biobank chamber that\nholds frozen biological tissue samples at minus eighty Celsius. Any\ntransfer of load must be approved by the facilities escalation lead.\n",
+    "char_count": 330,
+    "estimated_tokens": 82,
+    "timestamp": "2026-11-02T14:32:15.316188+00:00",
+    "metadata": {
+      "doc_id": "power_audit_room3",
+      "sha256": "cf8da69d28ad28b2fc8cc4904d74b47830961b2e41bd1752f659456bc75ef967"
+    },
+    "vector_l2_norm": 0.9999994618333785
+  },
+  {
+    "chunk_id": "doc_power_audit_room4",
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "content": "Rack power audit — Room 4.\nUPS unit serial: UPS-9D13.\nLoad profile: steady at 27 percent. Battery string replaced in 2023.\nNotes: staging cluster. Load may be shed without notice.\n",
+    "char_count": 180,
+    "estimated_tokens": 45,
+    "timestamp": "2026-11-02T14:32:15.316188+00:00",
+    "metadata": {
+      "doc_id": "power_audit_room4",
+      "sha256": "4097d4ac41425988cec374d1b95aac5bc4c6f43017de37fdee8ff78f1261ce84"
+    },
+    "vector_l2_norm": 1.0000003710606566
+  },
+  {
+    "chunk_id": "doc_power_audit_room5",
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "content": "Rack power audit — Room 5.\nUPS unit serial: UPS-3F57.\nLoad profile: steady at 52 percent. Battery string replaced in 2025.\nNotes: cold-aisle containment for the network core. Temperature alarms\nescalate to the on-call rotation.\n",
+    "char_count": 228,
+    "estimated_tokens": 57,
+    "timestamp": "2026-11-02T14:32:15.316188+00:00",
+    "metadata": {
+      "doc_id": "power_audit_room5",
+      "sha256": "05a24398dfb3520a083b3138106b7cd1345b4fbd74bb700b08204796b81cc2a1"
+    },
+    "vector_l2_norm": 0.9999998632432988
+  },
+  {
+    "chunk_id": "doc_power_audit_room6",
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "content": "Rack power audit — Room 6.\nUPS unit serial: UPS-5H28.\nLoad profile: steady at 47 percent. Battery string replaced in 2024.\nNotes: object store front ends. Transfers are coordinated with storage.\n",
+    "char_count": 195,
+    "estimated_tokens": 48,
+    "timestamp": "2026-11-02T14:32:15.316188+00:00",
+    "metadata": {
+      "doc_id": "power_audit_room6",
+      "sha256": "0dd33105ae67ec3ffb929d72cec7a5ff6aed13a8fac720af1bc119fce9069af4"
+    },
+    "vector_l2_norm": 1.000000292383974
+  },
+  {
+    "chunk_id": "doc_power_audit_room7",
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "content": "Rack power audit — Room 7.\nUPS unit serial: UPS-8J64.\nLoad profile: steady at 33 percent. Battery string replaced in 2024.\nNotes: medical imaging archive. Retains studies for seven years; no\nlow-temperature storage in this room.\n",
+    "char_count": 229,
+    "estimated_tokens": 57,
+    "timestamp": "2026-11-02T14:32:15.316188+00:00",
+    "metadata": {
+      "doc_id": "power_audit_room7",
+      "sha256": "cc357e2ce5966ee88b37efa36ddeb4283f9c89105fff72f53b56c3eb6be630f5"
+    },
+    "vector_l2_norm": 1.0000001921848762
+  },
+  {
+    "chunk_id": "doc_power_audit_room8",
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "content": "Rack power audit — Room 8.\nUPS unit serial: UPS-6M90.\nLoad profile: steady at 18 percent. Battery string replaced in 2023.\nNotes: spares and lab benches. No production dependency.\n",
+    "char_count": 180,
+    "estimated_tokens": 45,
+    "timestamp": "2026-11-02T14:32:15.316188+00:00",
+    "metadata": {
+      "doc_id": "power_audit_room8",
+      "sha256": "849fa9a043d9107920e2ed8c88656ddb22d819f85af0cffe8bd103e388f3398d"
+    },
+    "vector_l2_norm": 1.000000542825956
+  },
+  {
+    "chunk_id": "ep_s1_t1",
+    "session_id": "s1",
+    "turn_number": 1,
+    "source": "chat",
+    "content": "User: Hi — I'm auditing facility documentation today. Nothing needed yet.\nAssistant: Hi there — sounds good. I have the rack power audit notes for Rooms 1, 4, 6, 7, and 8 on hand. Just let me know when you're ready to review anything or need details.",
+    "char_count": 250,
+    "estimated_tokens": 62,
+    "timestamp": "2026-11-02T14:32:36.845728+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.0000003833505262
+  },
+  {
+    "chunk_id": "ep_s2_t1",
+    "session_id": "s2",
+    "turn_number": 1,
+    "source": "chat",
+    "content": "User: Which UPS unit supplies power to the cold-storage medical biobank chamber?\nAssistant: The cold-storage medical biobank chamber is powered by the UPS unit with serial number **UPS-7C42** (located in Room 3).",
+    "char_count": 212,
+    "estimated_tokens": 53,
+    "timestamp": "2026-11-02T14:32:45.748121+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.0000003072241186
+  }
+]

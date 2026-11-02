@@ -9,9 +9,9 @@ embedding tokens only.
 
 | File | Contents | Used by |
 |------|----------|---------|
-| `policy_v1.md` | Northwind access policy: roles → authorization levels table, change management (§3.2 = Level-1 reboots), break-glass account `iris-breakglass-77` | `document_needle_01`, `document_addendum_revision_01` |
-| `addendum_1.md` | Addendum superseding §3.2 (`Level-2` reboots) | `document_addendum_revision_01` (via `system_event`) |
-| `ops_handbook.md` | Service ports (telemetry ingestion gateway = `7443`), escalation leads (`Rostova`), failover cluster `dr-atlas-04` | `document_cross_thread_01` |
+| `policy_v1.md` | Northwind access policy: roles → authorization levels table, change management (§3.2 is the **only** place that states the reboot level = Level-1), break-glass account `iris-breakglass-77` | `document_needle_01`, `document_addendum_revision_01` |
+| `addendum_1.md` | Addendum superseding §3.2 (`Level-2` reboots) and setting the 2026-10-01 runbook compliance window | `document_addendum_revision_01` (via `system_event`) |
+| `ops_handbook.md` | Service ports (telemetry ingestion gateway = `7443`), escalation leads (`Rostova`), failover cluster `dr-atlas-04` | `document_cross_thread_01`; `document_needle_01` (topically adjacent distractor that makes the corpus exceed `top_k`) |
 
 ## How a scenario references them
 

@@ -22,7 +22,7 @@ Every request must carry one of the following authorization levels:
 |-----------------------------|---------------------|----------------------------------------|
 | Platform engineer           | Level-0             | Read-only in `prod`                    |
 | Senior platform engineer    | Level-1             | May approve standard changes           |
-| Change Advisory Board (CAB) | Level-2             | Required for production-tier reboots    |
+| Change Advisory Board (CAB) | Level-2             | Owns the change calendar; §4 data access |
 | Security incident commander | Level-3             | Break-glass and data-erasure decisions |
 
 An approval is bound to a single change ticket. Reusing an approval for a

@@ -1,0 +1,932 @@
+[
+  {
+    "run_id": "entity_binding_01_deepseek-v4-flash_baseline_react_84354533",
+    "scenario_id": "entity_binding_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 11,
+    "total_assertions": 8,
+    "passed_assertions": 8,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 36331.04310045019,
+    "avg_latency_per_turn_ms": 3302.822100040926,
+    "total_tokens": 4348,
+    "prompt_tokens": 4267,
+    "completion_tokens": 81,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Platform inventory entry: we are registering server srv-alpha for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.",
+        "agent_response": "Registered",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 5398.554899962619,
+        "token_usage": {
+          "input_tokens": 107,
+          "output_tokens": 2,
+          "total_tokens": 109,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 107,
+        "completion_tokens": 2,
+        "total_tokens": 109,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 46,
+        "retrieval_latency_ms": 0.005600042641162872,
+        "append_latency_ms": 2614.551499951631,
+        "embedding_latency_ms": 2614.486699923873,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ]
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Admin console configuration for that server: its admin console runs on port 7443 and its maintenance window is Tuesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.",
+        "agent_response": "Saved",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2665.005800081417,
+        "token_usage": {
+          "input_tokens": 153,
+          "output_tokens": 2,
+          "total_tokens": 155,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 153,
+        "completion_tokens": 2,
+        "total_tokens": 155,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 97,
+        "retrieval_latency_ms": 652.2115000989288,
+        "append_latency_ms": 418.4091000352055,
+        "embedding_latency_ms": 1069.9646000284702,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t2"
+        ]
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Platform inventory entry: we are registering server srv-gamma for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.",
+        "agent_response": "Registered",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2259.1766000259668,
+        "token_usage": {
+          "input_tokens": 191,
+          "output_tokens": 2,
+          "total_tokens": 193,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 191,
+        "completion_tokens": 2,
+        "total_tokens": 193,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 85,
+        "retrieval_latency_ms": 295.46279995702207,
+        "append_latency_ms": 317.3913999926299,
+        "embedding_latency_ms": 612.0412002783269,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t3"
+        ]
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Admin console configuration for that server: its admin console runs on port 7999 and its maintenance window is Thursday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.",
+        "agent_response": "Saved",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1945.7201000768691,
+        "token_usage": {
+          "input_tokens": 237,
+          "output_tokens": 2,
+          "total_tokens": 239,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 237,
+        "completion_tokens": 2,
+        "total_tokens": 239,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 98,
+        "retrieval_latency_ms": 372.62540007941425,
+        "append_latency_ms": 414.2019001301378,
+        "embedding_latency_ms": 786.2545000389218,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t4"
+        ]
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Platform inventory entry: we are registering server srv-beta for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.",
+        "agent_response": "Registered",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2635.6797001790255,
+        "token_usage": {
+          "input_tokens": 405,
+          "output_tokens": 2,
+          "total_tokens": 407,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 405,
+        "completion_tokens": 2,
+        "total_tokens": 407,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1103,
+        "retrieved_context_tokens": 275,
+        "embedding_tokens": 85,
+        "retrieval_latency_ms": 291.999600129202,
+        "append_latency_ms": 321.9039000105113,
+        "embedding_latency_ms": 613.286399981007,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-alpha for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.8849615968235696,
+            "rank": 1,
+            "char_count": 187,
+            "estimated_tokens": 46,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-gamma for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.8816106549535507,
+            "rank": 2,
+            "char_count": 187,
+            "estimated_tokens": 46,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7443 and its maintenance window is Tuesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6306313413843979,
+            "rank": 3,
+            "char_count": 207,
+            "estimated_tokens": 51,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7999 and its maintenance window is Thursday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6287879216443069,
+            "rank": 4,
+            "char_count": 208,
+            "estimated_tokens": 52,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ]
+      },
+      {
+        "turn_number": 6,
+        "user_input": "Admin console configuration for that server: its admin console runs on port 7080 and its maintenance window is Wednesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.",
+        "agent_response": "Saved",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2050.1159001141787,
+        "token_usage": {
+          "input_tokens": 451,
+          "output_tokens": 2,
+          "total_tokens": 453,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 451,
+        "completion_tokens": 2,
+        "total_tokens": 453,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1103,
+        "retrieved_context_tokens": 275,
+        "embedding_tokens": 98,
+        "retrieval_latency_ms": 380.86579996161163,
+        "append_latency_ms": 401.60340000875294,
+        "embedding_latency_ms": 781.5615001600236,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7443 and its maintenance window is Tuesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.9402127866040035,
+            "rank": 1,
+            "char_count": 207,
+            "estimated_tokens": 51,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7999 and its maintenance window is Thursday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.9394296676924331,
+            "rank": 2,
+            "char_count": 208,
+            "estimated_tokens": 52,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-alpha for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.6516328317140698,
+            "rank": 3,
+            "char_count": 187,
+            "estimated_tokens": 46,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-gamma for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.6405804270634831,
+            "rank": 4,
+            "char_count": 187,
+            "estimated_tokens": 46,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ]
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Platform inventory entry: we are registering server srv-delta for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.",
+        "agent_response": "Registered",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 5088.766200002283,
+        "token_usage": {
+          "input_tokens": 489,
+          "output_tokens": 2,
+          "total_tokens": 491,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 489,
+        "completion_tokens": 2,
+        "total_tokens": 491,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1103,
+        "retrieved_context_tokens": 275,
+        "embedding_tokens": 85,
+        "retrieval_latency_ms": 320.23670012131333,
+        "append_latency_ms": 329.3377999216318,
+        "embedding_latency_ms": 648.8710001576692,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-gamma for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.8854751967749984,
+            "rank": 1,
+            "char_count": 187,
+            "estimated_tokens": 46,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-alpha for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.8844825862714701,
+            "rank": 2,
+            "char_count": 187,
+            "estimated_tokens": 46,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7443 and its maintenance window is Tuesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6238212056325735,
+            "rank": 3,
+            "char_count": 207,
+            "estimated_tokens": 51,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7999 and its maintenance window is Thursday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6235875190076046,
+            "rank": 4,
+            "char_count": 208,
+            "estimated_tokens": 52,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t3"
+        ]
+      },
+      {
+        "turn_number": 8,
+        "user_input": "Admin console configuration for that server: its admin console runs on port 7555 and its maintenance window is Friday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.",
+        "agent_response": "Saved",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3400.8736999239773,
+        "token_usage": {
+          "input_tokens": 535,
+          "output_tokens": 2,
+          "total_tokens": 537,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 535,
+        "completion_tokens": 2,
+        "total_tokens": 537,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1103,
+        "retrieved_context_tokens": 275,
+        "embedding_tokens": 96,
+        "retrieval_latency_ms": 394.2646998912096,
+        "append_latency_ms": 695.9972998593003,
+        "embedding_latency_ms": 1089.348099892959,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7999 and its maintenance window is Thursday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.9407484096819878,
+            "rank": 1,
+            "char_count": 208,
+            "estimated_tokens": 52,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7443 and its maintenance window is Tuesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.9401586492750371,
+            "rank": 2,
+            "char_count": 207,
+            "estimated_tokens": 51,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-alpha for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.6516189791317346,
+            "rank": 3,
+            "char_count": 187,
+            "estimated_tokens": 46,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-gamma for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.6397276485057257,
+            "rank": 4,
+            "char_count": 187,
+            "estimated_tokens": 46,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t4"
+        ]
+      },
+      {
+        "turn_number": 9,
+        "user_input": "Hi, new session. I'm reviewing the platform team's core cluster inventory. What admin console ports are configured for srv-alpha and srv-beta?",
+        "agent_response": "Based on the information provided in this conversation, I have records for **srv-alpha** only. Its admin console is configured on port **7443** with a maintenance window of Tuesday 03:00 UTC.\n\nThere is no information about **srv-beta** in the conversation history.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 6444.516999879852,
+        "token_usage": {
+          "input_tokens": 491,
+          "output_tokens": 59,
+          "total_tokens": 550,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 491,
+        "completion_tokens": 59,
+        "total_tokens": 550,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 59,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1410,
+        "retrieved_context_tokens": 352,
+        "embedding_tokens": 141,
+        "retrieval_latency_ms": 265.74529986828566,
+        "append_latency_ms": 1166.8010998982936,
+        "embedding_latency_ms": 1431.0951000079513,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-alpha for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.7081371850801326,
+            "rank": 1,
+            "char_count": 187,
+            "estimated_tokens": 46,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7443 and its maintenance window is Tuesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.699072681150709,
+            "rank": 2,
+            "char_count": 207,
+            "estimated_tokens": 51,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7080 and its maintenance window is Wednesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6837471921336832,
+            "rank": 3,
+            "char_count": 209,
+            "estimated_tokens": 52,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7999 and its maintenance window is Thursday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6832506303920635,
+            "rank": 4,
+            "char_count": 208,
+            "estimated_tokens": 52,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t4",
+            "session_id": "s2",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7555 and its maintenance window is Friday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6805767014968881,
+            "rank": 5,
+            "char_count": 206,
+            "estimated_tokens": 51,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t1"
+        ]
+      },
+      {
+        "turn_number": 10,
+        "user_input": "For the firewall rule table, reply with ONLY the 4-digit admin console port number for server srv-alpha (for example: 9000), nothing else.",
+        "agent_response": "7443",
+        "assertions_passed": 4,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "7443",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "7080",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "7999",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "7555",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 2061.5750001743436,
+        "token_usage": {
+          "input_tokens": 586,
+          "output_tokens": 3,
+          "total_tokens": 589,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 586,
+        "completion_tokens": 3,
+        "total_tokens": 589,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 3,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1410,
+        "retrieved_context_tokens": 352,
+        "embedding_tokens": 74,
+        "retrieval_latency_ms": 301.4698000624776,
+        "append_latency_ms": 600.1742999069393,
+        "embedding_latency_ms": 900.8484000805765,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7443 and its maintenance window is Tuesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6638473718321888,
+            "rank": 1,
+            "char_count": 207,
+            "estimated_tokens": 51,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t4",
+            "session_id": "s2",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7555 and its maintenance window is Friday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6561171340104914,
+            "rank": 2,
+            "char_count": 206,
+            "estimated_tokens": 51,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7080 and its maintenance window is Wednesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6543918159819712,
+            "rank": 3,
+            "char_count": 209,
+            "estimated_tokens": 52,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7999 and its maintenance window is Thursday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.6482119103214469,
+            "rank": 4,
+            "char_count": 208,
+            "estimated_tokens": 52,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-alpha for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.5683249324286175,
+            "rank": 5,
+            "char_count": 187,
+            "estimated_tokens": 46,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t2"
+        ]
+      },
+      {
+        "turn_number": 11,
+        "user_input": "Next row: reply with ONLY the 4-digit admin console port number for server srv-beta (for example: 9000), nothing else.",
+        "agent_response": "7080",
+        "assertions_passed": 4,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "7080",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "7443",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "7999",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "7555",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 2381.0582000296563,
+        "token_usage": {
+          "input_tokens": 622,
+          "output_tokens": 3,
+          "total_tokens": 625,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 622,
+        "completion_tokens": 3,
+        "total_tokens": 625,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 3,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1409,
+        "retrieved_context_tokens": 352,
+        "embedding_tokens": 64,
+        "retrieval_latency_ms": 486.7610998917371,
+        "append_latency_ms": 387.81309989281,
+        "embedding_latency_ms": 873.0760999023914,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7443 and its maintenance window is Tuesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.7585964800774865,
+            "rank": 1,
+            "char_count": 207,
+            "estimated_tokens": 51,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7080 and its maintenance window is Wednesday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.7531975616455959,
+            "rank": 2,
+            "char_count": 209,
+            "estimated_tokens": 52,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t4",
+            "session_id": "s2",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7555 and its maintenance window is Friday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.7531963406429493,
+            "rank": 3,
+            "char_count": 206,
+            "estimated_tokens": 51,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Admin console configuration for that server: its admin console runs on port 7999 and its maintenance window is Thursday 03:00 UTC. Reply with the single word 'Saved' only, nothing else.\nAssistant: Saved",
+            "score": 0.7511843494061072,
+            "rank": 4,
+            "char_count": 208,
+            "estimated_tokens": 52,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t1",
+            "session_id": "s2",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Platform inventory entry: we are registering server srv-beta for the platform team's core cluster. Reply with the single word 'Registered' only, nothing else.\nAssistant: Registered",
+            "score": 0.6826949940925808,
+            "rank": 5,
+            "char_count": 186,
+            "estimated_tokens": 46,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t3"
+        ]
+      }
+    ],
+    "timestamp": "2026-10-27T16:14:50.723867+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": "memory/entity_binding_01_deepseek-v4-flash_baseline_react_84354533",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 81,
+    "cached_prompt_tokens": 0,
+    "retrieved_context_tokens": 2156,
+    "embedding_tokens": 969,
+    "total_retrieval_latency_ms": 3761.648300103843,
+    "total_append_latency_ms": 7668.184799607843,
+    "total_embedding_latency_ms": 11420.83360045217,
+    "ingestion_latency_ms": 0.0
+  }
+]

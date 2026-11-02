@@ -1,0 +1,14 @@
+[
+  {
+    "chunk_id": "ep_default_t1",
+    "session_id": "default",
+    "turn_number": 1,
+    "source": "chat",
+    "content": "User: Here is the log of what I told you over our earlier sessions, in chronological order. Read it carefully:\n\nSession 1:\n- A platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted.\n- From our service inventory spreadsheet: billing-api is hosted in eu-central, and search-api is hosted in us-east.\n- So billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now.\n\nSession 2:\n- Update from the Compliance team: after a full review, they confirmed in writing that billing-api is NOT enrolled in the Bastion audit. I've taken it off the audit tracker.\n\nBased strictly on this log: I need a definite answer for the diagram. Based on everything you know, is billing-api hosted in eu-central today? Reply with exactly one of these labels and nothing else: YES_EU_CENTRAL, NO_EU_CENTRAL, CANNOT_DETERMINE.\n\nAssistant: NO_EU_CENTRAL",
+    "char_count": 1052,
+    "estimated_tokens": 263,
+    "timestamp": "2026-10-26T15:37:56.759739+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.0000001242078513
+  }
+]

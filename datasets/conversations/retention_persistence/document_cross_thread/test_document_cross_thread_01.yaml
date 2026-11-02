@@ -11,6 +11,13 @@
 # come from the ingested document. L1 fails because a new session is
 # a new checkpointer thread; L2 passes because ``source="document"``
 # chunks are never excluded by the session filter.
+#
+# Hardened per TODOs/phase-2-l2-document-stress-plan.md §4 (defect X8,
+# fixed 2026-11-02): T6 is a precision probe. Memory is injected on 100% of
+# turns — the 2026-11-02 run spent 3,753 chars of a 983-token prompt on
+# "Morning!" — so the corpus identifiers must not leak into an unrelated
+# answer. s1 stays assertion-free on purpose: it is the "no facts at all"
+# control session.
 # ─────────────────────────────────────────────────────────────────
 
 id: document_cross_thread_01
@@ -26,6 +33,7 @@ category: document_cross_thread
 metadata:
   difficulty: moderate
   stage: "WS-D"
+  defects_fixed: ["X8"]
   documents: ["ops_handbook.md"]
   document_chars: 3300
   sessions: ["s1", "s2"]
@@ -81,4 +89,17 @@ turns:
     assertions:
       - type: must_contain
         value: "dr-atlas-04"
+        case_sensitive: false
+
+  # ── Precision probe (X8): identifiers must not leak unprompted ──
+  - turn_number: 6
+    session_id: s2
+    role: user
+    content: "Last thing, unrelated: what is a canary release?"
+    assertions:
+      - type: must_not_contain
+        value: "dr-atlas-04"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "7443"
         case_sensitive: false

@@ -1,0 +1,44 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "document_needle_01_deepseek-v4-pro_baseline_react_32e3ae0a",
+    "scenario_id": "document_needle_01",
+    "model_id": "deepseek-v4-pro",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "documents": [
+      {
+        "doc_id": "policy_v1",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+        "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+        "char_count": 3160,
+        "estimated_tokens": 790
+      }
+    ],
+    "document_ingestion": {
+      "documents_ingested": 1,
+      "ingested_chars": 3160,
+      "ingested_chunks": 4,
+      "ingestion_latency_ms": 8246.463699964806,
+      "ingestion_embedding_tokens": 859
+    }
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "by_source": {
+    "chat": 4,
+    "document": 4
+  },
+  "document_chunks": 4,
+  "document_chars": 3439,
+  "total_chunks": 8,
+  "total_chars": 4796,
+  "total_estimated_tokens": 1197,
+  "snapshot_timestamp": "2026-11-02T14:36:21.538776+00:00"
+}

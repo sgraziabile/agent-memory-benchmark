@@ -1,0 +1,93 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "document_dilution_01_deepseek-v4-pro_baseline_react_c329fad8",
+    "scenario_id": "document_dilution_01",
+    "model_id": "deepseek-v4-pro",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "documents": [
+      {
+        "doc_id": "power_audit_room1",
+        "source_path": null,
+        "sha256": "3cd0f20235be68de163a13562a780484dfadaca2eaac292e6bacdeb5e5c53535",
+        "char_count": 186,
+        "estimated_tokens": 46
+      },
+      {
+        "doc_id": "power_audit_room2",
+        "source_path": null,
+        "sha256": "f20146ac241f7b806a7daf0e7969a2f55851be5ed399ee2d67d13899b0f69151",
+        "char_count": 191,
+        "estimated_tokens": 47
+      },
+      {
+        "doc_id": "power_audit_room3",
+        "source_path": null,
+        "sha256": "cf8da69d28ad28b2fc8cc4904d74b47830961b2e41bd1752f659456bc75ef967",
+        "char_count": 330,
+        "estimated_tokens": 82
+      },
+      {
+        "doc_id": "power_audit_room4",
+        "source_path": null,
+        "sha256": "4097d4ac41425988cec374d1b95aac5bc4c6f43017de37fdee8ff78f1261ce84",
+        "char_count": 180,
+        "estimated_tokens": 45
+      },
+      {
+        "doc_id": "power_audit_room5",
+        "source_path": null,
+        "sha256": "05a24398dfb3520a083b3138106b7cd1345b4fbd74bb700b08204796b81cc2a1",
+        "char_count": 228,
+        "estimated_tokens": 57
+      },
+      {
+        "doc_id": "power_audit_room6",
+        "source_path": null,
+        "sha256": "0dd33105ae67ec3ffb929d72cec7a5ff6aed13a8fac720af1bc119fce9069af4",
+        "char_count": 195,
+        "estimated_tokens": 48
+      },
+      {
+        "doc_id": "power_audit_room7",
+        "source_path": null,
+        "sha256": "cc357e2ce5966ee88b37efa36ddeb4283f9c89105fff72f53b56c3eb6be630f5",
+        "char_count": 229,
+        "estimated_tokens": 57
+      },
+      {
+        "doc_id": "power_audit_room8",
+        "source_path": null,
+        "sha256": "849fa9a043d9107920e2ed8c88656ddb22d819f85af0cffe8bd103e388f3398d",
+        "char_count": 180,
+        "estimated_tokens": 45
+      }
+    ],
+    "document_ingestion": {
+      "documents_ingested": 8,
+      "ingested_chars": 1719,
+      "ingested_chunks": 8,
+      "ingestion_latency_ms": 6997.859499999322,
+      "ingestion_embedding_tokens": 427
+    }
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "by_source": {
+    "chat": 2,
+    "document": 8
+  },
+  "document_chunks": 8,
+  "document_chars": 1719,
+  "total_chunks": 10,
+  "total_chars": 2181,
+  "total_estimated_tokens": 542,
+  "snapshot_timestamp": "2026-11-02T14:32:48.312730+00:00"
+}

@@ -1,0 +1,603 @@
+[
+  {
+    "run_id": "document_needle_01_deepseek-v4-pro_baseline_react_32e3ae0a",
+    "scenario_id": "document_needle_01",
+    "model_id": "deepseek-v4-pro",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 4,
+    "total_assertions": 4,
+    "passed_assertions": 4,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 31728.747500048485,
+    "avg_latency_per_turn_ms": 7932.186875012121,
+    "total_tokens": 4852,
+    "prompt_tokens": 4192,
+    "completion_tokens": 660,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Hi! I'm going to use you as my assistant for the platform team this week.",
+        "agent_response": "Hi! Great to have you. I'm ready to help with the platform team this week. I've got the Northwind Datacenter Access Policy (Revision 1) loaded, so I can answer questions about access levels, change management, break-glass accounts, and more. Just let me know what you need.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 9913.503099989612,
+        "token_usage": {
+          "input_tokens": 951,
+          "output_tokens": 168,
+          "total_tokens": 1119,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 681
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 951,
+        "completion_tokens": 168,
+        "total_tokens": 1119,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 168,
+        "cached_prompt_tokens": 681,
+        "retrieved_context_chars": 3817,
+        "retrieved_context_tokens": 954,
+        "embedding_tokens": 109,
+        "retrieval_latency_ms": 221.42210003221408,
+        "append_latency_ms": 2675.8357000071555,
+        "embedding_latency_ms": 2896.375900018029,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_policy_v1_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Northwind Datacenter Access Policy (Revision 1)\n\nDocument owner: Platform Security\nApplies to: `prod`, `staging` and `lab` environments\nClassification: Internal\n\n## 1. Scope\n\nThis policy governs human and automated access to every Northwind facility,\nincluding the Rosario primary datacenter and the Buenos Aires disaster\nrecovery site. It covers change management, customer-data handling, and the\nemergency accounts used by the platform on-call rotation.\n\nNothing in this document overrides a contractual data-processing agreement.\nWhere a customer contract is stricter, the contract wins.\n\n## 2. Roles and authorization levels\n\nEvery request must carry one of the following authorization levels:",
+            "score": 0.2843303197886578,
+            "rank": 1,
+            "char_count": 699,
+            "estimated_tokens": 174,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 0,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## 2. Roles and authorization levels\n\nEvery request must carry one of the following authorization levels:\n\n| Role                        | Authorization level | Notes                                  |\n|-----------------------------|---------------------|----------------------------------------|\n| Platform engineer           | Level-0             | Read-only in `prod`                    |\n| Senior platform engineer    | Level-1             | May approve standard changes           |\n| Change Advisory Board (CAB) | Level-2             | Required for production-tier reboots    |\n| Security incident commander | Level-3             | Break-glass and data-erasure decisions |\n\nAn approval is bound to a single change ticket. Reusing an approval for a\nsecond ticket is treated as an audit finding, not as an approval.\n\n## 3. Change management\n\n### 3.1 Standard changes\n\nStandard changes (dashboards, alerts, log retention tweaks) may be applied\nduring business hours after a Level-0 review and a green CI pipeline.\n\n### 3.2 Production-tier reboots",
+            "score": 0.27916886401943763,
+            "rank": 2,
+            "char_count": 1048,
+            "estimated_tokens": 262,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 1,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Standard changes (dashboards, alerts, log retention tweaks) may be applied\nduring business hours after a Level-0 review and a green CI pipeline.\n\n### 3.2 Production-tier reboots\n\nProduction-tier reboots require Level-1 approval from the on-call lead. The\napproval must be recorded on the change ticket before the reboot starts, and\nthe reboot window is limited to the maintenance slot named on that ticket.\n\n### 3.3 Emergency changes\n\nAn emergency change may bypass the normal window but never the approval\nrequirement. If the approver cannot be reached, the Security incident\ncommander assumes approval authority and records the delegation in the\nincident log.\n\n## 4. Access to customer data\n\nCustomer data may only be read from the `prod` environment by a Level-2\nholder, and only through the audited query gateway. Bulk exports require a\nLevel-3 approval and expire after 24 hours.\n\n## 5. Break-glass accounts\n\nThe break-glass emergency account identifier is `iris-breakglass-77`. The\ncredential is sealed in the hardware token safe at the Rosario facility and\nis released only to the Security incident commander.",
+            "score": 0.27021290068527953,
+            "rank": 3,
+            "char_count": 1116,
+            "estimated_tokens": 279,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 2,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c3",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Every break-glass use must be followed by a post-incident review within five\nbusiness days. Accounts that are not rotated within that window are disabled.\n\n## 6. Audit and review\n\nAccess reviews run quarterly. The Platform Security team samples 10% of\nLevel-1 and Level-2 approvals and reconciles them against change tickets.\nFindings are reported to the Change Advisory Board.\n\n## 7. Exceptions\n\nExceptions require a written justification, a named owner and an expiry date\nno more than 90 days in the future. Expired exceptions are closed\nautomatically by the compliance job.",
+            "score": 0.2687599106467869,
+            "rank": 4,
+            "char_count": 576,
+            "estimated_tokens": 144,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 3,
+              "chunk_count": 4
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 2,
+        "user_input": "In two sentences, what is the difference between a rolling restart and a blue-green deployment?",
+        "agent_response": "A rolling restart updates instances incrementally, replacing old versions with new ones one at a time while the service remains live, whereas a blue-green deployment maintains two complete environments and switches all traffic from the old (blue) to the new (green) at once after validation, enabling instant rollback.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 10524.340500007384,
+        "token_usage": {
+          "input_tokens": 1037,
+          "output_tokens": 266,
+          "total_tokens": 1303,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 815
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 1037,
+        "completion_tokens": 266,
+        "total_tokens": 1303,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 266,
+        "cached_prompt_tokens": 815,
+        "retrieved_context_chars": 3817,
+        "retrieved_context_tokens": 954,
+        "embedding_tokens": 130,
+        "retrieval_latency_ms": 199.91510000545532,
+        "append_latency_ms": 2614.8182000033557,
+        "embedding_latency_ms": 2814.063600031659,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_policy_v1_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## 2. Roles and authorization levels\n\nEvery request must carry one of the following authorization levels:\n\n| Role                        | Authorization level | Notes                                  |\n|-----------------------------|---------------------|----------------------------------------|\n| Platform engineer           | Level-0             | Read-only in `prod`                    |\n| Senior platform engineer    | Level-1             | May approve standard changes           |\n| Change Advisory Board (CAB) | Level-2             | Required for production-tier reboots    |\n| Security incident commander | Level-3             | Break-glass and data-erasure decisions |\n\nAn approval is bound to a single change ticket. Reusing an approval for a\nsecond ticket is treated as an audit finding, not as an approval.\n\n## 3. Change management\n\n### 3.1 Standard changes\n\nStandard changes (dashboards, alerts, log retention tweaks) may be applied\nduring business hours after a Level-0 review and a green CI pipeline.\n\n### 3.2 Production-tier reboots",
+            "score": 0.41623510322904256,
+            "rank": 1,
+            "char_count": 1048,
+            "estimated_tokens": 262,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 1,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Standard changes (dashboards, alerts, log retention tweaks) may be applied\nduring business hours after a Level-0 review and a green CI pipeline.\n\n### 3.2 Production-tier reboots\n\nProduction-tier reboots require Level-1 approval from the on-call lead. The\napproval must be recorded on the change ticket before the reboot starts, and\nthe reboot window is limited to the maintenance slot named on that ticket.\n\n### 3.3 Emergency changes\n\nAn emergency change may bypass the normal window but never the approval\nrequirement. If the approver cannot be reached, the Security incident\ncommander assumes approval authority and records the delegation in the\nincident log.\n\n## 4. Access to customer data\n\nCustomer data may only be read from the `prod` environment by a Level-2\nholder, and only through the audited query gateway. Bulk exports require a\nLevel-3 approval and expire after 24 hours.\n\n## 5. Break-glass accounts\n\nThe break-glass emergency account identifier is `iris-breakglass-77`. The\ncredential is sealed in the hardware token safe at the Rosario facility and\nis released only to the Security incident commander.",
+            "score": 0.3986130972246426,
+            "rank": 2,
+            "char_count": 1116,
+            "estimated_tokens": 279,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 2,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Northwind Datacenter Access Policy (Revision 1)\n\nDocument owner: Platform Security\nApplies to: `prod`, `staging` and `lab` environments\nClassification: Internal\n\n## 1. Scope\n\nThis policy governs human and automated access to every Northwind facility,\nincluding the Rosario primary datacenter and the Buenos Aires disaster\nrecovery site. It covers change management, customer-data handling, and the\nemergency accounts used by the platform on-call rotation.\n\nNothing in this document overrides a contractual data-processing agreement.\nWhere a customer contract is stricter, the contract wins.\n\n## 2. Roles and authorization levels\n\nEvery request must carry one of the following authorization levels:",
+            "score": 0.31765412722932823,
+            "rank": 3,
+            "char_count": 699,
+            "estimated_tokens": 174,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 0,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c3",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Every break-glass use must be followed by a post-incident review within five\nbusiness days. Accounts that are not rotated within that window are disabled.\n\n## 6. Audit and review\n\nAccess reviews run quarterly. The Platform Security team samples 10% of\nLevel-1 and Level-2 approvals and reconciles them against change tickets.\nFindings are reported to the Change Advisory Board.\n\n## 7. Exceptions\n\nExceptions require a written justification, a named owner and an expiry date\nno more than 90 days in the future. Expired exceptions are closed\nautomatically by the compliance job.",
+            "score": 0.3071588653492901,
+            "rank": 4,
+            "char_count": 576,
+            "estimated_tokens": 144,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 3,
+              "chunk_count": 4
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t2"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 3,
+        "user_input": "I'm back in a new working session. According to our access policy, what is the break-glass emergency account identifier?",
+        "agent_response": "According to the Northwind Datacenter Access Policy (Section 5), the break-glass emergency account identifier is **`iris-breakglass-77`**.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "iris-breakglass-77",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "doc_policy_v1",
+            "passed": true,
+            "matched_chunks": [
+              "doc_policy_v1_c2",
+              "doc_policy_v1_c3",
+              "doc_policy_v1_c0",
+              "doc_policy_v1_c1"
+            ]
+          }
+        ],
+        "latency_ms": 5573.061700037215,
+        "token_usage": {
+          "input_tokens": 1074,
+          "output_tokens": 103,
+          "total_tokens": 1177,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 785
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1074,
+        "completion_tokens": 103,
+        "total_tokens": 1177,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 103,
+        "cached_prompt_tokens": 785,
+        "retrieved_context_chars": 4260,
+        "retrieved_context_tokens": 1065,
+        "embedding_tokens": 99,
+        "retrieval_latency_ms": 241.41359998611733,
+        "append_latency_ms": 814.9257999612018,
+        "embedding_latency_ms": 1055.4757000063546,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_policy_v1_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Standard changes (dashboards, alerts, log retention tweaks) may be applied\nduring business hours after a Level-0 review and a green CI pipeline.\n\n### 3.2 Production-tier reboots\n\nProduction-tier reboots require Level-1 approval from the on-call lead. The\napproval must be recorded on the change ticket before the reboot starts, and\nthe reboot window is limited to the maintenance slot named on that ticket.\n\n### 3.3 Emergency changes\n\nAn emergency change may bypass the normal window but never the approval\nrequirement. If the approver cannot be reached, the Security incident\ncommander assumes approval authority and records the delegation in the\nincident log.\n\n## 4. Access to customer data\n\nCustomer data may only be read from the `prod` environment by a Level-2\nholder, and only through the audited query gateway. Bulk exports require a\nLevel-3 approval and expire after 24 hours.\n\n## 5. Break-glass accounts\n\nThe break-glass emergency account identifier is `iris-breakglass-77`. The\ncredential is sealed in the hardware token safe at the Rosario facility and\nis released only to the Security incident commander.",
+            "score": 0.5681827668788848,
+            "rank": 1,
+            "char_count": 1116,
+            "estimated_tokens": 279,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 2,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Hi! I'm going to use you as my assistant for the platform team this week.\nAssistant: Hi! Great to have you. I'm ready to help with the platform team this week. I've got the Northwind Datacenter Access Policy (Revision 1) loaded, so I can answer questions about access levels, change management, break-glass accounts, and more. Just let me know what you need.",
+            "score": 0.5312760003517409,
+            "rank": 2,
+            "char_count": 364,
+            "estimated_tokens": 91,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_policy_v1_c3",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Every break-glass use must be followed by a post-incident review within five\nbusiness days. Accounts that are not rotated within that window are disabled.\n\n## 6. Audit and review\n\nAccess reviews run quarterly. The Platform Security team samples 10% of\nLevel-1 and Level-2 approvals and reconciles them against change tickets.\nFindings are reported to the Change Advisory Board.\n\n## 7. Exceptions\n\nExceptions require a written justification, a named owner and an expiry date\nno more than 90 days in the future. Expired exceptions are closed\nautomatically by the compliance job.",
+            "score": 0.44642176641979114,
+            "rank": 3,
+            "char_count": 576,
+            "estimated_tokens": 144,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 3,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Northwind Datacenter Access Policy (Revision 1)\n\nDocument owner: Platform Security\nApplies to: `prod`, `staging` and `lab` environments\nClassification: Internal\n\n## 1. Scope\n\nThis policy governs human and automated access to every Northwind facility,\nincluding the Rosario primary datacenter and the Buenos Aires disaster\nrecovery site. It covers change management, customer-data handling, and the\nemergency accounts used by the platform on-call rotation.\n\nNothing in this document overrides a contractual data-processing agreement.\nWhere a customer contract is stricter, the contract wins.\n\n## 2. Roles and authorization levels\n\nEvery request must carry one of the following authorization levels:",
+            "score": 0.43751020046672534,
+            "rank": 4,
+            "char_count": 699,
+            "estimated_tokens": 174,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 0,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## 2. Roles and authorization levels\n\nEvery request must carry one of the following authorization levels:\n\n| Role                        | Authorization level | Notes                                  |\n|-----------------------------|---------------------|----------------------------------------|\n| Platform engineer           | Level-0             | Read-only in `prod`                    |\n| Senior platform engineer    | Level-1             | May approve standard changes           |\n| Change Advisory Board (CAB) | Level-2             | Required for production-tier reboots    |\n| Security incident commander | Level-3             | Break-glass and data-erasure decisions |\n\nAn approval is bound to a single change ticket. Reusing an approval for a\nsecond ticket is treated as an audit finding, not as an approval.\n\n## 3. Change management\n\n### 3.1 Standard changes\n\nStandard changes (dashboards, alerts, log retention tweaks) may be applied\nduring business hours after a Level-0 review and a green CI pipeline.\n\n### 3.2 Production-tier reboots",
+            "score": 0.3160790588854336,
+            "rank": 5,
+            "char_count": 1048,
+            "estimated_tokens": 262,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 1,
+              "chunk_count": 4
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Which role is allowed to release that break-glass credential, and at which facility is it sealed?",
+        "agent_response": "The break-glass credential is sealed in the hardware token safe at the **Rosario** facility, and it is released only to the **Security incident commander** (Level-3 role).",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "incident commander",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_contain",
+            "value": "Rosario",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 5717.842200014275,
+        "token_usage": {
+          "input_tokens": 1130,
+          "output_tokens": 123,
+          "total_tokens": 1253,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 847
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1130,
+        "completion_tokens": 123,
+        "total_tokens": 1253,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 123,
+        "cached_prompt_tokens": 847,
+        "retrieved_context_chars": 4260,
+        "retrieved_context_tokens": 1065,
+        "embedding_tokens": 95,
+        "retrieval_latency_ms": 330.0184999825433,
+        "append_latency_ms": 464.39769997959957,
+        "embedding_latency_ms": 793.7392999883741,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_policy_v1_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Standard changes (dashboards, alerts, log retention tweaks) may be applied\nduring business hours after a Level-0 review and a green CI pipeline.\n\n### 3.2 Production-tier reboots\n\nProduction-tier reboots require Level-1 approval from the on-call lead. The\napproval must be recorded on the change ticket before the reboot starts, and\nthe reboot window is limited to the maintenance slot named on that ticket.\n\n### 3.3 Emergency changes\n\nAn emergency change may bypass the normal window but never the approval\nrequirement. If the approver cannot be reached, the Security incident\ncommander assumes approval authority and records the delegation in the\nincident log.\n\n## 4. Access to customer data\n\nCustomer data may only be read from the `prod` environment by a Level-2\nholder, and only through the audited query gateway. Bulk exports require a\nLevel-3 approval and expire after 24 hours.\n\n## 5. Break-glass accounts\n\nThe break-glass emergency account identifier is `iris-breakglass-77`. The\ncredential is sealed in the hardware token safe at the Rosario facility and\nis released only to the Security incident commander.",
+            "score": 0.4997580487810286,
+            "rank": 1,
+            "char_count": 1116,
+            "estimated_tokens": 279,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 2,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c3",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Every break-glass use must be followed by a post-incident review within five\nbusiness days. Accounts that are not rotated within that window are disabled.\n\n## 6. Audit and review\n\nAccess reviews run quarterly. The Platform Security team samples 10% of\nLevel-1 and Level-2 approvals and reconciles them against change tickets.\nFindings are reported to the Change Advisory Board.\n\n## 7. Exceptions\n\nExceptions require a written justification, a named owner and an expiry date\nno more than 90 days in the future. Expired exceptions are closed\nautomatically by the compliance job.",
+            "score": 0.44395075457128047,
+            "rank": 2,
+            "char_count": 576,
+            "estimated_tokens": 144,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 3,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## 2. Roles and authorization levels\n\nEvery request must carry one of the following authorization levels:\n\n| Role                        | Authorization level | Notes                                  |\n|-----------------------------|---------------------|----------------------------------------|\n| Platform engineer           | Level-0             | Read-only in `prod`                    |\n| Senior platform engineer    | Level-1             | May approve standard changes           |\n| Change Advisory Board (CAB) | Level-2             | Required for production-tier reboots    |\n| Security incident commander | Level-3             | Break-glass and data-erasure decisions |\n\nAn approval is bound to a single change ticket. Reusing an approval for a\nsecond ticket is treated as an audit finding, not as an approval.\n\n## 3. Change management\n\n### 3.1 Standard changes\n\nStandard changes (dashboards, alerts, log retention tweaks) may be applied\nduring business hours after a Level-0 review and a green CI pipeline.\n\n### 3.2 Production-tier reboots",
+            "score": 0.38651885275164616,
+            "rank": 3,
+            "char_count": 1048,
+            "estimated_tokens": 262,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 1,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_policy_v1_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Northwind Datacenter Access Policy (Revision 1)\n\nDocument owner: Platform Security\nApplies to: `prod`, `staging` and `lab` environments\nClassification: Internal\n\n## 1. Scope\n\nThis policy governs human and automated access to every Northwind facility,\nincluding the Rosario primary datacenter and the Buenos Aires disaster\nrecovery site. It covers change management, customer-data handling, and the\nemergency accounts used by the platform on-call rotation.\n\nNothing in this document overrides a contractual data-processing agreement.\nWhere a customer contract is stricter, the contract wins.\n\n## 2. Roles and authorization levels\n\nEvery request must carry one of the following authorization levels:",
+            "score": 0.3828009738174282,
+            "rank": 4,
+            "char_count": 699,
+            "estimated_tokens": 174,
+            "metadata": {
+              "title": "Northwind Datacenter Access Policy (Revision 1)",
+              "doc_id": "policy_v1",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+              "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+              "parent_chunk_id": "doc_policy_v1",
+              "chunk_index": 0,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Hi! I'm going to use you as my assistant for the platform team this week.\nAssistant: Hi! Great to have you. I'm ready to help with the platform team this week. I've got the Northwind Datacenter Access Policy (Revision 1) loaded, so I can answer questions about access levels, change management, break-glass accounts, and more. Just let me know what you need.",
+            "score": 0.3189178621365217,
+            "rank": 5,
+            "char_count": 364,
+            "estimated_tokens": 91,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      }
+    ],
+    "timestamp": "2026-11-02T14:35:41.543374+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": 1200,
+    "chunk_overlap": 200,
+    "memory_snapshot_path": "memory/document_needle_01_deepseek-v4-pro_baseline_react_32e3ae0a",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 660,
+    "cached_prompt_tokens": 3128,
+    "retrieved_context_tokens": 4038,
+    "embedding_tokens": 1292,
+    "total_retrieval_latency_ms": 992.76930000633,
+    "total_append_latency_ms": 6569.977399951313,
+    "total_embedding_latency_ms": 15805.749000050128,
+    "ingestion_latency_ms": 8246.463699964806,
+    "documents_ingested": 1,
+    "ingested_chars": 3160,
+    "ingested_chunks": 4,
+    "corpus_chunks": 8,
+    "corpus_chars": 4796
+  }
+]

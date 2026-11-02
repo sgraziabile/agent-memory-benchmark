@@ -1,42 +1,63 @@
 # ─────────────────────────────────────────────────────────────────
 # test_document_addendum_revision_01.yaml — Document Supersession
 # ─────────────────────────────────────────────────────────────────
-# Plan WS-D (TODOs/phase-2-l2-completion-plan.md §4, WS-D item 3).
-# policy_v1.md is preloaded. At turn 2 a system_event ingests
-# addendum_1.md, which supersedes §3.2 ("Level-1" → "Level-2").
+# Plan WS-D (TODOs/phase-2-l2-completion-plan.md, WS-D item 3), hardened per
+# TODOs/phase-2-l2-document-stress-plan.md §4 (defects X1-X4, fixed 2026-11-02).
 #
-# Because L2 is append-only, BOTH chunks now exist and compete for
-# the same top_k slots — the canonical evidence that atomic revision
-# requires L3's UPDATE/DELETE. Turn 1 measures the pre-revision
-# baseline; turns 3-4 measure whether the agent honours the revision.
+# policy_v1.md is preloaded. At turn 2 a system_event ingests addendum_1.md,
+# which supersedes §3.2 ("Level-1" → "Level-2").
+#
+# Because L2 is append-only, BOTH chunks now exist and compete for the same
+# top_k slots — the canonical evidence that atomic revision requires L3's
+# UPDATE/DELETE.
+#
+# Fixes applied:
+#   X1  policy_v1.md §2 no longer states a reboot approval level, so §3.2 is the
+#       single source of truth before the addendum. Previously T1 ("Level-1")
+#       and T3 ("Level-2") were both satisfiable from the §2 roles table alone,
+#       which made the "revision" unmeasurable.
+#   X2  T4 (cross-thread) now pins `must_retrieve_chunk: doc_addendum_1`. The
+#       old assertion was satisfiable from §2 with the addendum absent.
+#   X3  T5 is negation-robust by construction: it asserts an addendum-only fact
+#       (the 2026-10-01 compliance window). An answer that denies the revision
+#       ("Level-2 is NOT required") cannot contain it. `must_not_contain` on
+#       "Level-1" is deliberately avoided — a correct answer may legitimately
+#       say "Level-1 was superseded" (stress plan rule R1).
+#   X4  T5 also isolates the document channel: s1 never mentions the compliance
+#       window, so the chat episodes cannot satisfy it. In the 2026-11-02 run
+#       the top-2 chunks retrieved for T4 were the model's own s1 answers.
 #
 # Ablation contract:
-#   L0/L1 → fail all graded probes
-#   L2    → passes turn 1; turns 3-4 expose chunk collision
-# ─────────────────────────────────────────────────────────────────
+#   L0/L1 → fail every graded probe (no long-term document store)
+#   L2    → passes T1; T3-T5 expose chunk collision and ranking. T4 measured a
+#            Δcos of -0.0016 in favour of the superseded chunk.
 
 id: document_addendum_revision_01
 name: "Document Supersession (Append-Only Collision)"
 description: >
   The access policy is preloaded as a document. Turn 1 probes the
-  production-reboot approval level (Level-1 in revision 1). Turn 2 is a
-  system_event that ingests addendum_1.md, which supersedes §3.2 and
-  requires Level-2. Turns 3 and 4 re-probe the same fact in the same
-  session and in a fresh session. An append-only store now holds both
-  the superseded and the superseding chunk, so retrieval may surface
-  the stale one — precisely the failure L3's mutation operators target.
+  production-reboot approval level (Level-1 in revision 1; §3.2 is the only
+  place that states it). Turn 2 is a system_event that ingests addendum_1.md,
+  which supersedes §3.2 and requires Level-2. Turns 3-4 re-probe the same fact
+  in the same session and in a fresh session, pinning the addendum chunk so the
+  answer cannot come from the roles table or from the model's own earlier
+  answer. Turn 5 probes an addendum-only fact (the runbook compliance deadline)
+  that no chat turn has ever mentioned, so a correct answer can only come from
+  the document.
 category: document_revision
 metadata:
   difficulty: hard
   stage: "WS-D"
+  defects_fixed: ["X1", "X2", "X3", "X4"]
   documents: ["policy_v1.md", "addendum_1.md (via system_event)"]
   sessions: ["s1", "s2"]
   target_research_question: "P2"
   superseded_fact: "production-tier reboots require Level-1 approval"
   superseding_fact: "production-tier reboots require Level-2 approval"
+  addendum_only_fact: "runbooks must be updated by 2026-10-01"
   expected_level_0_behavior: "Fails (0%). No document memory; safe decline."
-  expected_level_1_behavior: "Fails (0%). The document never enters the thread."
-  expected_level_2_behavior: "Turn 1 passes; turns 3-4 may fail when the stale §3.2 chunk outranks the addendum (append-only collision)."
+  expected_level_1_behavior: "Fails (0%). The document never enters the thread; T5 is unreachable in s2."
+  expected_level_2_behavior: "T1 and T3 pass; T4/T5 measure collision and ranking. T4 must retrieve the addendum chunk, because the model's own s1 answers compete for the same slots."
 
 documents:
   - doc_id: policy_v1
@@ -55,6 +76,8 @@ turns:
       - type: must_contain
         value: "Level-1"
         case_sensitive: false
+      - type: must_retrieve_chunk
+        value: "doc_policy_v1"
 
   # ── Mid-conversation ingestion: the addendum supersedes §3.2 ────
   - turn_number: 2
@@ -76,7 +99,7 @@ turns:
       - type: must_retrieve_chunk
         value: "doc_addendum_1"
 
-  # ── Cross-thread re-probe ──────────────────────────────────────
+  # ── Cross-thread re-probe (X2: the addendum chunk is pinned) ────
   - turn_number: 4
     session_id: s2
     role: user
@@ -85,3 +108,17 @@ turns:
       - type: must_contain
         value: "Level-2"
         case_sensitive: false
+      - type: must_retrieve_chunk
+        value: "doc_addendum_1"
+
+  # ── Addendum-only fact never stated in chat (X3 + X4) ───────────
+  - turn_number: 5
+    session_id: s2
+    role: user
+    content: "Do we have to update our runbooks for this change, and by what date?"
+    assertions:
+      - type: must_contain
+        value: "2026-10-01"
+        case_sensitive: false
+      - type: must_retrieve_chunk
+        value: "doc_addendum_1"

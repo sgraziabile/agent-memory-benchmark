@@ -6,6 +6,12 @@
 > **Backend:** `VectorMemoryBackend` (LangGraph `InMemoryStore`) + `qwen3-embedding-0.6b`, `top_k = 5` en las 14 corridas válidas.
 > **Modelos:** `deepseek-v4-flash` (13 corridas) y `gpt-oss-20b` (1 corrida).
 > **Prompt:** `baseline_react` en todas las corridas.
+>
+> **Nota de archivo (2026-11-02):** los 19 bundles analizados acá se movieron de `outputs/runs/` a
+> [`archive/2026-11-02_l2_pre_scenario_hardening/`](../archive/2026-11-02_l2_pre_scenario_hardening/DEPRECATED.md),
+> junto con las 4 corridas de documentos del 2026-11-02. Los IDs de corrida no cambiaron; el
+> `DEPRECATED.md` explica por qué no son comparables con datos posteriores al endurecimiento de
+> escenarios (X1–X8) y qué debe re-correrse antes de publicar.
 
 ---
 

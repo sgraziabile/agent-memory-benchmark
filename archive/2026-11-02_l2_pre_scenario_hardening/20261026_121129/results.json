@@ -1,0 +1,971 @@
+[
+  {
+    "run_id": "derived_belief_revision_01_deepseek-v4-flash_baseline_react_40dfec48",
+    "scenario_id": "derived_belief_revision_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 13,
+    "total_assertions": 3,
+    "passed_assertions": 3,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 42135.05699951202,
+    "avg_latency_per_turn_ms": 3241.1582307316935,
+    "total_tokens": 7902,
+    "prompt_tokens": 7402,
+    "completion_tokens": 500,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Hi! I'm writing the reboot runbook for our server fleet and I want you to keep track of the details with me across sessions. Today I'll just give you the background.",
+        "agent_response": "Great, I'm ready to help you build and maintain your server fleet reboot runbook. Go ahead and share the background details — I'll keep track of everything across our sessions so we can build this out step by step.\n\nWhat kind of information should I start noting? For example:\n\n- Number of servers and their roles\n- Operating systems and versions\n- Reboot windows or maintenance schedules\n- Dependencies between services\n- Any existing automation tools in use\n- Critical services that need special handling\n- Monitoring or alerting setup\n\nOr just start wherever you'd like, and I'll organize it as we go.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 10846.477000042796,
+        "token_usage": {
+          "input_tokens": 112,
+          "output_tokens": 126,
+          "total_tokens": 238,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 112,
+        "completion_tokens": 126,
+        "total_tokens": 238,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 126,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 196,
+        "retrieval_latency_ms": 0.004699919372797012,
+        "append_latency_ms": 4020.180899882689,
+        "embedding_latency_ms": 4020.112000172958,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ]
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Before we start: in two sentences, what's the difference between a graceful reboot and a hard power cycle?",
+        "agent_response": "A graceful reboot sends a proper shutdown signal to the operating system, allowing it to close applications, flush data, and stop services cleanly before the hardware powers off. A hard power cycle cuts power to the machine immediately (like pulling the plug or holding the power button), which can cause data corruption, incomplete writes, and filesystem damage.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3809.049599803984,
+        "token_usage": {
+          "input_tokens": 263,
+          "output_tokens": 69,
+          "total_tokens": 332,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 263,
+        "completion_tokens": 69,
+        "total_tokens": 332,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 69,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 147,
+        "retrieval_latency_ms": 325.23759989999235,
+        "append_latency_ms": 605.5894999299198,
+        "embedding_latency_ms": 930.2304999437183,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t2"
+        ]
+      },
+      {
+        "turn_number": 3,
+        "user_input": "First, our change-control policy, which is fixed and applies to every server without exception: rebooting a prod-tier server requires Level-3 authorization, rebooting a staging-tier server requires Level-1 authorization, and dev-tier servers can be rebooted with no authorization at all. Just confirm you've noted it.",
+        "agent_response": "Confirmed. I've noted your change-control policy:\n\n- **Prod-tier**: Level-3 authorization required\n- **Staging-tier**: Level-1 authorization required\n- **Dev-tier**: No authorization required\n\nThis applies to every server without exception. I'll keep this as a fixed rule across all sessions.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3255.599800031632,
+        "token_usage": {
+          "input_tokens": 398,
+          "output_tokens": 63,
+          "total_tokens": 461,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 398,
+        "completion_tokens": 63,
+        "total_tokens": 461,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 63,
+        "cached_prompt_tokens": 256,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 235,
+        "retrieval_latency_ms": 426.3535998761654,
+        "append_latency_ms": 817.986800102517,
+        "embedding_latency_ms": 1243.5484000016004,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t3"
+        ]
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Fleet inventory for the runbook: srv-alpha is a prod-tier server, srv-beta is prod-tier as well, and srv-gamma is a dev-tier box. Just confirm you've noted it.",
+        "agent_response": "Confirmed. I've noted the fleet inventory:\n\n- **srv-alpha** — Prod-tier\n- **srv-beta** — Prod-tier\n- **srv-gamma** — Dev-tier\n\nI'll keep this mapped alongside the change-control policy.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3056.6689998377115,
+        "token_usage": {
+          "input_tokens": 508,
+          "output_tokens": 52,
+          "total_tokens": 560,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 508,
+        "completion_tokens": 52,
+        "total_tokens": 560,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 52,
+        "cached_prompt_tokens": 256,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 129,
+        "retrieval_latency_ms": 304.240700090304,
+        "append_latency_ms": 595.6594999879599,
+        "embedding_latency_ms": 899.3006001692265,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t4"
+        ]
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Quick check before I write the first runbook entry: what authorization level do I need to reboot srv-alpha? Just the level.",
+        "agent_response": "Level-3 authorization.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2541.374399792403,
+        "token_usage": {
+          "input_tokens": 590,
+          "output_tokens": 6,
+          "total_tokens": 596,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 590,
+        "completion_tokens": 6,
+        "total_tokens": 596,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 6,
+        "cached_prompt_tokens": 512,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 70,
+        "retrieval_latency_ms": 234.93569996207952,
+        "append_latency_ms": 282.6288000214845,
+        "embedding_latency_ms": 516.6474999859929,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t5"
+        ]
+      },
+      {
+        "turn_number": 6,
+        "user_input": "Perfect, so srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now. Just confirm you've noted it.",
+        "agent_response": "Confirmed. I've noted that **srv-alpha** requires **Level-3 authorization** for any reboot, and that this is now written into the runbook.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2104.786599986255,
+        "token_usage": {
+          "input_tokens": 631,
+          "output_tokens": 34,
+          "total_tokens": 665,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 631,
+        "completion_tokens": 34,
+        "total_tokens": 665,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 34,
+        "cached_prompt_tokens": 512,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 105,
+        "retrieval_latency_ms": 269.1987999714911,
+        "append_latency_ms": 459.2953999526799,
+        "embedding_latency_ms": 727.8587999753654,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t6"
+        ]
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Last thing for today: suggest a short, clear title for the runbook document.",
+        "agent_response": "**Server Fleet Reboot Runbook — Authorization & Procedures**",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2880.871000001207,
+        "token_usage": {
+          "input_tokens": 685,
+          "output_tokens": 13,
+          "total_tokens": 698,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 685,
+        "completion_tokens": 13,
+        "total_tokens": 698,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 13,
+        "cached_prompt_tokens": 512,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 57,
+        "retrieval_latency_ms": 181.0427000746131,
+        "append_latency_ms": 450.04769996739924,
+        "embedding_latency_ms": 630.3989998996258,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t7"
+        ]
+      },
+      {
+        "turn_number": 8,
+        "user_input": "New session. Quick one first: in one sentence, what does 'blast radius' mean in infrastructure work?",
+        "agent_response": "In infrastructure work, 'blast radius' refers to the scope and scale of potential damage or disruption that could result from a single failure, change, or incident within a system.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2505.891100037843,
+        "token_usage": {
+          "input_tokens": 620,
+          "output_tokens": 36,
+          "total_tokens": 656,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 620,
+        "completion_tokens": 36,
+        "total_tokens": 656,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 36,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2114,
+        "retrieved_context_tokens": 528,
+        "embedding_tokens": 99,
+        "retrieval_latency_ms": 201.41900004819036,
+        "append_latency_ms": 441.08799984678626,
+        "embedding_latency_ms": 641.7454001493752,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Before we start: in two sentences, what's the difference between a graceful reboot and a hard power cycle?\nAssistant: A graceful reboot sends a proper shutdown signal to the operating system, allowing it to close applications, flush data, and stop services cleanly before the hardware powers off. A hard power cycle cuts power to the machine immediately (like pulling the plug or holding the power button), which can cause data corruption, incomplete writes, and filesystem damage.",
+            "score": 0.3216187173494114,
+            "rank": 1,
+            "char_count": 487,
+            "estimated_tokens": 121,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t7",
+            "session_id": "s1",
+            "turn_number": 7,
+            "source": "chat",
+            "content": "User: Last thing for today: suggest a short, clear title for the runbook document.\nAssistant: **Server Fleet Reboot Runbook — Authorization & Procedures**",
+            "score": 0.30928502123738055,
+            "rank": 2,
+            "char_count": 154,
+            "estimated_tokens": 38,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I write the first runbook entry: what authorization level do I need to reboot srv-alpha? Just the level.\nAssistant: Level-3 authorization.",
+            "score": 0.2684638251536363,
+            "rank": 3,
+            "char_count": 163,
+            "estimated_tokens": 40,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Perfect, so srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now. Just confirm you've noted it.\nAssistant: Confirmed. I've noted that **srv-alpha** requires **Level-3 authorization** for any reboot, and that this is now written into the runbook.",
+            "score": 0.2665220573185337,
+            "rank": 4,
+            "char_count": 290,
+            "estimated_tokens": 72,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, our change-control policy, which is fixed and applies to every server without exception: rebooting a prod-tier server requires Level-3 authorization, rebooting a staging-tier server requires Level-1 authorization, and dev-tier servers can be rebooted with no authorization at all. Just confirm you've noted it.\nAssistant: Confirmed. I've noted your change-control policy:\n\n- **Prod-tier**: Level-3 authorization required\n- **Staging-tier**: Level-1 authorization required\n- **Dev-tier**: No authorization required\n\nThis applies to every server without exception. I'll keep this as a fixed rule across all sessions.",
+            "score": 0.23006069273233784,
+            "rank": 5,
+            "char_count": 627,
+            "estimated_tokens": 156,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ]
+      },
+      {
+        "turn_number": 9,
+        "user_input": "Inventory update: as of this morning, srv-alpha has been migrated to the staging tier. Just confirm you've noted it.",
+        "agent_response": "Confirmed. I've noted the update: **srv-alpha** has been migrated from prod-tier to **staging-tier** as of this morning.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2444.0067000687122,
+        "token_usage": {
+          "input_tokens": 690,
+          "output_tokens": 31,
+          "total_tokens": 721,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 690,
+        "completion_tokens": 31,
+        "total_tokens": 721,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 31,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1989,
+        "retrieved_context_tokens": 497,
+        "embedding_tokens": 92,
+        "retrieval_latency_ms": 357.27460007183254,
+        "append_latency_ms": 410.3907998651266,
+        "embedding_latency_ms": 766.847399994731,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Fleet inventory for the runbook: srv-alpha is a prod-tier server, srv-beta is prod-tier as well, and srv-gamma is a dev-tier box. Just confirm you've noted it.\nAssistant: Confirmed. I've noted the fleet inventory:\n\n- **srv-alpha** — Prod-tier\n- **srv-beta** — Prod-tier\n- **srv-gamma** — Dev-tier\n\nI'll keep this mapped alongside the change-control policy.",
+            "score": 0.7374788697290334,
+            "rank": 1,
+            "char_count": 362,
+            "estimated_tokens": 90,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Perfect, so srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now. Just confirm you've noted it.\nAssistant: Confirmed. I've noted that **srv-alpha** requires **Level-3 authorization** for any reboot, and that this is now written into the runbook.",
+            "score": 0.622681914024815,
+            "rank": 2,
+            "char_count": 290,
+            "estimated_tokens": 72,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I write the first runbook entry: what authorization level do I need to reboot srv-alpha? Just the level.\nAssistant: Level-3 authorization.",
+            "score": 0.5667381134118332,
+            "rank": 3,
+            "char_count": 163,
+            "estimated_tokens": 40,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, our change-control policy, which is fixed and applies to every server without exception: rebooting a prod-tier server requires Level-3 authorization, rebooting a staging-tier server requires Level-1 authorization, and dev-tier servers can be rebooted with no authorization at all. Just confirm you've noted it.\nAssistant: Confirmed. I've noted your change-control policy:\n\n- **Prod-tier**: Level-3 authorization required\n- **Staging-tier**: Level-1 authorization required\n- **Dev-tier**: No authorization required\n\nThis applies to every server without exception. I'll keep this as a fixed rule across all sessions.",
+            "score": 0.4871167402058277,
+            "rank": 4,
+            "char_count": 627,
+            "estimated_tokens": 156,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t7",
+            "session_id": "s1",
+            "turn_number": 7,
+            "source": "chat",
+            "content": "User: Last thing for today: suggest a short, clear title for the runbook document.\nAssistant: **Server Fleet Reboot Runbook — Authorization & Procedures**",
+            "score": 0.3944231913833692,
+            "rank": 5,
+            "char_count": 154,
+            "estimated_tokens": 38,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ]
+      },
+      {
+        "turn_number": 10,
+        "user_input": "Unrelated: what's the default port for SSH?",
+        "agent_response": "The default port for SSH is **22**.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2469.5405000820756,
+        "token_usage": {
+          "input_tokens": 771,
+          "output_tokens": 10,
+          "total_tokens": 781,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 771,
+        "completion_tokens": 10,
+        "total_tokens": 781,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 10,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2149,
+        "retrieved_context_tokens": 537,
+        "embedding_tokens": 34,
+        "retrieval_latency_ms": 146.102299913764,
+        "append_latency_ms": 244.85939997248352,
+        "embedding_latency_ms": 390.13929991051555,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t7",
+            "session_id": "s1",
+            "turn_number": 7,
+            "source": "chat",
+            "content": "User: Last thing for today: suggest a short, clear title for the runbook document.\nAssistant: **Server Fleet Reboot Runbook — Authorization & Procedures**",
+            "score": 0.3372169017742748,
+            "rank": 1,
+            "char_count": 154,
+            "estimated_tokens": 38,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Perfect, so srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now. Just confirm you've noted it.\nAssistant: Confirmed. I've noted that **srv-alpha** requires **Level-3 authorization** for any reboot, and that this is now written into the runbook.",
+            "score": 0.3212443736738255,
+            "rank": 2,
+            "char_count": 290,
+            "estimated_tokens": 72,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Fleet inventory for the runbook: srv-alpha is a prod-tier server, srv-beta is prod-tier as well, and srv-gamma is a dev-tier box. Just confirm you've noted it.\nAssistant: Confirmed. I've noted the fleet inventory:\n\n- **srv-alpha** — Prod-tier\n- **srv-beta** — Prod-tier\n- **srv-gamma** — Dev-tier\n\nI'll keep this mapped alongside the change-control policy.",
+            "score": 0.3158246088400031,
+            "rank": 3,
+            "char_count": 362,
+            "estimated_tokens": 90,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I write the first runbook entry: what authorization level do I need to reboot srv-alpha? Just the level.\nAssistant: Level-3 authorization.",
+            "score": 0.29313760076160456,
+            "rank": 4,
+            "char_count": 163,
+            "estimated_tokens": 40,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Hi! I'm writing the reboot runbook for our server fleet and I want you to keep track of the details with me across sessions. Today I'll just give you the background.\nAssistant: Great, I'm ready to help you build and maintain your server fleet reboot runbook. Go ahead and share the background details — I'll keep track of everything across our sessions so we can build this out step by step.\n\nWhat kind of information should I start noting? For example:\n\n- Number of servers and their roles\n- Operating systems and versions\n- Reboot windows or maintenance schedules\n- Dependencies between services\n- Any existing automation tools in use\n- Critical services that need special handling\n- Monitoring or alerting setup\n\nOr just start wherever you'd like, and I'll organize it as we go.",
+            "score": 0.2887467732772771,
+            "rank": 5,
+            "char_count": 787,
+            "estimated_tokens": 196,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t3"
+        ]
+      },
+      {
+        "turn_number": 11,
+        "user_input": "Hi, new session. I'm scheduling a reboot of srv-alpha for this afternoon. What authorization level is required today to reboot it?",
+        "agent_response": "Based on the information from our previous sessions, **srv-alpha** requires **Level-3 authorization** for any reboot. This is consistent with both the specific note for srv-alpha and the general policy that prod-tier servers require Level-3 authorization.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2821.8234998639673,
+        "token_usage": {
+          "input_tokens": 698,
+          "output_tokens": 52,
+          "total_tokens": 750,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 698,
+        "completion_tokens": 52,
+        "total_tokens": 750,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 52,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2414,
+        "retrieved_context_tokens": 603,
+        "embedding_tokens": 132,
+        "retrieval_latency_ms": 230.55480001494288,
+        "append_latency_ms": 532.9181000124663,
+        "embedding_latency_ms": 762.505300110206,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I write the first runbook entry: what authorization level do I need to reboot srv-alpha? Just the level.\nAssistant: Level-3 authorization.",
+            "score": 0.9063088508762566,
+            "rank": 1,
+            "char_count": 163,
+            "estimated_tokens": 40,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Perfect, so srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now. Just confirm you've noted it.\nAssistant: Confirmed. I've noted that **srv-alpha** requires **Level-3 authorization** for any reboot, and that this is now written into the runbook.",
+            "score": 0.8598957174814945,
+            "rank": 2,
+            "char_count": 290,
+            "estimated_tokens": 72,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t7",
+            "session_id": "s1",
+            "turn_number": 7,
+            "source": "chat",
+            "content": "User: Last thing for today: suggest a short, clear title for the runbook document.\nAssistant: **Server Fleet Reboot Runbook — Authorization & Procedures**",
+            "score": 0.6869254721508037,
+            "rank": 3,
+            "char_count": 154,
+            "estimated_tokens": 38,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, our change-control policy, which is fixed and applies to every server without exception: rebooting a prod-tier server requires Level-3 authorization, rebooting a staging-tier server requires Level-1 authorization, and dev-tier servers can be rebooted with no authorization at all. Just confirm you've noted it.\nAssistant: Confirmed. I've noted your change-control policy:\n\n- **Prod-tier**: Level-3 authorization required\n- **Staging-tier**: Level-1 authorization required\n- **Dev-tier**: No authorization required\n\nThis applies to every server without exception. I'll keep this as a fixed rule across all sessions.",
+            "score": 0.6288109755918777,
+            "rank": 4,
+            "char_count": 627,
+            "estimated_tokens": 156,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Hi! I'm writing the reboot runbook for our server fleet and I want you to keep track of the details with me across sessions. Today I'll just give you the background.\nAssistant: Great, I'm ready to help you build and maintain your server fleet reboot runbook. Go ahead and share the background details — I'll keep track of everything across our sessions so we can build this out step by step.\n\nWhat kind of information should I start noting? For example:\n\n- Number of servers and their roles\n- Operating systems and versions\n- Reboot windows or maintenance schedules\n- Dependencies between services\n- Any existing automation tools in use\n- Critical services that need special handling\n- Monitoring or alerting setup\n\nOr just start wherever you'd like, and I'll organize it as we go.",
+            "score": 0.5895698050596204,
+            "rank": 5,
+            "char_count": 787,
+            "estimated_tokens": 196,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t1"
+        ]
+      },
+      {
+        "turn_number": 12,
+        "user_input": "I need a single answer for the change ticket. Which authorization level is required today to reboot srv-alpha? Reply with the level only, in the form Level-N.",
+        "agent_response": "Level-1",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Level-1",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "Level-3",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 1865.7742000650615,
+        "token_usage": {
+          "input_tokens": 682,
+          "output_tokens": 4,
+          "total_tokens": 686,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 682,
+        "completion_tokens": 4,
+        "total_tokens": 686,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 4,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1881,
+        "retrieved_context_tokens": 470,
+        "embedding_tokens": 84,
+        "retrieval_latency_ms": 260.9124998562038,
+        "append_latency_ms": 317.7688999567181,
+        "embedding_latency_ms": 577.8601001948118,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I write the first runbook entry: what authorization level do I need to reboot srv-alpha? Just the level.\nAssistant: Level-3 authorization.",
+            "score": 0.8079110127598083,
+            "rank": 1,
+            "char_count": 163,
+            "estimated_tokens": 40,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Perfect, so srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now. Just confirm you've noted it.\nAssistant: Confirmed. I've noted that **srv-alpha** requires **Level-3 authorization** for any reboot, and that this is now written into the runbook.",
+            "score": 0.8073824515705027,
+            "rank": 2,
+            "char_count": 290,
+            "estimated_tokens": 72,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t7",
+            "session_id": "s1",
+            "turn_number": 7,
+            "source": "chat",
+            "content": "User: Last thing for today: suggest a short, clear title for the runbook document.\nAssistant: **Server Fleet Reboot Runbook — Authorization & Procedures**",
+            "score": 0.6712024003166066,
+            "rank": 3,
+            "char_count": 154,
+            "estimated_tokens": 38,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, our change-control policy, which is fixed and applies to every server without exception: rebooting a prod-tier server requires Level-3 authorization, rebooting a staging-tier server requires Level-1 authorization, and dev-tier servers can be rebooted with no authorization at all. Just confirm you've noted it.\nAssistant: Confirmed. I've noted your change-control policy:\n\n- **Prod-tier**: Level-3 authorization required\n- **Staging-tier**: Level-1 authorization required\n- **Dev-tier**: No authorization required\n\nThis applies to every server without exception. I'll keep this as a fixed rule across all sessions.",
+            "score": 0.640683897797606,
+            "rank": 4,
+            "char_count": 627,
+            "estimated_tokens": 156,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Inventory update: as of this morning, srv-alpha has been migrated to the staging tier. Just confirm you've noted it.\nAssistant: Confirmed. I've noted the update: **srv-alpha** has been migrated from prod-tier to **staging-tier** as of this morning.",
+            "score": 0.6214133462283286,
+            "rank": 5,
+            "char_count": 254,
+            "estimated_tokens": 63,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t2"
+        ]
+      },
+      {
+        "turn_number": 13,
+        "user_input": "Different server: which authorization level is required today to reboot srv-beta? Reply with the level only, in the form Level-N.",
+        "agent_response": "Level-3",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Level-3",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1533.1935998983681,
+        "token_usage": {
+          "input_tokens": 754,
+          "output_tokens": 4,
+          "total_tokens": 758,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 754,
+        "completion_tokens": 4,
+        "total_tokens": 758,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 4,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1989,
+        "retrieved_context_tokens": 497,
+        "embedding_tokens": 70,
+        "retrieval_latency_ms": 231.4142999239266,
+        "append_latency_ms": 265.251699835062,
+        "embedding_latency_ms": 495.7161999773234,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Quick check before I write the first runbook entry: what authorization level do I need to reboot srv-alpha? Just the level.\nAssistant: Level-3 authorization.",
+            "score": 0.7537504049277457,
+            "rank": 1,
+            "char_count": 163,
+            "estimated_tokens": 40,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t6",
+            "session_id": "s1",
+            "turn_number": 6,
+            "source": "chat",
+            "content": "User: Perfect, so srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now. Just confirm you've noted it.\nAssistant: Confirmed. I've noted that **srv-alpha** requires **Level-3 authorization** for any reboot, and that this is now written into the runbook.",
+            "score": 0.73683954399437,
+            "rank": 2,
+            "char_count": 290,
+            "estimated_tokens": 72,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t7",
+            "session_id": "s1",
+            "turn_number": 7,
+            "source": "chat",
+            "content": "User: Last thing for today: suggest a short, clear title for the runbook document.\nAssistant: **Server Fleet Reboot Runbook — Authorization & Procedures**",
+            "score": 0.6808526472542047,
+            "rank": 3,
+            "char_count": 154,
+            "estimated_tokens": 38,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: First, our change-control policy, which is fixed and applies to every server without exception: rebooting a prod-tier server requires Level-3 authorization, rebooting a staging-tier server requires Level-1 authorization, and dev-tier servers can be rebooted with no authorization at all. Just confirm you've noted it.\nAssistant: Confirmed. I've noted your change-control policy:\n\n- **Prod-tier**: Level-3 authorization required\n- **Staging-tier**: Level-1 authorization required\n- **Dev-tier**: No authorization required\n\nThis applies to every server without exception. I'll keep this as a fixed rule across all sessions.",
+            "score": 0.6234465491335796,
+            "rank": 4,
+            "char_count": 627,
+            "estimated_tokens": 156,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Fleet inventory for the runbook: srv-alpha is a prod-tier server, srv-beta is prod-tier as well, and srv-gamma is a dev-tier box. Just confirm you've noted it.\nAssistant: Confirmed. I've noted the fleet inventory:\n\n- **srv-alpha** — Prod-tier\n- **srv-beta** — Prod-tier\n- **srv-gamma** — Dev-tier\n\nI'll keep this mapped alongside the change-control policy.",
+            "score": 0.558748840493518,
+            "rank": 5,
+            "char_count": 362,
+            "estimated_tokens": 90,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t3"
+        ]
+      }
+    ],
+    "timestamp": "2026-10-26T15:11:29.828595+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": "memory/derived_belief_revision_01_deepseek-v4-flash_baseline_react_40dfec48",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 500,
+    "cached_prompt_tokens": 2048,
+    "retrieved_context_tokens": 3132,
+    "embedding_tokens": 1450,
+    "total_retrieval_latency_ms": 3168.6912996228784,
+    "total_append_latency_ms": 9443.665499333292,
+    "total_embedding_latency_ms": 12602.91050048545,
+    "ingestion_latency_ms": 0.0
+  }
+]
