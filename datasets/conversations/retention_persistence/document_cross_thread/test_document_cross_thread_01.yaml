@@ -1,0 +1,84 @@
+# ─────────────────────────────────────────────────────────────────
+# test_document_cross_thread_01.yaml — Documents Across Threads
+# ─────────────────────────────────────────────────────────────────
+# Plan WS-D (TODOs/phase-2-l2-completion-plan.md §4). ops_handbook.md
+# is preloaded as a document. Session s1 only exchanges pleasantries
+# and never mentions the handbook; session s2 probes three facts that
+# exist exclusively inside it.
+#
+# This isolates the *document* channel from the *chat* channel: the
+# s1 chat episodes contain nothing useful, so a passing run can only
+# come from the ingested document. L1 fails because a new session is
+# a new checkpointer thread; L2 passes because ``source="document"``
+# chunks are never excluded by the session filter.
+# ─────────────────────────────────────────────────────────────────
+
+id: document_cross_thread_01
+name: "Documents Retrieved Across Threads (Document Memory Gate)"
+description: >
+  The operations handbook is ingested as a document before turn 1.
+  Session s1 contains no facts at all. Session s2 probes a service
+  port, an escalation contact and a failover cluster identifier, all
+  of which appear only in the handbook. Because the s1 chat episodes
+  are useless, success proves the document channel works cross-thread
+  rather than the conversation being replayed.
+category: document_cross_thread
+metadata:
+  difficulty: moderate
+  stage: "WS-D"
+  documents: ["ops_handbook.md"]
+  document_chars: 3300
+  sessions: ["s1", "s2"]
+  seeded_facts: 3
+  target_research_question: "P1"
+  expected_level_0_behavior: "Fails (0%). No memory at all."
+  expected_level_1_behavior: "Fails (0%). s2 is a fresh thread; the handbook was never in the s1 context."
+  expected_level_2_behavior: "Passes (100%). Handbook chunks are retrieved in s2."
+
+documents:
+  - doc_id: ops_handbook
+    path: ops_handbook.md
+    metadata:
+      title: "Northwind Operations Handbook: Service Ports and Endpoints"
+
+turns:
+  # ── Session s1: no facts whatsoever ────────────────────────────
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "Morning! I'm getting set up for the week — nothing urgent today."
+    assertions: []
+
+  - turn_number: 2
+    session_id: s1
+    role: user
+    content: "Thanks, that's all for now. I'll come back in a new session later."
+    assertions: []
+
+  # ── Session s2: document-only facts ────────────────────────────
+  - turn_number: 3
+    session_id: s2
+    role: user
+    content: "Back in a new session. Which port does the telemetry ingestion gateway listen on?"
+    assertions:
+      - type: must_contain
+        value: "7443"
+        case_sensitive: false
+
+  - turn_number: 4
+    session_id: s2
+    role: user
+    content: "Who is the escalation lead for the Rosario facility?"
+    assertions:
+      - type: must_contain
+        value: "Rostova"
+        case_sensitive: false
+
+  - turn_number: 5
+    session_id: s2
+    role: user
+    content: "And what is the failover cluster identifier for the disaster-recovery pair?"
+    assertions:
+      - type: must_contain
+        value: "dr-atlas-04"
+        case_sensitive: false

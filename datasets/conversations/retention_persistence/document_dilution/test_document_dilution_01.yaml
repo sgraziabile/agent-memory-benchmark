@@ -1,0 +1,118 @@
+# ─────────────────────────────────────────────────────────────────
+# test_document_dilution_01.yaml — Document Corpus Dilution
+# ─────────────────────────────────────────────────────────────────
+# Plan WS-D (TODOs/phase-2-l2-completion-plan.md §4). Eight
+# near-identical rack power-audit memos are ingested as documents
+# before turn 1. Only one memo contains the target UPS serial, and
+# every memo shares the same schema ("Rack power audit — Room N",
+# "UPS unit serial", "Load profile"), so the target must win on
+# semantics alone.
+#
+# With the default top_k = 5, at most 5 of the 8 memos reach the
+# model — the retriever is saturated by construction. This is the
+# document analogue of top_k_saturation_01 (which dilutes with chat
+# episodes) and needs no chat seeding at all.
+#
+# Ablation lever (CLI only, zero harness changes):
+#   fail at --top-k 5, pass at --top-k 20  → pure retrieval-cutoff miss
+#   inspected via summary.csv / results.json (corpus_chunks,
+#   ingested_chunks, retrieved_memories[].chunk_id)
+# ─────────────────────────────────────────────────────────────────
+
+id: document_dilution_01
+name: "Document Corpus Dilution (top-k Saturation over Documents)"
+description: >
+  Eight rack power-audit memos are preloaded as documents. Seven are
+  decoys that repeat the same schema with different rooms and UPS
+  serials; the eighth records UPS-7C42 for the room that powers the
+  cold-storage medical biobank chamber. The probe describes the
+  chamber rather than the room, so answering requires the target memo
+  to survive the top-k cut-off against seven lookalikes.
+category: document_dilution
+metadata:
+  difficulty: hard
+  stage: "WS-D"
+  documents: 8
+  document_chunks: 8
+  default_top_k: 5
+  sessions: ["s1", "s2"]
+  target_research_question: "P1"
+  target_document:
+    doc_id: power_audit_room3
+    serial: "UPS-7C42"
+    room: "Room 3"
+    seed_phrase: "frozen biological tissue samples at minus eighty Celsius"
+    probe_paraphrase: "cold-storage medical biobank chamber"
+  expected_level_0_behavior: "Fails (0%). No document memory."
+  expected_level_1_behavior: "Fails (0%). Documents never enter the thread."
+  expected_level_2_behavior: "Depends on top_k: fails at 5 (saturated), passes at 20."
+
+documents:
+  - doc_id: power_audit_room1
+    content: |
+      Rack power audit — Room 1.
+      UPS unit serial: UPS-2K19.
+      Load profile: steady at 38 percent. Battery string replaced in 2025.
+      Notes: general compute only. No storage or cooling dependency.
+  - doc_id: power_audit_room2
+    content: |
+      Rack power audit — Room 2.
+      UPS unit serial: UPS-4B81.
+      Load profile: steady at 44 percent. Battery string replaced in 2024.
+      Notes: hosts the build fleet. Transfers are routine and unapproved.
+  - doc_id: power_audit_room3
+    content: |
+      Rack power audit — Room 3.
+      UPS unit serial: UPS-7C42.
+      Load profile: steady at 61 percent. Battery string replaced in 2025.
+      Notes: this room powers the cold-storage medical biobank chamber that
+      holds frozen biological tissue samples at minus eighty Celsius. Any
+      transfer of load must be approved by the facilities escalation lead.
+  - doc_id: power_audit_room4
+    content: |
+      Rack power audit — Room 4.
+      UPS unit serial: UPS-9D13.
+      Load profile: steady at 27 percent. Battery string replaced in 2023.
+      Notes: staging cluster. Load may be shed without notice.
+  - doc_id: power_audit_room5
+    content: |
+      Rack power audit — Room 5.
+      UPS unit serial: UPS-3F57.
+      Load profile: steady at 52 percent. Battery string replaced in 2025.
+      Notes: cold-aisle containment for the network core. Temperature alarms
+      escalate to the on-call rotation.
+  - doc_id: power_audit_room6
+    content: |
+      Rack power audit — Room 6.
+      UPS unit serial: UPS-5H28.
+      Load profile: steady at 47 percent. Battery string replaced in 2024.
+      Notes: object store front ends. Transfers are coordinated with storage.
+  - doc_id: power_audit_room7
+    content: |
+      Rack power audit — Room 7.
+      UPS unit serial: UPS-8J64.
+      Load profile: steady at 33 percent. Battery string replaced in 2024.
+      Notes: medical imaging archive. Retains studies for seven years; no
+      low-temperature storage in this room.
+  - doc_id: power_audit_room8
+    content: |
+      Rack power audit — Room 8.
+      UPS unit serial: UPS-6M90.
+      Load profile: steady at 18 percent. Battery string replaced in 2023.
+      Notes: spares and lab benches. No production dependency.
+
+turns:
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "Hi — I'm auditing facility documentation today. Nothing needed yet."
+    assertions: []
+
+  - turn_number: 2
+    session_id: s2
+    role: user
+    content: "Which UPS unit supplies power to the cold-storage medical biobank chamber?"
+    assertions:
+      - type: must_contain
+        value: "UPS-7C42"
+        case_sensitive: false

@@ -79,11 +79,20 @@ def _normalize_for_matching(text: str) -> str:
 import yaml
 from langchain_core.messages import AIMessage, HumanMessage
 
+from core.documents import (
+    CORPUS_SESSION_ID,
+    DEFAULT_DOCUMENTS_DIR,
+    IngestionOutcome,
+    build_episode_records,
+    load_document,
+    manifest_entries,
+)
 from core.schemas import (
     AssertionRule,
     BenchmarkRunSummary,
     BenchmarkScenario,
     ConversationTurn,
+    DocumentSpec,
     TurnResult,
 )
 
@@ -145,6 +154,62 @@ def _read_l2_telemetry(result: Any) -> dict[str, Any]:
     }
 
 
+#: Assertion types evaluated against retrieval telemetry instead of response
+#: text (plan WS-D §Q4). Kept explicit so ``evaluate_assertions`` dispatch and
+#: the schema's ``Literal`` cannot drift apart silently.
+_RETRIEVAL_ASSERTION_TYPES = frozenset(
+    {
+        "must_retrieve_chunk",
+        "must_not_retrieve_chunk",
+        "must_retrieve_source",
+        "must_not_retrieve_source",
+    }
+)
+
+
+def _evaluate_retrieval_assertion(
+    rule: "AssertionRule", episodes: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Evaluate one retrieval assertion against a turn's top-k episodes.
+
+    ``*_chunk`` rules match a case-insensitive substring of ``chunk_id``, so
+    a document id (``doc_policy_v1``) also matches its sub-chunks
+    (``doc_policy_v1_c2``) without the scenario hardcoding splitter output.
+    ``*_source`` rules match the exact ``source`` tag (``chat`` /
+    ``document``).
+
+    Returns:
+        The standard assertion-detail dict plus ``matched_chunks`` — the
+        chunk IDs that satisfied the rule, for direct evidence in exports.
+    """
+    value = _normalize_for_matching(rule.value)
+    if not rule.case_sensitive:
+        value = value.casefold()
+
+    matched: list[str] = []
+    for episode in episodes:
+        chunk_id = str(episode.get("chunk_id", ""))
+        if rule.type.endswith("_chunk"):
+            candidate = _normalize_for_matching(chunk_id)
+            if not rule.case_sensitive:
+                candidate = candidate.casefold()
+            if value and value in candidate:
+                matched.append(chunk_id)
+        else:
+            source = str(episode.get("source", ""))
+            candidate = source if rule.case_sensitive else source.casefold()
+            if candidate == value:
+                matched.append(chunk_id)
+
+    expects_present = rule.type.startswith("must_retrieve")
+    return {
+        "rule_type": rule.type,
+        "value": rule.value,
+        "passed": bool(matched) == expects_present,
+        "matched_chunks": matched,
+    }
+
+
 # ── Default paths ────────────────────────────────────────────────────────────
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -187,10 +252,15 @@ class BenchmarkRunner:
         config_dir: Path | str = _DEFAULT_CONFIG_DIR,
         dataset_dir: Path | str = _DEFAULT_DATASET_DIR,
         output_dir: Path | str = _DEFAULT_OUTPUT_DIR,
+        documents_dir: Path | str = DEFAULT_DOCUMENTS_DIR,
     ) -> None:
         self.config_dir = Path(config_dir)
         self.dataset_dir = Path(dataset_dir)
         self.output_dir = Path(output_dir)
+        #: Shared document-fixture root used when a scenario-declared path is
+        #: not found next to its YAML (plan WS-D). Overridable so tests can
+        #: point at ``tmp_path`` instead of the committed corpus.
+        self.documents_dir = Path(documents_dir)
         #: Shared output directory for the current invocation, pre-created
         #: when a memory backend is attached so ``memory/<run_id>/`` snapshot
         #: exports land next to the final results export (plan §4.3).
@@ -249,6 +319,11 @@ class BenchmarkRunner:
                 logger.warning("Skipping invalid scenario %s: %s", yaml_path.name, exc)
                 continue
 
+            # Provenance for document resolution (plan WS-D): relative
+            # ``documents[].path`` / ``attachments`` entries are resolved
+            # against the scenario's own directory first.
+            scenario.source_path = str(yaml_path)
+
             if filter_ids is None or scenario.id in filter_ids:
                 scenarios.append(scenario)
                 logger.info("Loaded scenario: %s (%s)", scenario.id, scenario.name)
@@ -293,21 +368,47 @@ class BenchmarkRunner:
 
     @staticmethod
     def evaluate_assertions(
-        response: str, rules: list[AssertionRule]
+        response: str,
+        rules: list[AssertionRule],
+        *,
+        retrieved_memories: list[dict[str, Any]] | None = None,
     ) -> list[dict[str, Any]]:
-        """Evaluate a list of assertion rules against an agent response.
+        """Evaluate assertion rules against the response and/or retrieval.
+
+        Two families (plan WS-D §Q4):
+
+        - **Text assertions** (``must_contain`` / ``must_not_contain``) run
+          against the agent's answer.
+        - **Retrieval assertions** (``must_retrieve_chunk`` /
+          ``must_not_retrieve_chunk`` / ``must_retrieve_source`` /
+          ``must_not_retrieve_source``) run against the ``retrieved_memories``
+          telemetry of the same turn. They make retrieval failures *causal*:
+          a dilution test can prove the needle chunk never reached the model
+          instead of inferring it from a wrong answer.
 
         Args:
             response: The agent's response text.
             rules: List of ``AssertionRule`` instances to check.
+            retrieved_memories: Top-k retrieved episode dicts from the agent's
+                own telemetry (``L2AgentState.retrieved_memories``). ``None``
+                or empty means "nothing was retrieved" — retrieval assertions
+                then fail (positive) or pass (negative), deterministically.
 
         Returns:
             List of dicts, each with keys: ``rule_type``, ``value``,
-            ``passed``, ``actual_found``.
+            ``passed``, ``found_in_response`` (text rules) or
+            ``matched_chunks`` (retrieval rules).
         """
         results: list[dict[str, Any]] = []
+        episodes = retrieved_memories or []
 
         for rule in rules:
+            if rule.type in _RETRIEVAL_ASSERTION_TYPES:
+                results.append(
+                    _evaluate_retrieval_assertion(rule, episodes)
+                )
+                continue
+
             # Normalize cosmetic Unicode variance (typographic hyphens,
             # spaces, quotes, fullwidth forms) on BOTH sides so e.g. a
             # response containing "DELTA\u20117749" (non-breaking hyphen)
@@ -337,6 +438,111 @@ class BenchmarkRunner:
 
         return results
 
+    # ── Document Ingestion (plan WS-D) ────────────────────────────────────
+
+    @staticmethod
+    def _system_event_specs(turn: ConversationTurn) -> list[DocumentSpec]:
+        """Translate a ``system_event`` turn into document specs.
+
+        Two sources are ingested, per ``TODOs/phase-2-l2-completion-plan.md``
+        §WS-D: the turn's inline ``content`` (short notices such as
+        *"addendum 1 supersedes §3.2"*) and every path in ``attachments``.
+
+        Deterministic ``doc_id`` values keep chunk IDs stable across runs:
+        ``evt_<session>`` for inline content (the turn suffix is added by
+        :func:`~core.documents.build_episode_records`, yielding
+        ``doc_evt_<session>_t<turn>``) and the attachment's file stem for
+        files (``addendum_1.md`` → ``doc_addendum_1_t<turn>``).
+        """
+        specs: list[DocumentSpec] = []
+        if turn.content and turn.content.strip():
+            specs.append(
+                DocumentSpec(
+                    doc_id=f"evt_{turn.session_id}",
+                    content=turn.content,
+                )
+            )
+        for attachment in turn.attachments:
+            specs.append(
+                DocumentSpec(
+                    doc_id=Path(attachment).stem or "attachment",
+                    path=attachment,
+                    metadata={"attachment": attachment},
+                )
+            )
+        return specs
+
+    def _ingest_documents(
+        self,
+        *,
+        scenario: BenchmarkScenario,
+        specs: list[DocumentSpec],
+        memory_backend: Any,
+        session_id: str,
+        turn_number: int,
+    ) -> IngestionOutcome:
+        """Resolve, read and append documents to the active memory backend.
+
+        Shared by both ingestion channels (scenario-level corpus preload and
+        ``system_event`` turns). The chat model is never invoked — ingestion
+        costs embedding tokens only — and the backend performs the actual
+        chunking, so oversized documents split exactly like long chat turns.
+
+        Args:
+            scenario: Scenario the documents belong to (path resolution and
+                error messages).
+            specs: Declarative document entries to ingest.
+            memory_backend: Active ``EpisodicMemoryBackend`` (L2+).
+            session_id: Provenance session (``"corpus"`` for preloads).
+            turn_number: ``0`` for preloads, the event turn index otherwise.
+
+        Returns:
+            An :class:`IngestionOutcome` with chunk IDs, provenance manifests
+            and embedding telemetry.
+
+        Raises:
+            FileNotFoundError: For an unresolvable ``path`` entry.
+            ValueError: For blank or duplicate-conflicting documents.
+        """
+        if not specs:
+            return IngestionOutcome()
+
+        scenario_dir = Path(scenario.source_path).parent if scenario.source_path else None
+        documents = [
+            load_document(
+                spec,
+                scenario_id=scenario.id,
+                scenario_dir=scenario_dir,
+                documents_dir=self.documents_dir,
+            )
+            for spec in specs
+        ]
+        records = build_episode_records(
+            documents, session_id=session_id, turn_number=turn_number
+        )
+        telemetry = memory_backend.append(records)
+
+        logger.info(
+            "  Ingested %d document(s) (%d chars, %d chunk(s), %.1f ms) "
+            "session=%s turn=%d",
+            len(documents),
+            sum(document.char_count for document in documents),
+            len(telemetry.chunk_ids),
+            telemetry.append_latency_ms,
+            session_id,
+            turn_number,
+        )
+
+        return IngestionOutcome(
+            document_ids=[document.doc_id for document in documents],
+            chunk_ids=list(telemetry.chunk_ids),
+            manifests=manifest_entries(documents),
+            char_count=sum(document.char_count for document in documents),
+            append_latency_ms=telemetry.append_latency_ms,
+            embedding_latency_ms=telemetry.embedding_latency_ms,
+            embedding_tokens=telemetry.embedding_tokens,
+        )
+
     # ── Single Run Execution ─────────────────────────────────────────────
 
     def run_single(
@@ -350,6 +556,7 @@ class BenchmarkRunner:
         memory_backend: Any = None,
         memory_backend_config: dict[str, Any] | None = None,
         snapshot_dir: Path | None = None,
+        documents_enabled: bool = True,
     ) -> BenchmarkRunSummary:
         """Execute a single benchmark tuple: ⟨Scenario, Prompt, Model, Level⟩.
 
@@ -377,6 +584,10 @@ class BenchmarkRunner:
             snapshot_dir: Directory to place ``memory/<run_id>/`` snapshots
                         under. ``None`` skips the export (e.g. backend
                         attached but caller manages snapshots itself).
+            documents_enabled: When ``False``, scenario-declared documents and
+                        ``system_event`` attachments are ignored (control
+                        runs: same conversation, empty corpus). Defaults to
+                        ``True``.
 
         Returns:
             A ``BenchmarkRunSummary`` with all turn results and metrics.
@@ -445,10 +656,103 @@ class BenchmarkRunner:
             if configured_top_k is not None:
                 config["configurable"]["top_k"] = configured_top_k
 
+        # ── Plan WS-D: scenario-level corpus preload ──────────────────────
+        # Documents declared on the scenario are ingested ONCE, before turn 1,
+        # so every session (and therefore every probe) can retrieve them from
+        # the cross-thread store. Ingestion never invokes the chat model; its
+        # embedding cost is reported separately from chat tokens/latency.
+        preloaded_document_ids: list[str] = []
+        preloaded_chunk_ids: list[str] = []
+        preloaded_chars = 0
+        preloaded_append_latency_ms = 0.0
+        preloaded_embedding_latency_ms = 0.0
+        preloaded_embedding_tokens = 0
+        document_manifests: list[dict[str, Any]] = []
+
+        if scenario.documents and not documents_enabled:
+            logger.info(
+                "  Document ingestion disabled — skipping %d preloaded "
+                "document(s) of scenario %s",
+                len(scenario.documents),
+                scenario.id,
+            )
+        elif scenario.documents:
+            if memory_backend is None:
+                # L0/L1 have no long-term store: documents cannot exist
+                # anywhere, so document probes fail by design (ablation floor).
+                logger.warning(
+                    "  Scenario %s declares %d document(s) but level %s has "
+                    "no memory backend — documents are unavailable (expected "
+                    "for L0/L1)",
+                    scenario.id,
+                    len(scenario.documents),
+                    agent_level,
+                )
+            else:
+                # Misconfigured documents (missing file, blank text) fail the
+                # tuple loudly: scoring probes against a corpus that was never
+                # ingested would silently invalidate the run.
+                outcome = self._ingest_documents(
+                    scenario=scenario,
+                    specs=list(scenario.documents),
+                    memory_backend=memory_backend,
+                    session_id=CORPUS_SESSION_ID,
+                    turn_number=0,
+                )
+                preloaded_document_ids = outcome.document_ids
+                preloaded_chunk_ids = outcome.chunk_ids
+                preloaded_chars = outcome.char_count
+                preloaded_append_latency_ms = outcome.append_latency_ms
+                preloaded_embedding_latency_ms = outcome.embedding_latency_ms
+                preloaded_embedding_tokens = outcome.embedding_tokens
+                document_manifests.extend(outcome.manifests)
+
         for turn in scenario.turns:
             if turn.role == "system_event":
-                # System events are injected but not sent to the model
-                logger.info("  System event at turn %d: %s", turn.turn_number, turn.content[:80])
+                # System events are ingested into memory, never sent to the
+                # model (plan WS-D / AUDIT §3.8: the historical no-op).
+                logger.info(
+                    "  System event at turn %d: %s",
+                    turn.turn_number,
+                    turn.content[:80],
+                )
+                if memory_backend is None or not documents_enabled:
+                    if turn.attachments:
+                        logger.warning(
+                            "  Turn %d: %d attachment(s) ignored (%s)",
+                            turn.turn_number,
+                            len(turn.attachments),
+                            "--no-documents"
+                            if not documents_enabled
+                            else "no memory backend",
+                        )
+                    continue
+
+                outcome = self._ingest_documents(
+                    scenario=scenario,
+                    specs=self._system_event_specs(turn),
+                    memory_backend=memory_backend,
+                    session_id=turn.session_id,
+                    turn_number=turn.turn_number,
+                )
+                document_manifests.extend(outcome.manifests)
+                turn_results.append(
+                    TurnResult(
+                        turn_number=turn.turn_number,
+                        user_input=turn.content,
+                        agent_response="",
+                        status="ok",
+                        latency_ms=outcome.append_latency_ms,
+                        session_id=turn.session_id,
+                        role=turn.role,
+                        append_latency_ms=outcome.append_latency_ms,
+                        embedding_latency_ms=outcome.embedding_latency_ms,
+                        embedding_tokens=outcome.embedding_tokens,
+                        ingested_documents=outcome.document_ids,
+                        ingested_chars=outcome.char_count,
+                        ingested_chunk_ids=outcome.chunk_ids,
+                    )
+                )
                 continue
 
             # Session boundary (plan §4.2): a turn whose session_id differs
@@ -630,9 +934,14 @@ class BenchmarkRunner:
                 )
                 continue
 
-            # Evaluate assertions (only for successfully completed turns)
+            # Evaluate assertions (only for successfully completed turns).
+            # Retrieval telemetry is handed over so retrieval assertions
+            # (``must_retrieve_chunk`` / ``*_source``) are evaluated against
+            # what the agent actually retrieved this turn (plan WS-D §Q4).
             assertion_details = self.evaluate_assertions(
-                ai_response, turn.assertions
+                ai_response,
+                turn.assertions,
+                retrieved_memories=l2_tel["retrieved_memories"],
             )
             passed = sum(1 for a in assertion_details if a["passed"])
             failed = sum(1 for a in assertion_details if not a["passed"])
@@ -666,20 +975,31 @@ class BenchmarkRunner:
         # observability but excluded from all scientific metrics (pass rate,
         # latency, tokens) so infrastructure failures never contaminate
         # benchmark results (audit §3.3).
+        #
+        # Plan WS-D: ``system_event`` ingestion turns are "ok" but are NOT
+        # chat turns. They assert nothing, so they must stay out of the
+        # assertion denominators, and their ingestion latency (which can dwarf
+        # a model call for a large corpus) must stay out of the per-turn
+        # average. Their cost is reported through ``ingestion_latency_ms`` and
+        # the ``ingested_*`` counters instead.
         num_turns = len(turn_results)
         ok_turns = [tr for tr in turn_results if tr.status == "ok"]
+        chat_ok_turns = [tr for tr in ok_turns if tr.role == "user"]
+        ingestion_turns = [tr for tr in turn_results if tr.role == "system_event"]
         error_count = num_turns - len(ok_turns)
 
-        total_assertions = sum(tr.assertions_passed + tr.assertions_failed for tr in ok_turns)
-        total_passed = sum(tr.assertions_passed for tr in ok_turns)
-        total_failed = sum(tr.assertions_failed for tr in ok_turns)
-        total_latency = sum(tr.latency_ms for tr in ok_turns)
+        total_assertions = sum(
+            tr.assertions_passed + tr.assertions_failed for tr in chat_ok_turns
+        )
+        total_passed = sum(tr.assertions_passed for tr in chat_ok_turns)
+        total_failed = sum(tr.assertions_failed for tr in chat_ok_turns)
+        total_latency = sum(tr.latency_ms for tr in chat_ok_turns)
 
-        # Aggregate token usage across successfully completed turns
+        # Aggregate token usage across successfully completed chat turns
         total_tokens = 0
         prompt_tokens = 0
         completion_tokens = 0
-        for tr in ok_turns:
+        for tr in chat_ok_turns:
             usage = tr.token_usage or {}
             p_tok = usage.get("input_tokens") or usage.get("prompt_tokens") or 0
             c_tok = usage.get("output_tokens") or usage.get("completion_tokens") or 0
@@ -702,14 +1022,46 @@ class BenchmarkRunner:
         retrieved_context_tokens = sum(
             tr.retrieved_context_tokens for tr in turn_results
         )
-        embedding_tokens_total = sum(tr.embedding_tokens for tr in turn_results)
+        embedding_tokens_total = (
+            sum(tr.embedding_tokens for tr in turn_results) + preloaded_embedding_tokens
+        )
         total_retrieval_latency = sum(tr.retrieval_latency_ms for tr in turn_results)
         total_append_latency = sum(tr.append_latency_ms for tr in turn_results)
-        total_embedding_latency = sum(tr.embedding_latency_ms for tr in turn_results)
-        # ingestion_latency_ms: reserved for system_event document-chunk
-        # ingestion, deferred with document ingestion itself — kept at 0.0
-        # so the export column exists from day one.
-        ingestion_latency = 0.0
+        total_embedding_latency = (
+            sum(tr.embedding_latency_ms for tr in turn_results)
+            + preloaded_embedding_latency_ms
+        )
+
+        # ── Plan WS-D: document-ingestion aggregation ─────────────────────
+        # ``preloaded_*`` covers the scenario corpus (no TurnResult exists for
+        # it: it happened before turn 1); ``ingestion_turns`` covers
+        # ``system_event`` ingestions.
+        documents_ingested_total = len(preloaded_document_ids) + sum(
+            len(tr.ingested_documents) for tr in ingestion_turns
+        )
+        ingested_chars_total = preloaded_chars + sum(
+            tr.ingested_chars for tr in ingestion_turns
+        )
+        ingested_chunks_total = len(preloaded_chunk_ids) + sum(
+            len(tr.ingested_chunk_ids) for tr in ingestion_turns
+        )
+        ingestion_latency = preloaded_append_latency_ms + sum(
+            tr.append_latency_ms for tr in ingestion_turns
+        )
+
+        # Store size at snapshot time (dilution context for top-k analysis).
+        # Guarded: test doubles expose no ``corpus_stats()``, and a backend
+        # internals change must never break a run at reporting time.
+        corpus_chunks: int | None = None
+        corpus_chars: int | None = None
+        corpus_stats = getattr(memory_backend, "corpus_stats", None) if memory_backend else None
+        if callable(corpus_stats):
+            try:
+                stats = corpus_stats() or {}
+                corpus_chunks = stats.get("total_chunks")
+                corpus_chars = stats.get("total_chars")
+            except Exception as exc:  # noqa: BLE001 — reporting must not crash
+                logger.warning("corpus_stats() failed for %s: %s", run_id, exc)
 
         # backend_cfg was already resolved at config-build time (above).
         backend_name = (
@@ -733,6 +1085,17 @@ class BenchmarkRunner:
                         "model_id": model_id,
                         "prompt_id": prompt_id,
                         "agent_level": agent_level,
+                        # Plan WS-D provenance: which documents produced the
+                        # ``source="document"`` chunks in this snapshot.
+                        "documents": document_manifests,
+                        "document_ingestion": {
+                            "documents_ingested": documents_ingested_total,
+                            "ingested_chars": ingested_chars_total,
+                            "ingested_chunks": ingested_chunks_total,
+                            "ingestion_latency_ms": ingestion_latency,
+                            "ingestion_embedding_tokens": preloaded_embedding_tokens
+                            + sum(tr.embedding_tokens for tr in ingestion_turns),
+                        },
                     },
                 )
                 memory_snapshot_path = f"{snapshot_dir.name}/{run_id}"
@@ -753,7 +1116,9 @@ class BenchmarkRunner:
             error_turns=error_count,
             error_rate=error_count / num_turns if num_turns > 0 else 0.0,
             total_latency_ms=total_latency,
-            avg_latency_per_turn_ms=total_latency / len(ok_turns) if ok_turns else 0.0,
+            avg_latency_per_turn_ms=total_latency / len(chat_ok_turns)
+            if chat_ok_turns
+            else 0.0,
             total_tokens=total_tokens,
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
@@ -777,6 +1142,12 @@ class BenchmarkRunner:
             total_append_latency_ms=total_append_latency,
             total_embedding_latency_ms=total_embedding_latency,
             ingestion_latency_ms=ingestion_latency,
+            # ── Plan WS-D document-ingestion metrics ──────────────────────
+            documents_ingested=documents_ingested_total,
+            ingested_chars=ingested_chars_total,
+            ingested_chunks=ingested_chunks_total,
+            corpus_chunks=corpus_chunks,
+            corpus_chars=corpus_chars,
         )
 
         logger.info(
@@ -800,6 +1171,7 @@ class BenchmarkRunner:
         export: bool = True,
         memory_backend: Any = None,
         memory_backend_config: dict[str, Any] | None = None,
+        documents_enabled: bool = True,
     ) -> list[BenchmarkRunSummary]:
         """Execute the full Cartesian product: Scenarios × Prompts × Models.
 
@@ -822,6 +1194,8 @@ class BenchmarkRunner:
                 ``None`` keeps L0/L1 behavior identical.
             memory_backend_config: Optional identity dict (plan §4.3) for
                 run summaries and snapshot manifests.
+            documents_enabled: When ``False``, scenario documents and
+                ``system_event`` attachments are ignored (control runs).
 
         Returns:
             List of ``BenchmarkRunSummary`` objects for all executed tuples.
@@ -885,6 +1259,7 @@ class BenchmarkRunner:
                     memory_backend=memory_backend,
                     memory_backend_config=memory_backend_config,
                     snapshot_dir=snapshot_dir,
+                    documents_enabled=documents_enabled,
                 )
                 results.append(summary)
             except Exception as exc:
@@ -982,6 +1357,17 @@ class BenchmarkRunner:
             # future L2-markdown run must never overwrite each other.
             "memory_backend",
             "embedding_model_id",
+            # Plan WS-D: retrieval/chunking knobs are swept by context-heavy
+            # document scenarios, so they must be part of the CSV identity.
+            "top_k",
+            "chunk_size",
+            "chunk_overlap",
+            # Plan WS-D: document-ingestion volume and cost.
+            "documents_ingested",
+            "ingested_chars",
+            "ingested_chunks",
+            "corpus_chunks",
+            "ingestion_latency_ms",
             "total_turns",
             "total_assertions",
             "passed_assertions",

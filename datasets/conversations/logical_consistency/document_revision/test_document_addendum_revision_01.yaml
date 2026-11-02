@@ -1,0 +1,87 @@
+# ─────────────────────────────────────────────────────────────────
+# test_document_addendum_revision_01.yaml — Document Supersession
+# ─────────────────────────────────────────────────────────────────
+# Plan WS-D (TODOs/phase-2-l2-completion-plan.md §4, WS-D item 3).
+# policy_v1.md is preloaded. At turn 2 a system_event ingests
+# addendum_1.md, which supersedes §3.2 ("Level-1" → "Level-2").
+#
+# Because L2 is append-only, BOTH chunks now exist and compete for
+# the same top_k slots — the canonical evidence that atomic revision
+# requires L3's UPDATE/DELETE. Turn 1 measures the pre-revision
+# baseline; turns 3-4 measure whether the agent honours the revision.
+#
+# Ablation contract:
+#   L0/L1 → fail all graded probes
+#   L2    → passes turn 1; turns 3-4 expose chunk collision
+# ─────────────────────────────────────────────────────────────────
+
+id: document_addendum_revision_01
+name: "Document Supersession (Append-Only Collision)"
+description: >
+  The access policy is preloaded as a document. Turn 1 probes the
+  production-reboot approval level (Level-1 in revision 1). Turn 2 is a
+  system_event that ingests addendum_1.md, which supersedes §3.2 and
+  requires Level-2. Turns 3 and 4 re-probe the same fact in the same
+  session and in a fresh session. An append-only store now holds both
+  the superseded and the superseding chunk, so retrieval may surface
+  the stale one — precisely the failure L3's mutation operators target.
+category: document_revision
+metadata:
+  difficulty: hard
+  stage: "WS-D"
+  documents: ["policy_v1.md", "addendum_1.md (via system_event)"]
+  sessions: ["s1", "s2"]
+  target_research_question: "P2"
+  superseded_fact: "production-tier reboots require Level-1 approval"
+  superseding_fact: "production-tier reboots require Level-2 approval"
+  expected_level_0_behavior: "Fails (0%). No document memory; safe decline."
+  expected_level_1_behavior: "Fails (0%). The document never enters the thread."
+  expected_level_2_behavior: "Turn 1 passes; turns 3-4 may fail when the stale §3.2 chunk outranks the addendum (append-only collision)."
+
+documents:
+  - doc_id: policy_v1
+    path: policy_v1.md
+    metadata:
+      title: "Northwind Datacenter Access Policy (Revision 1)"
+      version: 1
+
+turns:
+  # ── Session s1: pre-revision baseline ───────────────────────────
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "According to our access policy, what approval level does a production-tier reboot require?"
+    assertions:
+      - type: must_contain
+        value: "Level-1"
+        case_sensitive: false
+
+  # ── Mid-conversation ingestion: the addendum supersedes §3.2 ────
+  - turn_number: 2
+    session_id: s1
+    role: system_event
+    content: "Compliance published Addendum 1 to the access policy. It supersedes section 3.2 with immediate effect."
+    attachments:
+      - addendum_1.md
+
+  # ── Same-session re-probe ──────────────────────────────────────
+  - turn_number: 3
+    session_id: s1
+    role: user
+    content: "Remind me: what approval do production-tier reboots require now, after the addendum?"
+    assertions:
+      - type: must_contain
+        value: "Level-2"
+        case_sensitive: false
+      - type: must_retrieve_chunk
+        value: "doc_addendum_1"
+
+  # ── Cross-thread re-probe ──────────────────────────────────────
+  - turn_number: 4
+    session_id: s2
+    role: user
+    content: "New session. Which approval level applies to production-tier reboots in the current policy?"
+    assertions:
+      - type: must_contain
+        value: "Level-2"
+        case_sensitive: false

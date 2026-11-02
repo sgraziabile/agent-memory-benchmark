@@ -26,6 +26,9 @@ env/
 outputs/runs/*
 !outputs/runs/.gitkeep
 
+# Generated document corpora (reproducible from scripts/generate_corpus.py --seed)
+datasets/documents/generated/
+
 # OS
 .DS_Store
 Thumbs.db

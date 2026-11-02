@@ -143,7 +143,19 @@ Six scenarios designed to stress-test different memory failure modes:
 | `temporal_multi_hop_01` | Multi-Hop Reasoning | 4 | Moderate | P1 | Compositional deduction over facts distributed across turns |
 | `in_context_control_01` | Positive Control | 1 | Basic | P2 | Single-turn baseline — all premises in one prompt (upper bound) |
 
-Each scenario is a YAML file with structured `assertions` per turn (`must_contain` / `must_not_contain`), enabling fully automated pass/fail evaluation without human judgment.
+Each scenario is a YAML file with structured `assertions` per turn, enabling fully automated pass/fail evaluation without human judgment. Text assertions (`must_contain` / `must_not_contain`) grade the answer; retrieval assertions (`must_retrieve_chunk`, `must_not_retrieve_chunk`, `must_retrieve_source`, `must_not_retrieve_source`) grade what the retriever actually injected, so top-k dilution failures are causal rather than inferred.
+
+### Document-memory scenarios (plan WS-D)
+
+These scenarios ingest **documents** into memory instead of (or in addition
+to) chat turns. See [`datasets/documents/README.md`](datasets/documents/README.md).
+
+| Scenario | Category | Turns | What It Tests |
+|----------|----------|:-----:|---------------|
+| `document_needle_01` | Document Needle | 4 | A fact buried in a preloaded document must be recalled in a later session |
+| `document_addendum_revision_01` | Document Revision | 4 | A mid-conversation `system_event` supersedes a document section; append-only L2 must reconcile (`Level-1` → `Level-2`) |
+| `document_dilution_01` | Document Dilution | 2 | Eight near-identical documents saturate `top_k`; fail@5 / pass@20 |
+| `document_cross_thread_01` | Document Cross-Thread | 5 | Document facts retrieved from a new session whose chat history contains nothing |
 
 ---
 
@@ -210,6 +222,34 @@ python run.py --model nanogpt:z-ai/glm-5.3-flash --scenario attrition_01
 python run.py --model nanogpt:moonshotai/kimi-k2.6 --scenario needle_haystack_01
 ```
 
+### Add documents to memory (L2+)
+
+Documents declared in a scenario YAML (`documents:` and `system_event`
+`attachments:`) are chunked and appended to the episodic store with
+`source="document"` — the chat model is never invoked, so ingestion costs
+embedding tokens only. Sweep the retrieval/chunking axes from the CLI:
+
+```bash
+# Preload a document corpus and probe it (default top_k = 5)
+python run.py --model qwen3.6-27b --scenario document_needle_01 --level 2
+
+# Retrieval-cutoff ablation: fail@5 → pass@20 proves a top-k miss
+python run.py --model qwen3.6-27b --scenario document_dilution_01 --level 2 --top-k 5
+python run.py --model qwen3.6-27b --scenario document_dilution_01 --level 2 --top-k 20
+
+# Chunking ablation
+python run.py --model qwen3.6-27b --scenario document_needle_01 --level 2 \
+    --chunk-size 600 --chunk-overlap 100
+
+# Control run: same conversation, empty corpus
+python run.py --model qwen3.6-27b --scenario document_needle_01 --level 2 --no-documents
+```
+
+Ingestion volume/cost is reported separately from chat metrics:
+`documents_ingested`, `ingested_chars`, `ingested_chunks`, `corpus_chunks`,
+`ingestion_latency_ms` (see `results.json` / `summary.csv`), and snapshot
+provenance lands in `outputs/runs/<ts>/memory/<run_id>/manifest.json`.
+
 ### Available options
 
 ```
@@ -219,6 +259,12 @@ python run.py --help
   --scenario, -s    Scenario ID or 'all'             (default: all)
   --prompt, -p      Prompt ID from prompts.yaml      (default: baseline_react)
   --level, -l       Level number(s), name, or 'all'   (default: 0; e.g. 1 or 0,1)
+  --backend, -b     Memory backend for L2+ runs      (default: vector)
+  --embedding-model Embedding model ID               (default: qwen3-embedding-8b)
+  --top-k           Retrieval cut-off for L2+        (default: 5; 0 disables retrieval)
+  --chunk-size      Max chars per chunk              (default: 1200)
+  --chunk-overlap   Chars shared between chunks      (default: 200; must be < --chunk-size)
+  --no-documents    Ignore documents/attachments (control runs)
   --verbose, -v     Enable debug logging
   --list-models     List registered models and exit
   --list-scenarios  List available scenarios and exit
@@ -274,27 +320,35 @@ agent-memory-benchmark/
 │   ├── base.py                          # Abstract BaseBenchmarkAgent interface
 │   ├── level_0_reactive/
 │   │   └── graph.py                     # L0 stateless graph (Command routing)
-│   └── level_1_working_memory/
-│       └── graph.py                     # L1 intra-thread graph (MemorySaver)
+│   ├── level_1_working_memory/
+│   │   └── graph.py                     # L1 intra-thread graph (MemorySaver)
+│   └── level_2_episodic_rag/
+│       ├── graph.py                     # L2 retrieve → model → append (Naive RAG)
+│       └── backends/                    # EpisodeRecord contract + vector backend
 ├── configs/
-│   ├── models.yaml                      # 8 subscription models (NanoGPT)
+│   ├── models.yaml                      # Chat + embedding model registry
 │   └── prompts.yaml                     # 3 system prompts (baseline, epistemic, minimal)
 ├── core/
+│   ├── documents.py                     # WS-D: document resolution, loading, records
 │   ├── model_factory.py                 # Dynamic multi-provider LLM instantiator
 │   ├── runner.py                        # Cartesian product orchestrator + export
 │   └── schemas.py                       # Pydantic v2 contracts + LangGraph state
 ├── datasets/
+│   ├── documents/                       # WS-D document corpus + generator docs
 │   └── conversations/                   # Scenario YAMLs, organized by research theme
-│       ├── logical_consistency/         # belief_revision, explicit_forget, in_context_control, negative_hallucination
-│       ├── retention_persistence/       # attrition, in_context_needle, needle_haystack
+│       ├── logical_consistency/         # belief_revision, document_revision, explicit_forget, ...
+│       ├── retention_persistence/       # attrition, needle_haystack, document_needle, document_dilution, ...
 │       ├── compositional_reasoning/     # in_context_multihop, temporal_multi_hop
-│       ├── robustness_security/         # adversarial_forget
-│       └── computational_cost/          # empty (.gitkeep) — planned tests
+│       ├── robustness_security/         # adversarial_forget, memory_injection
+│       └── computational_cost/          # overhead_baseline (P3)
 ├── outputs/
-│   ├── runs/                            # Timestamped results (JSON + CSV + Markdown)
+│   ├── runs/                            # Timestamped results (JSON + CSV + Markdown + memory/)
 │   └── by_theme/                        # Runs reorganized by theme/category (generated)
+├── scripts/
+│   ├── add_scenario.py                  # Materialize YAML blocks from a stage spec
+│   └── generate_corpus.py               # Deterministic synthetic document corpus
 ├── tests/
-│   └── test_scaffolding.py              # Deterministic harness tests (no API keys needed)
+│   └── test_document_ingestion.py       # WS-D harness tests (no API keys needed)
 ├── .env.example                         # Environment variable template
 ├── pyproject.toml                       # Dependencies and build config
 ├── SPEC.md                              # Technical specification (Spanish)

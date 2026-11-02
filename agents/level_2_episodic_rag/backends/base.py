@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 #: Provenance tag: conversational episode vs. ingested document chunk.
 EpisodeSource = Literal["chat", "document"]
@@ -55,7 +55,8 @@ class EpisodeRecord(BaseModel):
         chunk_id: Stable chunk identifier, e.g. ``ep_s1_t2_0`` (episode,
                   session ``s1``, turn 2, chunk 0) or ``doc_spec01_c03``.
         session_id: Session the episode belongs to (``s1``, ``s2``, ...).
-        turn_number: 1-based turn index within the session.
+        turn_number: 1-based turn index within the session; ``0`` for a
+                document preloaded before the conversation started.
         source: ``chat`` for conversational turns, ``document`` for
                 ingested large-file chunks.
         content: The chunk/section text itself.
@@ -86,12 +87,22 @@ class EpisodeRecord(BaseModel):
             )
         return value
 
-    @field_validator("turn_number")
-    @classmethod
-    def _turn_number_positive(cls, value: int) -> int:
-        if value < 1:
-            raise ValueError(f"turn_number is 1-based, got {value}")
-        return value
+    @model_validator(mode="after")
+    def _turn_number_range(self) -> "EpisodeRecord":
+        """Validate ``turn_number`` against the record's provenance.
+
+        Chat and ``system_event`` turns are 1-based; ``0`` is reserved for a
+        scenario-level document preloaded BEFORE the conversation started
+        (plan WS-D), because no conversational turn produced it.
+        """
+        if self.turn_number < 0:
+            raise ValueError(f"turn_number must be >= 0, got {self.turn_number}")
+        if self.turn_number == 0 and self.source != "document":
+            raise ValueError(
+                "turn_number 0 is reserved for preloaded documents "
+                "(source='document'); chat turns are 1-based"
+            )
+        return self
 
     @classmethod
     def from_content(
@@ -122,6 +133,39 @@ class EpisodeRecord(BaseModel):
             estimated_tokens=estimate_tokens(content),
             timestamp=timestamp if timestamp is not None else utc_now_iso(),
             metadata=metadata if metadata is not None else {},
+        )
+
+    @classmethod
+    def from_document(
+        cls,
+        *,
+        chunk_id: str,
+        content: str,
+        session_id: str = "corpus",
+        turn_number: int = 0,
+        metadata: dict[str, Any] | None = None,
+        timestamp: str | None = None,
+    ) -> "EpisodeRecord":
+        """Build a ``source="document"`` record (plan WS-D).
+
+        Convenience factory for ``BenchmarkRunner``'s two ingestion channels:
+
+        - **Scenario corpus preload** — ``session_id="corpus"`` and
+          ``turn_number=0`` (the document existed before turn 1).
+        - **``system_event`` ingestion** — the turn's ``session_id`` and
+          ``turn_number``, so provenance answers "when did memory learn this?".
+
+        ``char_count`` / ``estimated_tokens`` / ``timestamp`` are derived
+        exactly as in :meth:`from_content`, so they can never drift.
+        """
+        return cls.from_content(
+            chunk_id=chunk_id,
+            session_id=session_id,
+            turn_number=turn_number,
+            source="document",
+            content=content,
+            timestamp=timestamp,
+            metadata=metadata,
         )
 
 
