@@ -48,7 +48,57 @@ SCENARIO_MAP: dict[str, tuple[str, str]] = {
     "in_context_needle_01": ("retention_persistence", "in_context_needle"),
     "temporal_multi_hop_01": ("compositional_reasoning", "temporal_multi_hop"),
     "in_context_multihop_01": ("compositional_reasoning", "in_context_multihop"),
+    "cross_thread_01": ("retention_persistence", "cross_thread"),
+    "3hop_temporal_01": ("compositional_reasoning", "temporal_multi_hop"),
+    "cross_thread_derived_01": ("compositional_reasoning", "cross_thread_derived"),
+    "in_context_derivation_01": ("compositional_reasoning", "in_context_derivation"),
+    "derived_belief_revision_01": ("logical_consistency", "belief_revision"),
+    "backward_modus_tollens_01": ("logical_consistency", "belief_revision"),
+    "in_context_derived_revision_01": ("logical_consistency", "in_context_control"),
+    "in_context_modus_tollens_01": ("logical_consistency", "in_context_control"),
+    "overhead_baseline_01": ("computational_cost", "overhead_baseline"),
+    "memory_injection_01": ("robustness_security", "memory_injection"),
+    "top_k_saturation_01": ("retention_persistence", "top_k_saturation"),
+    "entity_binding_01": ("logical_consistency", "entity_binding"),
 }
+
+# Dynamic fallback: any scenario id already materialized under
+# ``datasets/conversations/<theme>/<category>/`` resolves from the tree
+# itself, so newly added scenarios (written by ``scripts/add_scenario.py``)
+# no longer require a manual ``SCENARIO_MAP`` entry.
+DATASET_DIR = REPO_ROOT / "datasets" / "conversations"
+
+
+def build_tree_map() -> dict[str, tuple[str, str]]:
+    """Index the themed dataset tree: ``scenario_id -> (theme, category)``.
+
+    Only organized files (``<theme>/<category>/test_<id>.yaml``) count;
+    top-level stragglers are handled by ``scripts/organize_datasets.py``.
+    """
+    mapping: dict[str, tuple[str, str]] = {}
+    for path in DATASET_DIR.rglob("test_*.yaml"):
+        rel = path.relative_to(DATASET_DIR)
+        if len(rel.parts) != 3:
+            continue
+        mapping[path.name[len("test_") : -len(".yaml")]] = (
+            rel.parts[0],
+            rel.parts[1],
+        )
+    return mapping
+
+
+def resolve_scenario(
+    scenario_id: str, tree_map: dict[str, tuple[str, str]] | None = None
+) -> tuple[str, str]:
+    """Resolve ``(theme, test_category)``: static map first, then the tree."""
+    if scenario_id in SCENARIO_MAP:
+        return SCENARIO_MAP[scenario_id]
+    if tree_map is None:
+        tree_map = build_tree_map()
+    if scenario_id in tree_map:
+        return tree_map[scenario_id]
+    return ("others", scenario_id)
+
 
 # Fixed ordering of themes in the directory tree and consolidated markdown.
 THEME_ORDER: list[str] = [
@@ -113,6 +163,7 @@ def load_run_records() -> list[dict]:
     Returns a list of dicts, one per run, each carrying the required
     consolidated-summary columns plus the source folder path (``_run_dir``).
     """
+    tree_map = build_tree_map()
     records: list[dict] = []
     for results_path in sorted(RUNS_DIR.glob("*/results.json")):
         run_dir = results_path.parent
@@ -128,9 +179,7 @@ def load_run_records() -> list[dict]:
             if not isinstance(entry, dict):
                 continue
             scenario_id = entry.get("scenario_id", "unknown")
-            theme, test_category = SCENARIO_MAP.get(
-                scenario_id, ("others", scenario_id)
-            )
+            theme, test_category = resolve_scenario(scenario_id, tree_map)
             records.append(
                 {
                     "timestamp": run_dir.name,

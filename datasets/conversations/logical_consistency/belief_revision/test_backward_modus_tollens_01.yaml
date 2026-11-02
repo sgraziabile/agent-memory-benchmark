@@ -1,0 +1,200 @@
+# ─────────────────────────────────────────────────────────────────
+# test_backward_modus_tollens_01.yaml — Backward Contraction (MT)
+# ─────────────────────────────────────────────────────────────────
+# Stage 5.4 (TODOs/test-expansion-plan.md). Logical converse of 5.1.
+# s1 seeds an ENTRENCHED rule R (eu-central -> Bastion audit,
+# enforced by the deploy pipeline, no exceptions possible), a base
+# fact F1 (billing-api is hosted in eu-central) and the derived
+# conclusion D1 (billing-api is in the Bastion audit), articulated by
+# the agent (T5) and cached by the user (T6). s2 contradicts ONLY the
+# derived conclusion (not-D1, from Compliance, in writing), with no
+# mention of regions. s3 probes the BASE FACT F1 with region lexicon
+# only. Since R is entrenched, {R, not-D1} |- not-F1 (Modus Tollens /
+# Hansson kernel contraction over the incision set {F1, R}). An agent
+# that merely deletes D1 keeps {F1, R, not-D1}: globally inconsistent,
+# and answers "yes, eu-central" when asked about the region.
+# Two-step probe (plan 2.2 design): T11 open recall (observational,
+# no assertions) -> T12 commitment with closed labels. T13 is a rule
+# control: a hypothetical new eu-central service must still be in the
+# audit (detects contracting R instead of F1).
+#
+# Deviations from the plan text (rationale in metadata):
+#   - "GDPR auditing" -> fictional "Bastion audit": real-world GDPR
+#     semantics (scope follows data subjects, not hosting region)
+#     undermine R's entrenchment and leak world-knowledge to L0.
+#   - must_contain "no" -> closed labels: the substring "no" matches
+#     "not", "know", "none", "cannot", so a safe decline would pass.
+# ─────────────────────────────────────────────────────────────────
+
+id: backward_modus_tollens_01
+name: "Backward Contraction via Modus Tollens (Kernel Contraction)"
+description: >
+  Session s1 states an absolute platform rule (every service hosted in
+  eu-central is automatically enrolled in the Bastion audit by the deploy
+  pipeline; no exceptions can exist), a service inventory (billing-api in
+  eu-central, search-api in us-east), and then has the agent derive, and the
+  user cache, that billing-api is in the Bastion audit. Session s2 reports
+  that Compliance confirmed in writing that billing-api is NOT in the Bastion
+  audit, without mentioning regions. Session s3 asks whether billing-api is
+  hosted in eu-central (open recall, then a closed-label commitment). The
+  only consistent answer is no (Modus Tollens over the entrenched rule). A
+  final control asks whether a brand-new eu-central service would be
+  enrolled, which must still be yes.
+category: belief_revision
+metadata:
+  difficulty: hard
+  stage: "5.4"
+  sessions: ["s1", "s2", "s3"]
+  paired_control: "in_context_modus_tollens_01"
+  krr_operation: "Kernel contraction by not-D1: R entrenched, so retract F1 (Modus Tollens), not R and not merely D1"
+  rule_R: "eu-central -> enrolled in the Bastion audit (pipeline-enforced; no exceptions exist or can be granted)"
+  base_fact_F1: "T4: billing-api is hosted in eu-central (from the service inventory spreadsheet)"
+  derived_D1: "T5 (agent derivation) + T6 (user cache): billing-api is enrolled in the Bastion audit"
+  contradiction_not_D1: "T9: Compliance confirmed in writing that billing-api is NOT enrolled (no region lexicon)"
+  entrenchment_order: "R (pipeline-enforced, exceptionless) > not-D1 (Compliance, written, full review) > F1 (inventory spreadsheet)"
+  expected_answer: "NO_EU_CENTRAL ({R, not-D1} |- not-F1)"
+  stale_answer: "YES_EU_CENTRAL (F1 survived: D1 deleted, base fact untouched)"
+  answer_labels:
+    T12: ["YES_EU_CENTRAL", "NO_EU_CENTRAL", "CANNOT_DETERMINE"]
+    T13: ["YES_BASTION", "NO_BASTION", "CANNOT_DETERMINE"]
+  plan_deviations:
+    rule_domain: >
+      The plan's illustrative "GDPR auditing" is replaced by a fictional,
+      purely stipulated "Bastion audit". Real GDPR scope depends on data
+      subjects, not hosting region, so world knowledge would license
+      retracting R instead of F1 (breaking the entrenchment premise), and an
+      L0 agent could answer the T13 control from world knowledge alone.
+    assertion_form: >
+      The plan's must_contain "no" is replaced by closed labels. "no" is a
+      substring of "not", "know", "none" and "cannot", so a safe decline
+      ("I don't know") would pass. Labels are chosen so that no label is a
+      substring of another (case-insensitive).
+  headline_metric: >
+    Turn 12 pass (must_contain "NO_EU_CENTRAL"). T11 is observational only.
+    T13 is the rule control used for attribution, not a headline score.
+    With must_contain only, amnesic agents (L0/L1) score 0% cleanly.
+  outcome_matrix:
+    "T12 NO + T13 YES": "Kernel contraction on F1. R preserved. Correct."
+    "T12 YES + T13 YES": "GLOBALLY INCONSISTENT. Target failure (L3 CRUD signature): D1 deleted, F1 and R both kept."
+    "T12 YES + T13 NO/CANNOT": "Wrong incision. R contracted (treated billing-api as an exception) instead of F1; violates entrenchment."
+    "T12 CANNOT + T13 YES": "Conflict detected but not resolved by entrenchment (no backward propagation)."
+    "T12 NO + T13 NO/CANNOT": "Over-contraction. Region fact dropped but R also lost or doubted."
+    "T12 CANNOT + T13 CANNOT": "Memory/retrieval failure (amnesia). Expected L0/L1 shape."
+  conflict_audit: >
+    Grep the T9 agent_response for "eu-central". A hit means the model
+    flagged the {F1, R, not-D1} collision at WRITE time (now stored as an s2
+    episode); classify the run as "conflict_flagged_at_write". Not an
+    assertion: pushing back on the user here is legitimate behaviour.
+  precondition_audit: >
+    The T5 agent_response should be affirmative (in-window derivation of
+    D1). T6 restates D1 in the user's own words, so D1 is stored even if T5
+    is wrong.
+  expected_level_0_behavior: "Fails (0%). No memory; CANNOT_DETERMINE / safe decline on both probes."
+  expected_level_1_behavior: "Fails (0%). s3 opens a fresh checkpointer thread; CANNOT_DETERMINE."
+  expected_level_2_behavior: >
+    Append-only episodic RAG: the s3 query ("billing-api", "eu-central",
+    "hosted") matches F1 (T4) and R (T3) most strongly; not-D1 (T9) shares
+    only "billing-api". Passes only if T9 is also in top-k AND the model
+    applies Modus Tollens at read time over an inconsistent memory block.
+  expected_level_3_behavior: "Expected to fail (YES_EU_CENTRAL): CRUD update targets the chunk matching 'Bastion audit for billing-api' (D1) and leaves F1 untouched."
+  expected_level_4_behavior: "Should pass. Backward propagation over the minimal incision set {F1, R} retracts F1 because R is entrenched."
+  target_research_question: "P1, P2"
+
+turns:
+  # ── Session s1 (Thread A): entrenched R + base fact F1 + D1 ─────
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "Hi! I'm taking over compliance tracking for our platform services and I want you to help me keep the facts straight across sessions. Today is just background."
+    assertions: []
+
+  - turn_number: 2
+    session_id: s1
+    role: user
+    content: "Before we start: in two sentences, what's the difference between an audit log and an application log?"
+    assertions: []
+
+  # RULE R (entrenched: mechanism-enforced, exceptionless)
+  - turn_number: 3
+    session_id: s1
+    role: user
+    content: "First, a platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted. Just confirm you've noted it."
+    assertions: []
+
+  # BASE FACT F1 (+ decoy search-api in another region)
+  - turn_number: 4
+    session_id: s1
+    role: user
+    content: "From our service inventory spreadsheet: billing-api is hosted in eu-central, and search-api is hosted in us-east. Just confirm you've noted it."
+    assertions: []
+
+  # DERIVED D1 — articulated by the agent (precondition_audit)
+  - turn_number: 5
+    session_id: s1
+    role: user
+    content: "Quick check before I update the audit tracker: is billing-api enrolled in the Bastion audit? Just yes or no."
+    assertions: []
+
+  # DERIVED D1 — cached by the user (deterministic entry in the store)
+  - turn_number: 6
+    session_id: s1
+    role: user
+    content: "Right, so billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now. Just confirm you've noted it."
+    assertions: []
+
+  - turn_number: 7
+    session_id: s1
+    role: user
+    content: "Last thing for today: suggest a short name for a shared compliance tracker spreadsheet."
+    assertions: []
+
+  # ── Session s2 (Thread B): contradiction of D1 ONLY ─────────────
+  - turn_number: 8
+    session_id: s2
+    role: user
+    content: "New session. Quick one first: in one sentence, what is a data retention policy?"
+    assertions: []
+
+  # NOT-D1 (mid-thread; no region / eu-central / hosting lexicon)
+  # conflict_audit: grep this turn's agent_response for "eu-central".
+  - turn_number: 9
+    session_id: s2
+    role: user
+    content: "Update from the Compliance team: after a full review, they confirmed in writing that billing-api is NOT enrolled in the Bastion audit. I've taken it off the audit tracker. Just confirm you've noted it."
+    assertions: []
+
+  - turn_number: 10
+    session_id: s2
+    role: user
+    content: "Unrelated: in one sentence, what is a cron expression?"
+    assertions: []
+
+  # ── Session s3: two-step probe on the BASE FACT F1 ──────────────
+  # Probe uses F1's lexicon ("billing-api", "eu-central", "hosted")
+  # and avoids not-D1's ("Bastion", "audit", "Compliance", "enrolled").
+  # OPEN RECALL (observational, NO assertions)
+  - turn_number: 11
+    session_id: s3
+    role: user
+    content: "Hi, new session. I'm drawing the network diagram for billing-api. Is it currently hosted in the eu-central region?"
+    assertions: []
+
+  # COMMITMENT (hard assertions live HERE only)
+  - turn_number: 12
+    session_id: s3
+    role: user
+    content: "I need a definite answer for the diagram. Based on everything you know, is billing-api hosted in eu-central today? Reply with exactly one of these labels and nothing else: YES_EU_CENTRAL, NO_EU_CENTRAL, CANNOT_DETERMINE."
+    assertions:
+      - type: must_contain
+        value: "NO_EU_CENTRAL"
+        case_sensitive: false
+
+  # RULE CONTROL (attribution: R must survive the contraction)
+  - turn_number: 13
+    session_id: s3
+    role: user
+    content: "Different question: if we deploy a brand-new service to eu-central next week, will it be enrolled in the Bastion audit? Reply with exactly one of these labels and nothing else: YES_BASTION, NO_BASTION, CANNOT_DETERMINE."
+    assertions:
+      - type: must_contain
+        value: "YES_BASTION"
+        case_sensitive: false

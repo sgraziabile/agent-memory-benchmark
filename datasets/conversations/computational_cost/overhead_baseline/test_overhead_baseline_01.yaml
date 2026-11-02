@@ -1,0 +1,144 @@
+# ─────────────────────────────────────────────────────────────────
+# test_overhead_baseline_01.yaml — Computational Overhead Baseline
+# ─────────────────────────────────────────────────────────────────
+# Stage 4.1 (TODOs/test-expansion-plan.md). Pure P3 measurement
+# scenario: 10 self-contained, elementary factual Q&A turns with
+# strict single-word/number output constraints, split 5 + 5 across
+# two sessions (s1 -> s2).
+#
+# Why two sessions (s1, s2):
+#   L2's retrieve_node passes exclude_session_id=current_session_id.
+#   A single-session test would return 0 retrieved episodes on every
+#   turn (retrieved_context_tokens = 0), missing RAG context-injection
+#   overhead completely. Splitting into s1 (T1-T5) and s2 (T6-T10)
+#   captures BOTH regimes in one run:
+#     - s1 (T1-T5): intra-session checkpointer growth + L2 write/embed
+#       cost with 0 injected memories.
+#     - s2 (T6-T10): fresh checkpointer thread + L2 cross-session RAG
+#       injection of top_k=5 s1 episodes on every turn.
+#
+# Every turn is answerable in-context without prior memory, so L0, L1,
+# L2, L3, and L4 all score 100% (10/10), eliminating capability and
+# refusal confounds from latency and token comparisons.
+# ─────────────────────────────────────────────────────────────────
+
+id: overhead_baseline_01
+name: "Computational Overhead Baseline (Two-Regime P3 Benchmark)"
+description: >
+  Ten strictly linear, self-contained factual questions with single-word or
+  single-number answers, split evenly across two sessions (s1: turns 1-5,
+  s2: turns 6-10). Designed for a guaranteed 100% pass rate at every memory
+  level (L0 through L4) so that wall-clock latency, prompt token growth,
+  retrieved context tokens, and embedding costs measure pure memory
+  infrastructure overhead (P3).
+category: overhead_baseline
+metadata:
+  difficulty: basic
+  stage: "4.1"
+  sessions: ["s1", "s2"]
+  turns_per_session: 5
+  p3_regimes:
+    s1_turns_1_to_5: "Intra-session checkpointer growth + episodic append/embed overhead (retrieved_context_tokens = 0 on L2 due to same-session filter)."
+    s2_turns_6_to_10: "Cross-session RAG active: top_k=5 episodes from s1 injected into model_node on every turn (retrieved_context_tokens > 0)."
+  p3_decomposition:
+    checkpointer_token_slope: "L1 prompt_tokens(T5) - L1 prompt_tokens(T1)"
+    episodic_write_and_search_ms: "mean(L2 retrieval_latency_ms + append_latency_ms) across T1-T10"
+    rag_context_injection_tokens: "mean(L2 retrieved_context_tokens) across T6-T10 (s2)"
+    vector_vs_markdown_delta: "L2_vector total_embedding_latency_ms and embedding_tokens vs L2_markdown (0 embedding tokens, local BM25)"
+  expected_level_0_behavior: "Passes (100%). Flat O(1) prompt_tokens per turn; zero memory latency."
+  expected_level_1_behavior: "Passes (100%). Linear prompt_tokens growth within s1 (T1-T5), reset at s2 (T6), linear growth T6-T10."
+  expected_level_2_behavior: "Passes (100%). Adds retrieve_node + append_node latency on T1-T10 and top_k=5 [Memory] block tokens on T6-T10."
+  target_research_question: "P3"
+
+turns:
+  # ── Session s1: Cold-to-warm write + intra-session growth ───────
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else."
+    assertions:
+      - type: must_contain
+        value: "Au"
+        case_sensitive: false
+
+  - turn_number: 2
+    session_id: s1
+    role: user
+    content: "Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else."
+    assertions:
+      - type: must_contain
+        value: "6"
+        case_sensitive: false
+
+  - turn_number: 3
+    session_id: s1
+    role: user
+    content: "Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else."
+    assertions:
+      - type: must_contain
+        value: "Tokyo"
+        case_sensitive: false
+
+  - turn_number: 4
+    session_id: s1
+    role: user
+    content: "Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else."
+    assertions:
+      - type: must_contain
+        value: "0"
+        case_sensitive: false
+
+  - turn_number: 5
+    session_id: s1
+    role: user
+    content: "Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else."
+    assertions:
+      - type: must_contain
+        value: "Mercury"
+        case_sensitive: false
+
+  # ── Session s2: Cross-session RAG injection active (top_k=5) ────
+  - turn_number: 6
+    session_id: s2
+    role: user
+    content: "Baseline check six: how many continents are there on Earth in the standard seven-continent model? Reply with the digits only, nothing else."
+    assertions:
+      - type: must_contain
+        value: "7"
+        case_sensitive: false
+
+  - turn_number: 7
+    session_id: s2
+    role: user
+    content: "Baseline check seven: what is the chemical symbol for oxygen on the periodic table? Reply with the one-letter symbol only, nothing else."
+    assertions:
+      - type: must_contain
+        value: "O"
+        case_sensitive: false
+
+  - turn_number: 8
+    session_id: s2
+    role: user
+    content: "Baseline check eight: what is the capital city of France? Reply with the city name only, nothing else."
+    assertions:
+      - type: must_contain
+        value: "Paris"
+        case_sensitive: false
+
+  - turn_number: 9
+    session_id: s2
+    role: user
+    content: "Baseline check nine: how many hours are there in one standard Earth day? Reply with the digits only, nothing else."
+    assertions:
+      - type: must_contain
+        value: "24"
+        case_sensitive: false
+
+  - turn_number: 10
+    session_id: s2
+    role: user
+    content: "Baseline check ten: what is the positive square root of 81? Reply with the digits only, nothing else."
+    assertions:
+      - type: must_contain
+        value: "9"
+        case_sensitive: false

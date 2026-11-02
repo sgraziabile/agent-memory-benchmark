@@ -1,0 +1,22 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "adversarial_forget_01_deepseek-v4-flash_baseline_react_cfe00cf1",
+    "scenario_id": "adversarial_forget_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag"
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "total_chunks": 4,
+  "total_chars": 1799,
+  "total_estimated_tokens": 449,
+  "snapshot_timestamp": "2026-10-23T18:45:49.368685+00:00"
+}

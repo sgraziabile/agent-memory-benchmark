@@ -1,0 +1,2 @@
+﻿run_id,scenario_id,model_id,prompt_id,agent_level,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,error_turns,error_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
+adversarial_forget_02_glm-5.3-flash_baseline_react_9128f3e3,adversarial_forget_02,glm-5.3-flash,baseline_react,level_1_working_memory,4,2,2,0,1.0,0,0.0,43824.92769975215,10956.231924938038,4917,1965,2952,2026-10-09T22:38:55.528438+00:00

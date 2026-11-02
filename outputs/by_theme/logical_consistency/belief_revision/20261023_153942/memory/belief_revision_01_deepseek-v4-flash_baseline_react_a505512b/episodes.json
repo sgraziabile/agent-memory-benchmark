@@ -1,0 +1,62 @@
+[
+  {
+    "chunk_id": "ep_default_t1",
+    "session_id": "default",
+    "turn_number": 1,
+    "source": "chat",
+    "content": "User: Hi! I want to tell you about my pet. My cat's name is Luna and she is 3 years old. She's a calico.\nAssistant: Hi! That's wonderful — Luna sounds like a lovely cat. Calico cats have such beautiful and unique coat patterns. What's she like? Is she playful, cuddly, or a bit of both?",
+    "char_count": 286,
+    "estimated_tokens": 71,
+    "timestamp": "2026-10-23T18:39:45.593516+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999999287205217
+  },
+  {
+    "chunk_id": "ep_default_t2",
+    "session_id": "default",
+    "turn_number": 2,
+    "source": "chat",
+    "content": "User: What is my cat's name and how old is she?\nAssistant: Your cat's name is Luna, and she is 3 years old.",
+    "char_count": 107,
+    "estimated_tokens": 26,
+    "timestamp": "2026-10-23T18:39:51.163945+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999998691824775
+  },
+  {
+    "chunk_id": "ep_default_t3",
+    "session_id": "default",
+    "turn_number": 3,
+    "source": "chat",
+    "content": "User: Actually, I made a mistake earlier. My cat's name is Miso, not Luna. I always mix them up! Her name is definitely Miso.\nAssistant: No problem at all! Thanks for the correction. So to update the record:\n\nYour cat's name is **Miso**, she is **3 years old**, and she's a **calico**.",
+    "char_count": 285,
+    "estimated_tokens": 71,
+    "timestamp": "2026-10-23T18:39:54.854560+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999998919311515
+  },
+  {
+    "chunk_id": "ep_default_t4",
+    "session_id": "default",
+    "turn_number": 4,
+    "source": "chat",
+    "content": "User: So, what is my cat's name?\nAssistant: Your cat's name is Miso.",
+    "char_count": 68,
+    "estimated_tokens": 17,
+    "timestamp": "2026-10-23T18:39:57.203061+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999999030096055
+  },
+  {
+    "chunk_id": "ep_default_t5",
+    "session_id": "default",
+    "turn_number": 5,
+    "source": "chat",
+    "content": "User: Great. And just to confirm — how old is Miso and what breed is she?\nAssistant: To confirm: Miso is **3 years old** and she is a **calico**.",
+    "char_count": 145,
+    "estimated_tokens": 36,
+    "timestamp": "2026-10-23T18:39:59.821043+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.0000002367131944
+  }
+]

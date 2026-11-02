@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────────────────────────────
+# test_in_context_derived_revision_01.yaml — In-Context 5.1 Control
+# ─────────────────────────────────────────────────────────────────
+# Paired control for derived_belief_revision_01 (Stage 5.1). SAME
+# premises (rule R, base fact F1, cached derived belief D1, revised
+# fact F2), verbatim and in the same chronological order, minus the
+# conversational distractors. Same commitment question and same
+# assertions as the scenario's T12, delivered in ONE prompt.
+#   pass control + fail 5.1 → memory failure (stale D1 in the store)
+#   fail both               → reasoning failure (no re-derivation)
+# Not reproducible here: the agent's own T5 derivation (model output).
+# The user's T6 restatement of D1 carries the stale belief instead.
+# ─────────────────────────────────────────────────────────────────
+
+id: in_context_derived_revision_01
+name: "In-Context Derived-Belief Revision (Paired Control for 5.1)"
+description: >
+  Single-turn control. A chronological log with the exact premises of
+  derived_belief_revision_01 (fixed tier-to-authorization rule, fleet
+  inventory, the cached conclusion that srv-alpha needs Level-3, and the
+  later migration of srv-alpha to the staging tier) is followed by the same
+  one-value commitment question. The correct answer (Level-1) must be
+  re-derived from the rule and the revised fact; the stale cached conclusion
+  (Level-3) is present verbatim in the prompt.
+category: in_context_control
+metadata:
+  difficulty: moderate
+  stage: "5.1c"
+  paired_with: "derived_belief_revision_01"
+  premise_source_turns: [3, 4, 6, 9]
+  expected_answer: "Level-1 (R + F2)"
+  stale_answer: "Level-3 (cached D1)"
+  interpretation: >
+    Pass here + T12 fail on derived_belief_revision_01 = memory failure (the
+    architecture surfaced or kept the stale derived belief). Fail on both =
+    reasoning failure (the model does not re-derive even with every premise
+    in context). Read together with that scenario's T13 control.
+  expected_level_0_behavior: "Answerable in-context. Expected near ceiling; failures are reasoning failures, not memory failures."
+  target_research_question: "P2"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: |
+      Here is the log of what I told you over our earlier sessions, in chronological order. Read it carefully:
+
+      Session 1:
+      - Our change-control policy, which is fixed and applies to every server without exception: rebooting a prod-tier server requires Level-3 authorization, rebooting a staging-tier server requires Level-1 authorization, and dev-tier servers can be rebooted with no authorization at all.
+      - Fleet inventory for the runbook: srv-alpha is a prod-tier server, srv-beta is prod-tier as well, and srv-gamma is a dev-tier box.
+      - So srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now.
+
+      Session 2:
+      - Inventory update: as of this morning, srv-alpha has been migrated to the staging tier.
+
+      Based strictly on this log: I need a single answer for the change ticket. Which authorization level is required today to reboot srv-alpha? Reply with the level only, in the form Level-N.
+    assertions:
+      - type: must_contain
+        value: "Level-1"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "Level-3"
+        case_sensitive: false

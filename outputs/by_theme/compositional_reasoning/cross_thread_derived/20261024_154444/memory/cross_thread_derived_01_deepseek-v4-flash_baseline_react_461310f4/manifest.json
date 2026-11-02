@@ -1,0 +1,22 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "cross_thread_derived_01_deepseek-v4-flash_baseline_react_461310f4",
+    "scenario_id": "cross_thread_derived_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag"
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "total_chunks": 11,
+  "total_chars": 3548,
+  "total_estimated_tokens": 883,
+  "snapshot_timestamp": "2026-10-24T18:45:50.359828+00:00"
+}

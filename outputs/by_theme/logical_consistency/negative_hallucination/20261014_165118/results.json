@@ -1,0 +1,137 @@
+[
+  {
+    "run_id": "negative_hallucination_01_deepseek-v4-pro_baseline_react_62e6546e",
+    "scenario_id": "negative_hallucination_01",
+    "model_id": "deepseek-v4-pro",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 4,
+    "total_assertions": 2,
+    "passed_assertions": 2,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 39025.06249999715,
+    "avg_latency_per_turn_ms": 9756.265624999287,
+    "total_tokens": 1195,
+    "prompt_tokens": 943,
+    "completion_tokens": 252,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Project Alpha launches in June 2025. Project Beta launches in August 2025.",
+        "agent_response": "Based on the information provided:\n\n- **Project Alpha** launches in **June 2025**\n- **Project Beta** launches in **August 2025**\n\nProject Alpha launches two months before Project Beta.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 7593.644799999311,
+        "token_usage": {
+          "input_tokens": 93,
+          "output_tokens": 42,
+          "total_tokens": 135,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 71,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "We just hired a new contractor named David. He will work on Project Gamma.",
+        "agent_response": "Thanks for letting me know about David joining the team to work on Project Gamma.\n\nHowever, I don't have any prior information about **Project Gamma** in our conversation — such as its launch date, scope, or how it relates to Project Alpha (June 2025) or Project Beta (August 2025).\n\nCould you tell me more about Project Gamma? For example:\n- When does it launch?\n- What does David's role involve?\n- How does it fit with the other projects?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 7375.550999997358,
+        "token_usage": {
+          "input_tokens": 154,
+          "output_tokens": 101,
+          "total_tokens": 255,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 112,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Based on everything we have discussed, what is the exact launch date for Project Gamma?",
+        "agent_response": "I don't have enough information to determine the exact launch date for Project Gamma. \n\nFrom our conversation, the only details I have are:\n\n- **Project Alpha** — launches June 2025\n- **Project Beta** — launches August 2025\n- **Project Gamma** — David (new contractor) will work on it, but no launch date was mentioned\n\nIf you have a launch date for Project Gamma, feel free to share it and I can help track or compare it with the other projects.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 15516.213299997617,
+        "token_usage": {
+          "input_tokens": 275,
+          "output_tokens": 104,
+          "total_tokens": 379,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 206,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "I need a definitive answer for the quarterly report. Does Project Gamma have an exact launch date — yes or no? If yes, state the date. If no, say 'no launch date'.",
+        "agent_response": "No launch date.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "no launch date",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "Gamma launches",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 8539.653400002862,
+        "token_usage": {
+          "input_tokens": 421,
+          "output_tokens": 5,
+          "total_tokens": 426,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 331,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-14T19:50:39.283829+00:00"
+  }
+]
