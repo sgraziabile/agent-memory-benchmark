@@ -41,8 +41,8 @@ class L2AgentState(TypedDict):
     runner code serves L0/L1 (channels absent) and L2 (channels present).
 
     Channels:
-        retrieved_context_chars: Char length of the formatted
-            ``[Memory ...]`` block injected into ``model_node``.
+        retrieved_context_chars: Char length of the memory block injected into
+            ``model_node`` (content only; chunks separated by a ``-----`` rule).
         retrieved_context_tokens: Token estimate of that block.
         retrieval_latency_ms: Time spent in ``retrieve_node``.
         append_latency_ms: Time spent in ``append_node`` (chat episodes).
@@ -268,8 +268,9 @@ class TurnResult(BaseModel):
         visible_output_tokens: ``max(0, completion_tokens - reasoning_tokens)``.
         cached_prompt_tokens: Prefix-cache hit tokens
               (``input_token_details.cache_read``).
-        retrieved_context_chars: Char length of the ``[Memory ...]`` block
-              injected by ``retrieve_node`` (0 for L0/L1).
+        retrieved_context_chars: Char length of the memory block injected by
+              ``retrieve_node`` (0 for L0/L1). Content only since 2026-11-02 —
+              no provenance header (see the L2 stress plan §8.1).
         retrieved_context_tokens: Token estimate of that block.
         embedding_tokens: Tokens sent to the embedding API this turn
               (retrieve + append; 0 for L0/L1 and the markdown backend).

@@ -19,8 +19,8 @@
 #       unambiguous: rooms 5/7/8 explicitly disclaim the feed.
 #   X6  The scenario had ONE assertion. It now has six: the target serial, the
 #       near-miss disclaimer (see X9), a second target in a different memo
-#       (build fleet), and an abstention probe for a room that does not exist
-#       (`must_not_contain: "UPS-"` catches any invented serial).
+#       (build fleet), and an over-disclosure probe for a room that is not in
+#       the audit (see X10).
 #
 #   X9  T3 used to ask "which room is that unit installed in?", a fact derived
 #       from the sentence T2 had just answered. The checkpointer answered it from
@@ -33,8 +33,28 @@
 #       the near-miss disclaimer ("the chamber's own power feed comes from
 #       Room 3, not from this room") becomes the discriminator.
 #
-# Absence control (run level): `--no-documents` must fail T2-T4 while T5 still
-# passes, which is the difference between "memory missing" and "memory guessing".
+#  X10  Two problems in one turn (post-cleanup run 20261102_162243):
+#       (a) `must_not_contain: "UPS-"` negates a token *class*, so a correct
+#           refusal that lists the serials it does have — "Room 1 (UPS-2K19),
+#           Room 2 (UPS-4B81), Room 6 (UPS-5H28), Room 8 (UPS-6M90)" — fails it.
+#           The answer was right and the assertion was wrong. T5 keeps the rule
+#           but is re-labelled: it measures **refusal without over-disclosure**
+#           (a real property: the model volunteered four serials nobody asked
+#           for; `notes/2026-10-30…` §9 item 6 tracks the same "leak-in-refusal"
+#           pattern for `adversarial_forget`).
+#       (b) The obvious replacement — `must_contain: "Room 11"` — is vacuous:
+#           the probe names Room 11, so every answer, hallucinated or not, echoes
+#           it. Design rule **R10**: never assert a token that appears in the
+#           user turn. The abstention axis therefore needs a *positive*
+#           corpus-exclusive signal, so a scope memo was added
+#           (`power_audit_scope`, ticket `FAC-2291`) and T6 asserts it.
+#       A deterministic "no match outside an allow-list" rule would express both
+#       properties exactly; it is deferred to
+#       TODOs/phase-2-l2-document-stress-plan.md §8 (decision 10).
+#
+# Absence control (run level): `--no-documents` must fail T2-T4 and T6 while T5
+# still passes, which is the difference between "memory missing" and "memory
+# guessing".
 #
 # Ablation lever (CLI only, zero harness changes):
 #   fail at --top-k 5, pass at --top-k 20  → pure retrieval-cutoff miss
@@ -51,18 +71,20 @@ description: >
   room, so answering requires the target memo to survive the top-k cut-off
   against three lookalikes that share its key phrase. A near-miss probe then
   asks for the redundant conditioning loop, which only the Room 5 memo records
-  (and which explicitly disclaims being the power feed), and an abstention probe
-  asks for a room that does not exist.
+  (and which explicitly disclaims being the power feed); an over-disclosure
+  probe asks for a room that is not in the audit (a clean refusal must not dump
+  the serials it does have); and a scope-note probe asks for the ticket of the
+  pending survey, whose id exists only in the ninth document.
 category: document_dilution
 metadata:
   difficulty: hard
   stage: "WS-D"
-  defects_fixed: ["X6", "X7", "X9"]
-  documents: 8
-  document_chunks: 8
+  defects_fixed: ["X6", "X7", "X9", "X10"]
+  documents: 9
+  document_chunks: 9
   default_top_k: 5
   near_miss_decoys: ["power_audit_room5", "power_audit_room7", "power_audit_room8"]
-  assertions_total: 7
+  assertions_total: 9
   sessions: ["s1", "s2"]
   target_research_question: "P1"
   target_document:
@@ -81,6 +103,16 @@ metadata:
     room: "Room 5"
     fact: "redundant conditioning loop for the chamber, explicitly NOT the power feed"
     why: "stated only in this memo and never in a chat turn, so the thread cannot answer it (X9)"
+  over_disclosure_probe:
+    turn: 5
+    property: "refusal without over-disclosure"
+    rule: "must_not_contain 'UPS-' fires when the answer lists any serial, real or invented"
+    known_limitation: "a correct answer that enumerates documented serials fails by design (X10a); the exact property needs the allow-list rule deferred to §8 decision 10"
+  scope_probe:
+    turn: 6
+    doc_id: power_audit_scope
+    token: "FAC-2291"
+    property: "the absence of a serial is a documented fact, so the answer is checkable positively (X10b)"
   abstention_probe: "Room 11 is absent from the corpus; any serial in the answer is a hallucination"
   expected_level_0_behavior: "Fails (0%). No document memory; T5 passes trivially (negative assertion)."
   expected_level_1_behavior: "Fails (0%). Documents never enter the thread."
@@ -142,6 +174,12 @@ documents:
       Load profile: steady at 18 percent. Battery string replaced in 2023.
       Notes: spares and lab benches. No production dependency; the
       cold-storage medical biobank chamber is out of scope for this room.
+  - doc_id: power_audit_scope
+    content: |
+      Rack power audit — scope note.
+      This survey covers Rooms 1 through 8 only. Rooms 9 and above are out of
+      scope for this audit and have no UPS serial on file.
+      The facilities survey for Room 11 is pending under ticket FAC-2291.
 
 turns:
   - turn_number: 1
@@ -184,7 +222,7 @@ turns:
       - type: must_retrieve_chunk
         value: "doc_power_audit_room2"
 
-  # ── Abstention probe (X6): the answer is absent from the corpus ──
+  # ── Over-disclosure probe (X10a): declining must not dump inventory ──
   - turn_number: 5
     session_id: s2
     role: user
@@ -193,3 +231,15 @@ turns:
       - type: must_not_contain
         value: "UPS-"
         case_sensitive: true
+
+  # ── Scope-note probe (X10b): the absence is a documented fact ────
+  - turn_number: 6
+    session_id: s2
+    role: user
+    content: "Which ticket covers the pending facilities survey for Room 11?"
+    assertions:
+      - type: must_contain
+        value: "FAC-2291"
+        case_sensitive: false
+      - type: must_retrieve_chunk
+        value: "doc_power_audit_scope"

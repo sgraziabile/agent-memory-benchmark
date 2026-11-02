@@ -28,7 +28,12 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 
 from agents import AGENT_REGISTRY
 from agents.level_2_episodic_rag.backends.vector import VectorMemoryBackend
-from agents.level_2_episodic_rag.graph import DEFAULT_TOP_K, Level2EpisodicRAGAgent
+from agents.level_2_episodic_rag.graph import (
+    DEFAULT_TOP_K,
+    _MEMORY_SEPARATOR,
+    _format_memory_block,
+    Level2EpisodicRAGAgent,
+)
 
 DIMS = 32
 
@@ -50,12 +55,31 @@ class DeterministicFakeEmbedding(Embeddings):
         return self._vector(text)
 
 
+def injected_memory_blocks(messages: list[BaseMessage]) -> list[str]:
+    """Return the injected memory block(s): ``SystemMessage``s after the prompt.
+
+    ``model_node`` builds ``[system_prompt] + history + [memory block] + latest
+    human``, so the block is every ``SystemMessage`` that is not the leading
+    system prompt. Detection is positional on purpose: the formatter emits no
+    header/prefix (``_MEMORY_SEPARATOR`` in the L2 graph).
+    """
+    return [
+        str(message.content)
+        for index, message in enumerate(messages)
+        if index > 0 and isinstance(message, SystemMessage)
+    ]
+
+
 class FakeChatModel(BaseChatModel):
     """Records every payload and echoes the memory block it was shown.
 
-    The response quotes any ``[Memory ...]`` SystemMessage content so tests
-    can assert exactly what the model saw: ``RECALL: <memory block>`` when
-    a block was injected, ``ECHO: <latest human turn>`` otherwise.
+    The response quotes any injected memory ``SystemMessage`` content so tests
+    can assert exactly what the model saw: ``RECALL: <memory block>`` when a
+    block was injected, ``ECHO: <latest human turn>`` otherwise.
+
+    The block is identified **positionally** (a ``SystemMessage`` that is not
+    the leading system prompt), never by a header prefix — the formatter emits
+    no per-episode header on purpose (``_MEMORY_SEPARATOR`` in the graph).
     """
 
     payloads: list[list[BaseMessage]] = []
@@ -76,10 +100,7 @@ class FakeChatModel(BaseChatModel):
     ) -> ChatResult:
         self.payloads.append(list(messages))
 
-        memory_blocks = [
-            str(m.content) for m in messages
-            if isinstance(m, SystemMessage) and str(m.content).startswith("[Memory")
-        ]
+        memory_blocks = injected_memory_blocks(messages)
         latest_human = next(
             (m for m in reversed(messages) if isinstance(m, HumanMessage))
         )
@@ -159,13 +180,10 @@ class TestCrossSessionRecall:
             make_config(backend, "s2", "thread_s2"),
         )
 
-        # The model saw the s1 episode in an injected [Memory] SystemMessage...
+        # The model saw the s1 episode in an injected memory SystemMessage...
         payload_text = " ".join(str(m.content) for m in fake_model.payloads[-1])
         assert "DELTA-7749" in payload_text
-        assert any(
-            isinstance(m, SystemMessage) and str(m.content).startswith("[Memory")
-            for m in fake_model.payloads[-1]
-        )
+        assert injected_memory_blocks(fake_model.payloads[-1])
         # ...and the AI response (echoing the block) contains it.
         assert "DELTA-7749" in last_ai_text(result)
 
@@ -203,6 +221,73 @@ class TestCrossSessionRecall:
         assert DEFAULT_TOP_K == 5
 
 
+# ── Memory-block hygiene: no provenance may reach the prompt ─────────────────
+
+
+class TestMemoryBlockHygiene:
+    """The injected block must not hand the model the experiment's variables.
+
+    Rank, ``chunk_id``, ``session_id``, ``turn_number``, ``source`` and ``score``
+    stay in ``retrieved_memories`` telemetry and in the snapshots; the prompt gets
+    content only (see ``_MEMORY_SEPARATOR`` in the L2 graph).
+    """
+
+    @staticmethod
+    def _probe(fake_model):
+        backend = make_backend()
+        graph = Level2EpisodicRAGAgent().build_graph()
+        graph.invoke(
+            {"messages": [HumanMessage(content="My favorite reactor is the DELTA-7749")]},
+            make_config(backend, "s1", "thread_s1"),
+        )
+        result = graph.invoke(
+            {"messages": [HumanMessage(content="What is my favorite reactor?")]},
+            make_config(backend, "s2", "thread_s2"),
+        )
+        blocks = injected_memory_blocks(fake_model.payloads[-1])
+        assert len(blocks) == 1
+        return blocks[0], result
+
+    def test_block_is_content_only(self, fake_model):
+        block, result = self._probe(fake_model)
+        expected = _MEMORY_SEPARATOR.join(
+            episode["content"] for episode in result["retrieved_memories"]
+        )
+        assert block == expected
+
+    def test_no_provenance_fields_leak_into_the_prompt(self, fake_model):
+        block, _ = self._probe(fake_model)
+        for marker in ("score=", "session=", "turn=", "source=", "id=", "[Memory"):
+            assert marker not in block, f"{marker!r} leaked into the prompt"
+        # The chunk_id encodes session/turn as well (ep_s1_t1, doc_x_c2), so the
+        # identifier itself must not appear either.
+        assert "ep_s1_t1" not in block
+
+    def test_formatter_emits_no_header(self):
+        episodes = [
+            {
+                "rank": 1,
+                "chunk_id": "doc_policy_v1_c2",
+                "session_id": "corpus",
+                "turn_number": 0,
+                "source": "document",
+                "score": 0.9123,
+                "content": "alpha",
+            },
+            {
+                "rank": 2,
+                "chunk_id": "ep_s1_t2",
+                "session_id": "s1",
+                "turn_number": 2,
+                "source": "chat",
+                "score": 0.4567,
+                "content": "beta",
+            },
+        ]
+        assert _format_memory_block(episodes) == f"alpha{_MEMORY_SEPARATOR}beta"
+        assert _format_memory_block([]) == ""
+
+
 # ── Prefix-cache-preserving ephemeral injection ──────────────────────────────
 
 
@@ -222,12 +307,9 @@ class TestEphemeralInjection:
         )
 
         # The checkpointer state must contain ONLY Human/AI messages —
-        # the ephemeral [Memory] SystemMessage never persists.
+        # the ephemeral memory SystemMessage never persists.
         checkpointed = graph.get_state(cfg_s1).values["messages"]
-        assert not any(
-            isinstance(m, SystemMessage) and str(m.content).startswith("[Memory")
-            for m in checkpointed
-        )
+        assert injected_memory_blocks(checkpointed) == []
         # Thread state grew by exactly 4 messages (2 human + 2 AI).
         assert len(checkpointed) == 4
 
@@ -267,19 +349,17 @@ class TestSessionExclusion:
             {"messages": [HumanMessage(content="reactor secret alpha DELTA-7749")]},
             cfg_s1,
         )
-        graph.invoke(
+        result = graph.invoke(
             {"messages": [HumanMessage(content="reactor secret?")]},
             cfg_s1,
         )
 
-        # Turn 2's payload must NOT contain s1's own chat episodes.
-        payload_text = " ".join(str(m.content) for m in fake_model.payloads[-1])
-        assert "ep_s1_t1" not in payload_text
-        # And no memory block was injected at all (backend holds only s1 chats).
-        assert not any(
-            isinstance(m, SystemMessage) and str(m.content).startswith("[Memory")
-            for m in fake_model.payloads[-1]
-        )
+        # Telemetry is the ground truth: retrieval excluded s1's own chat
+        # episodes, so nothing was retrieved at all (the backend holds only s1
+        # chats) and no memory block may be injected. Checking the block by a
+        # header prefix is no longer possible by design — the block has none.
+        assert result["retrieved_memories"] == []
+        assert injected_memory_blocks(fake_model.payloads[-1]) == []
 
 
 # ── No-backend degradation ───────────────────────────────────────────────────
@@ -304,11 +384,8 @@ class TestNoBackendDegradation:
         # The turn still completes — the model answered via echo.
         assert "DELTA-7749" in last_ai_text(result)
 
-        # No [Memory] block was injected anywhere.
-        assert not any(
-            isinstance(m, SystemMessage) and str(m.content).startswith("[Memory")
-            for m in fake_model.payloads[-1]
-        )
+        # No memory block was injected anywhere (no backend attached).
+        assert injected_memory_blocks(fake_model.payloads[-1]) == []
 
         # All telemetry channels are zeroed, not missing.
         assert result["retrieved_memories"] == []

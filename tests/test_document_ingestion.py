@@ -777,7 +777,7 @@ class TestDocumentScenarios:
 
     def test_document_dilution_shape(self):
         scenario = self._load()["document_dilution_01"]
-        assert len(scenario.documents) == 8
+        assert len(scenario.documents) == 9
         assert all(d.content and d.content.strip() for d in scenario.documents)
         target = next(d for d in scenario.documents if d.doc_id == scenario.metadata["target_document"]["doc_id"])
         assert scenario.metadata["target_document"]["serial"] in target.content
@@ -889,7 +889,7 @@ class TestDocumentScenarios:
         ), "T3 must pin the near-miss memo chunk"
 
     def test_document_dilution_grades_every_probe_and_checks_abstention(self):
-        """X6: fact turns carry >=2 assertions, plus an abstention probe."""
+        """X6/X10: fact turns carry >=2 assertions, plus both absence probes."""
         scenario = self._load()["document_dilution_01"]
         graded = [t for t in scenario.turns if t.assertions]
         assert len(graded) >= 4
@@ -899,11 +899,45 @@ class TestDocumentScenarios:
         assert fact_turns
         for turn in fact_turns:
             assert len(turn.assertions) >= 2, f"turn {turn.turn_number} is under-asserted"
+        # X10a: refusing must not dump inventory (negative probe).
         assert any(
             a.type == "must_not_contain" and a.value == "UPS-"
             for t in graded
             for a in t.assertions
-        ), "abstention probe missing"
+        ), "over-disclosure probe missing"
+        # X10b: the absence is also asserted positively, from a corpus-exclusive token.
+        scope = scenario.metadata["scope_probe"]
+        scope_turn = next(t for t in graded if t.turn_number == scope["turn"])
+        assert any(
+            a.type == "must_contain" and a.value == scope["token"]
+            for a in scope_turn.assertions
+        ), "scope probe must assert the corpus-exclusive ticket id"
+        assert any(
+            a.type == "must_retrieve_chunk" and scope["doc_id"] in a.value
+            for a in scope_turn.assertions
+        ), "scope probe must pin the scope-note chunk"
+
+    def test_no_positive_assertion_echoes_its_own_probe(self):
+        """R10: a `must_contain` token must not appear in its own user turn.
+
+        An assertion satisfied by echoing the question measures nothing. This is
+        why ``must_contain: "Room 11"`` was rejected as an abstention check
+        (X10b): every answer, hallucinated or not, would have passed.
+        """
+        for scenario in self._load().values():
+            if not scenario.id.startswith("document_"):
+                continue
+            for turn in scenario.turns:
+                if turn.role != "user":
+                    continue
+                probe = turn.content.casefold()
+                for rule in turn.assertions:
+                    if rule.type != "must_contain":
+                        continue
+                    assert rule.value.casefold() not in probe, (
+                        f"{scenario.id} T{turn.turn_number}: assertion "
+                        f"{rule.value!r} is satisfied by the probe itself"
+                    )
 
     def test_documents_are_not_chat_turns(self):
         """Documents must be ingested out-of-band, never as user turns."""

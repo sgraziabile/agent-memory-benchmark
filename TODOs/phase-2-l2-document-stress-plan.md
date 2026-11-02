@@ -126,6 +126,7 @@ Consequences, in order of cheapness:
 | **R7** | For every fact, run the **counterfactual twin corpus** (same probe, opposite value). Identical answers in both runs prove the model never read the corpus. | The single highest-value control; costs one run. |
 | **R8** | Same `doc_id` + changed content is a **harness invariant violation** (1.12) — report it as the L3 gap, not as an agent failure. | Avoids scoring an exception as a model error. |
 | **R9** | Treat the retriever as a **fixed factor**: every L-R/L-D claim names the retrieved pair (`embedding_model_id` + `chunk_size`) and reports the **Δcos margin** (1.14), not only the winner. Prefer an *orthogonal* second rung (BM25) over a bigger sibling — a 4–8B model of the same family shares the 0.6B model's failure modes, and it is currently unreachable anyway (1.15). | A better embedder is a **treatment change, not a validity fix**: it can improve recall (R-A) while masking discrimination failures (R-D), and it hides the architectural finding. |
+| **R10** | **Never assert a token that appears in the user turn.** It is satisfied by echo, not by knowledge; assert corpus-exclusive tokens only. | `must_contain: "Room 11"` looked like an abstention check but passes on any answer, hallucinated or not (X10b). Enforced by `test_no_positive_assertion_echoes_its_own_probe` across the four document scenarios. |
 
 ---
 
@@ -142,6 +143,7 @@ Consequences, in order of cheapness:
 | **X7** | Decoys do **not** share the probe's key n-gram, so the margin is +0.158. | 1.5 | Rewrite 3 decoys to contain the exact phrase "cold-storage medical biobank chamber" with different UPS serials (same schema, same sentence, one digit apart). |
 | **X8** | Control turns are contaminated by unconditional memory injection (95–100% of the prompt on chit-chat). | 1.10 | Either accept and report as a P3 finding, or add a precision probe (`must_not_contain` of a corpus-exclusive token on an unrelated turn). |
 | **X9** | A graded probe can be answered **by the thread instead of the store**: `document_dilution_01` T3 asked for the room of the unit T2 had just named, so the checkpointer answered it and only the retrieval assertion failed. | run `20261102_151134`: `must_retrieve_chunk doc_power_audit_room3` **red** (room3 absent from the top-5: `room8 .515 · room6 .513 · ep_s1_t1 .498 · room1 .497 · room7 .488`) while `must_contain "Room 3"` passed, and the answer said *"as mentioned in the previous answer"* | Probe a fact stated **only** in one memo and never in a chat turn (Room 5's redundant conditioning loop) |
+| **X10** | Two failures in one absence probe: (a) `must_not_contain: "UPS-"` negates a token **class**, so a *correct* refusal that lists the documented serials fails; (b) the natural replacement (`must_contain: "Room 11"`) is **vacuous**, because the probe names the entity and every answer echoes it. | run `20261102_162243` T5: *"I don't have a rack power audit entry for Room 11 … The entries provided cover only **Room 1** (UPS-2K19), **Room 2** (UPS-4B81), **Room 6** (UPS-5H28), and **Room 8** (UPS-6M90)"* → `must_not_contain "UPS-"` **red** | Keep the rule but **re-label** the probe as *refusal without over-disclosure*; add a scope memo (`power_audit_scope`, ticket `FAC-2291`) and a T6 that asserts it **positively**; encode rule **R10** |
 
 ### 4.1 Status — X1–X8 implemented (2026-11-02)
 
@@ -156,9 +158,10 @@ Consequences, in order of cheapness:
 | **X7** | Three decoys (rooms 5, 7, 8) now contain the probe's **exact** phrase with different serials, and explicitly disclaim the feed so ground truth stays unambiguous | `test_document_dilution_decoys_share_the_probe_phrase` |
 | **X8** | Precision turns added: `document_needle_01` T5 and `document_cross_thread_01` T6 assert that identifiers do not leak into unrelated answers | `test_document_needle_shape`, `test_document_cross_thread_shape` |
 | **X9** | `document_dilution_01` T3 replaced: it now asks for the redundant conditioning loop (Room 5 / `UPS-3F57`), a fact no chat turn states, and pins `doc_power_audit_room5`. Found *after* the first post-fix run, which is exactly what the measurement grid is for | `test_document_dilution_derived_probe_is_not_answerable_from_chat` |
+| **X10** | `document_dilution_01` T5 re-labelled as **refusal without over-disclosure** (rule and content unchanged) and a **T6** added that asserts `FAC-2291` from the new `power_audit_scope` memo, pinning `doc_power_audit_scope`. Rule **R10** added, with an executable guard over all four document scenarios | `test_document_dilution_grades_every_probe_and_checks_abstention`, `test_no_positive_assertion_echoes_its_own_probe` |
 
-**Assertion budget after the fixes:** addendum 8, dilution 7, needle 6, cross_thread 5 → **26
-assertions (was 12)**, and every fact turn now carries a retrieval assertion. Full suite: **377 passed**.
+**Assertion budget after the fixes:** addendum 8, dilution 9, needle 6, cross_thread 5 → **28
+assertions (was 12)**, and every fact turn now carries a retrieval assertion. Full suite: **381 passed**.
 
 ### 4.2 First post-fix run (2026-11-02 15:1x, `deepseek-v4-pro`, `top_k=5`)
 
@@ -502,6 +505,68 @@ Per-scenario definition of done:
 | 7 | **Per-source quota / source-aware retrieval** | Would cure R-C (D14) *inside* L2 | If implemented, L2 stops being naive RAG and the finding disappears — record it as an L3 candidate instead |
 | 8 | **BM25 backend benchmark** | D15 / stage S4 | `MarkdownMemoryBackend` exists and is tested but never benchmarked; owned by `phase-2-l2-completion-plan.md` WS-C — coordinate so the two plans do not run duplicate sweeps |
 | 9 | **Second retriever rung: BM25 vs a 4–8B API embedder** | External validity of every L-R claim (R9) | BM25 is free, offline and **orthogonal** → recommended first. The 8B is currently blocked by HTTP 429 `subscription_only` (1.15), and `bge-large-en-v1.5` truncates at **512 tokens**, which would silently invalidate the `--chunk-size 4000` arm of D13 |
+| 10 | **Deterministic pattern rule** for the assertion engine (`must_not_match_outside_allowlist`: regex + allow-list) | Two properties of this suite are **not expressible** today: "no serial outside the documented set" (X10a) and negation-aware revision ("Level-2 is NOT required" satisfies `must_contain: "Level-2"`, finding 1.7) | `re` from the stdlib, no LLM → it does **not** pre-empt L3 (only judge-based *scoring* does, decision 5). ~50 lines in `schemas.py` + `runner.py`, ~5 tests, 3 doc lines. **Additive**: the 28 assertions and the archived runs stay valid. Design in §8.2 |
+
+### 8.2 Deferred design — decision 10 (deterministic allow-list rule)
+
+The engine has only substring semantics (`core/schemas.py:96-105`; dispatch at
+`core/runner.py:405-428`). Two properties of this suite are currently approximated or unmeasurable:
+
+| Property | Used today | Needed |
+|---|---|---|
+| No invention on refusal | `must_not_contain: "UPS-"` — fires on a *correct* refusal that lists the serials it has (X10a) | "no match of `UPS-\d[A-Z]\d\d` outside the documented set" |
+| Negation-aware revision | `must_contain: "Level-2"` passes on *"Level-2 is NOT required"* (finding 1.7) | polarity-sensitive matching (needs a judge, **not** this rule) |
+
+Minimal addition:
+
+```python
+class AllowListPatternRule(BaseModel):
+    type: Literal["must_not_match_outside_allowlist"]
+    value: str                    # regex, applied to the NORMALIZED response
+    allow: list[str] = []         # literal matches that are acceptable
+    case_sensitive: bool = False
+```
+
+Semantics: `finditer` over `_normalize_for_matching(response)`; fail if any match is not in `allow`.
+Document that the pattern must be written against the normalized text (the normalizer folds
+typographic hyphens, which is exactly what serials need).
+
+Scope guard — regex + allow-list **only**. No numeric tolerance, no per-turn weighting, no LLM.
+
+Unblocks: T5's exact property, `adversarial_forget` post-refusal leakage (`notes…` §9 item 6), and
+D11 (coverage honesty).
+
+### 8.1 Applied 2026-11-02 — provenance header removed (harness change)
+
+`_format_memory_block` (`agents/level_2_episodic_rag/graph.py`) now emits **content only**: episodes are
+concatenated in rank order and separated by `_MEMORY_SEPARATOR` (`\n\n-----\n\n`). Removed from the
+prompt: `rank`, `id`, `session`, `turn`, `source`, `score`.
+
+Why (three of them are variables under test):
+
+- `score` handed the model the retriever's confidence → contradiction/authority tests drifted toward
+  "most similar wins" (rule **R5**).
+- `turn`/`session` handed it a free **recency oracle**: in `document_addendum_revision_01` T4 the
+  addendum chunk read `turn=2` next to `turn=0` policy chunks.
+- the `chunk_id` encodes session, turn and chunk index (`doc_addendum_1_t2`, `ep_s1_t2`), so it could
+  not be inlined either.
+- a plain rule also removes the citation-looking `[Memory #1]` marker that the model echoed into its
+  own answer in run `20261102_153150` (`ep_s2_t2` → a `source="chat"` chunk).
+
+Consequences that must be declared in the thesis:
+
+1. **`retrieved_context_chars/tokens` shrink** (dilution T3: 1 889 → 1 427 chars, **−24 %**) and are
+   **not comparable with any run before 2026-11-02**, including the four post-hardening runs of that
+   morning. Re-running the document suite is mandatory before quoting it.
+2. `document_addendum_revision_01` T4/T5 become **harder**: recency is now readable only from the
+   document text (`Published:`, `Effective:`, "supersedes section 3.2") — which is exactly why rule
+   **R3** exists.
+3. `entity_binding_01` loses the metadata crutch documented in `phase-2-l2-completion-plan.md`
+   finding 1.13; its 100 % may drop. That is the intended de-biasing, not a regression.
+4. **Attribution is gone**: the model can no longer cite a chunk id. If citations are wanted, add an
+   **opaque** handle (hash) rather than the deterministic `chunk_id`, and assert it explicitly.
+5. **Guards:** `tests/test_l2_graph.py::TestMemoryBlockHygiene` (3 tests) fails if any provenance
+   marker reappears in the prompt, and `test_formatter_emits_no_header` pins the format itself.
 
 ---
 
