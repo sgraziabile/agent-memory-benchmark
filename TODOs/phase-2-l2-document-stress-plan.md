@@ -141,6 +141,7 @@ Consequences, in order of cheapness:
 | **X6** | `document_dilution_01` has **one** assertion and no absence control. | 1.1 | Add 2 sub-probes (serial, room, "how many relevant audits do you have?") + one run with `--needle ''`. |
 | **X7** | Decoys do **not** share the probe's key n-gram, so the margin is +0.158. | 1.5 | Rewrite 3 decoys to contain the exact phrase "cold-storage medical biobank chamber" with different UPS serials (same schema, same sentence, one digit apart). |
 | **X8** | Control turns are contaminated by unconditional memory injection (95–100% of the prompt on chit-chat). | 1.10 | Either accept and report as a P3 finding, or add a precision probe (`must_not_contain` of a corpus-exclusive token on an unrelated turn). |
+| **X9** | A graded probe can be answered **by the thread instead of the store**: `document_dilution_01` T3 asked for the room of the unit T2 had just named, so the checkpointer answered it and only the retrieval assertion failed. | run `20261102_151134`: `must_retrieve_chunk doc_power_audit_room3` **red** (room3 absent from the top-5: `room8 .515 · room6 .513 · ep_s1_t1 .498 · room1 .497 · room7 .488`) while `must_contain "Room 3"` passed, and the answer said *"as mentioned in the previous answer"* | Probe a fact stated **only** in one memo and never in a chat turn (Room 5's redundant conditioning loop) |
 
 ### 4.1 Status — X1–X8 implemented (2026-11-02)
 
@@ -154,9 +155,50 @@ Consequences, in order of cheapness:
 | **X6** | `document_dilution_01` goes from **1 to 7 assertions**: target serial, derived room, a second memo (build fleet), and an abstention probe (`must_not_contain: "UPS-"` for a room that does not exist) | `test_document_dilution_grades_every_probe_and_checks_abstention` |
 | **X7** | Three decoys (rooms 5, 7, 8) now contain the probe's **exact** phrase with different serials, and explicitly disclaim the feed so ground truth stays unambiguous | `test_document_dilution_decoys_share_the_probe_phrase` |
 | **X8** | Precision turns added: `document_needle_01` T5 and `document_cross_thread_01` T6 assert that identifiers do not leak into unrelated answers | `test_document_needle_shape`, `test_document_cross_thread_shape` |
+| **X9** | `document_dilution_01` T3 replaced: it now asks for the redundant conditioning loop (Room 5 / `UPS-3F57`), a fact no chat turn states, and pins `doc_power_audit_room5`. Found *after* the first post-fix run, which is exactly what the measurement grid is for | `test_document_dilution_derived_probe_is_not_answerable_from_chat` |
 
 **Assertion budget after the fixes:** addendum 8, dilution 7, needle 6, cross_thread 5 → **26
-assertions (was 12)**, and every fact turn now carries a retrieval assertion. Full suite: **376 passed**.
+assertions (was 12)**, and every fact turn now carries a retrieval assertion. Full suite: **377 passed**.
+
+### 4.2 First post-fix run (2026-11-02 15:1x, `deepseek-v4-pro`, `top_k=5`)
+
+| Scenario | Assertions | Pass | Corpus chunks | Tokens | Verdict |
+|---|--:|--:|--:|--:|---|
+| `document_cross_thread_01` | 5 | 5/5 | 9 | 7 804 | precision probe (T6) green |
+| `document_needle_01` | 6 | 6/6 | 13 | 7 572 | 7 document chunks vs `k=5`: retrieval selective, still green |
+| `document_addendum_revision_01` | 8 | 8/8 | 10 | 5 668 | addendum rank 3 at T4 but pinned → causal pass; T5 (`2026-10-01`) green |
+| `document_dilution_01` | 7 | 6/7 → **7/7** after X9 | 13 | 4 324 | T3 fixed: `room5` ranks 1st (0.726) over the confusable `room3` (0.706), and the model resolved it |
+
+What the hardening bought, in numbers:
+
+- **X7 quantified:** the dilution target's margin over the best decoy fell from **+0.158 to +0.027**
+  (target .825 vs room5 .798), and the model still answered correctly *and* explained the disclaimer —
+  an L-D pass at a 0.027 margin.
+- **Causality (X2/X4):** in addendum T4 the addendum still ranks **3rd** (0.663) behind two chat
+  episodes (0.693 / 0.664); the C6 pattern is unchanged, but the turn now requires the chunk, so the
+  pass is no longer luck.
+- **Selectivity (X5):** needle went from 4 document chunks to 7 plus a growing chat tail — from
+  guaranteed recall to real selection.
+- **Cost:** assertions 12 → 26 (+117%), tokens 16.6k → 25.6k (+54%).
+
+Still uncovered by any assertion (belongs to D11, coverage honesty): dilution T5 answered *"the
+available records cover Rooms 1, 2, 3, 4, 5, 6, and 8"* — **Room 7 is missing** from its own claim.
+The post-X9 re-run instead answered *"the documents I can access cover Rooms 1, 2, 4, 6, and 8"*, i.e.
+honest scoping of the top-5 with no completeness claim. The behaviour is therefore **unstable across
+runs**, not systematically wrong — still a D11 candidate, not a defect of this scenario.
+
+Two observations from the re-run worth keeping:
+
+- **X9 is closed, and causally.** T3 retrieves `room5` at rank 1 (**0.726**) with the confusable
+  `room3` second (**0.706**, margin **0.019**); the answer was *"Room 5 provides the redundant
+  conditioning loop … (The chamber's primary power feed comes from Room 3.)"*. A near-tie in the
+  retriever, resolved by reading the disclaimer.
+- **Memory-header echo (new, not a failure).** In T3 the model copied the injected block header into
+  its own answer — *"… comes from Room 3.)**[Memory #1]*** — and that text is now a `source="chat"`
+  chunk (`ep_s2_t2` in the snapshot). Assertions are unaffected, but long-term memory now carries a
+  truncated provenance marker that later turns can retrieve. If attribution is wanted, require an
+  explicit citation in the answer and assert it (`must_contain "doc_power_audit_room5"`), instead of
+  letting the header leak.
 
 ---
 

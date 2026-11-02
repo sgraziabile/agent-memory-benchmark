@@ -18,9 +18,20 @@
 #       compete because they never mentioned the chamber. Ground truth stays
 #       unambiguous: rooms 5/7/8 explicitly disclaim the feed.
 #   X6  The scenario had ONE assertion. It now has six: the target serial, the
-#       room that derives from it, a second target in a different memo (build
-#       fleet), and an abstention probe for a room that does not exist
+#       near-miss disclaimer (see X9), a second target in a different memo
+#       (build fleet), and an abstention probe for a room that does not exist
 #       (`must_not_contain: "UPS-"` catches any invented serial).
+#
+#   X9  T3 used to ask "which room is that unit installed in?", a fact derived
+#       from the sentence T2 had just answered. The checkpointer answered it from
+#       the thread, so `must_retrieve_chunk doc_power_audit_room3` failed while
+#       the text assertion passed (run 20261102_151134: room3 absent from the
+#       top-5, answer still right). That is the "answer correct + target absent"
+#       cell of the measurement grid, i.e. an invalid probe. T3 now asks for the
+#       redundant conditioning loop: a fact stated ONLY in the Room 5 memo and
+#       never mentioned in any chat turn, so only the store can answer it, and
+#       the near-miss disclaimer ("the chamber's own power feed comes from
+#       Room 3, not from this room") becomes the discriminator.
 #
 # Absence control (run level): `--no-documents` must fail T2-T4 while T5 still
 # passes, which is the difference between "memory missing" and "memory guessing".
@@ -36,14 +47,17 @@ description: >
   Eight rack power-audit memos are preloaded as documents. Four of them mention
   the cold-storage medical biobank chamber, but only the Room 3 memo records the
   UPS that actually feeds it (UPS-7C42); the others carry different serials and
-  explicitly disclaim the feed. The probe describes the chamber rather than the
+  explicitly disclaim the feed. The probes describe the chamber rather than the
   room, so answering requires the target memo to survive the top-k cut-off
-  against three lookalikes that share its key phrase.
+  against three lookalikes that share its key phrase. A near-miss probe then
+  asks for the redundant conditioning loop, which only the Room 5 memo records
+  (and which explicitly disclaims being the power feed), and an abstention probe
+  asks for a room that does not exist.
 category: document_dilution
 metadata:
   difficulty: hard
   stage: "WS-D"
-  defects_fixed: ["X6", "X7"]
+  defects_fixed: ["X6", "X7", "X9"]
   documents: 8
   document_chunks: 8
   default_top_k: 5
@@ -61,6 +75,12 @@ metadata:
     doc_id: power_audit_room2
     serial: "UPS-4B81"
     fact: "hosts the build fleet"
+  near_miss_probe:
+    doc_id: power_audit_room5
+    serial: "UPS-3F57"
+    room: "Room 5"
+    fact: "redundant conditioning loop for the chamber, explicitly NOT the power feed"
+    why: "stated only in this memo and never in a chat turn, so the thread cannot answer it (X9)"
   abstention_probe: "Room 11 is absent from the corpus; any serial in the answer is a hallucination"
   expected_level_0_behavior: "Fails (0%). No document memory; T5 passes trivially (negative assertion)."
   expected_level_1_behavior: "Fails (0%). Documents never enter the thread."
@@ -141,16 +161,17 @@ turns:
       - type: must_retrieve_chunk
         value: "doc_power_audit_room3"
 
+  # ── Near-miss probe (X9): a fact stated only in the Room 5 memo ──
   - turn_number: 3
     session_id: s2
     role: user
-    content: "And which room is that unit installed in?"
+    content: "Which room provides the redundant conditioning loop for the cold-storage medical biobank chamber?"
     assertions:
       - type: must_contain
-        value: "Room 3"
+        value: "Room 5"
         case_sensitive: false
       - type: must_retrieve_chunk
-        value: "doc_power_audit_room3"
+        value: "doc_power_audit_room5"
 
   - turn_number: 4
     session_id: s2

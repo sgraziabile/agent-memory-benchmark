@@ -866,6 +866,28 @@ class TestDocumentScenarios:
             assert serial not in by_id[doc_id].content, doc_id
         assert phrase in by_id[scenario.metadata["target_document"]["doc_id"]].content
 
+    def test_document_dilution_derived_probe_is_not_answerable_from_chat(self):
+        """X9: a graded probe must not be answerable by the thread alone.
+
+        T3 used to ask for the room of the unit T2 had just named, so the
+        checkpointer answered it while `must_retrieve_chunk` failed (run
+        20261102_151134: room3 absent from the top-5, answer still correct).
+        The replacement probes a fact stated only in the Room 5 memo.
+        """
+        scenario = self._load()["document_dilution_01"]
+        turn = next(t for t in scenario.turns if t.turn_number == 3)
+        earlier = " ".join(
+            t.content for t in scenario.turns if t.turn_number < turn.turn_number
+        ).lower()
+        near_miss = scenario.metadata["near_miss_probe"]
+        assert "redundant conditioning loop" not in earlier
+        assert near_miss["serial"].lower() not in earlier
+        assert near_miss["room"].lower() not in earlier
+        assert any(
+            a.type == "must_retrieve_chunk" and near_miss["doc_id"] in a.value
+            for a in turn.assertions
+        ), "T3 must pin the near-miss memo chunk"
+
     def test_document_dilution_grades_every_probe_and_checks_abstention(self):
         """X6: fact turns carry >=2 assertions, plus an abstention probe."""
         scenario = self._load()["document_dilution_01"]

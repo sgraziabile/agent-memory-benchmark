@@ -154,7 +154,7 @@ to) chat turns. See [`datasets/documents/README.md`](datasets/documents/README.m
 |----------|----------|:-----:|---------------|
 | `document_needle_01` | Document Needle | 5 | A fact buried in a preloaded document must be recalled in a later session. The corpus (7 document chunks with the adjacent `ops_handbook.md`) now exceeds `top_k=5`, so the retriever must **select**; a precision turn checks the identifier never leaks unprompted |
 | `document_addendum_revision_01` | Document Revision | 5 | A mid-conversation `system_event` supersedes a document section; every post-event probe pins the addendum chunk, and an addendum-only fact (the 2026-10-01 compliance window) is probed from a fresh session |
-| `document_dilution_01` | Document Dilution | 5 | Eight memos; three decoys share the probe phrase ("cold-storage medical biobank chamber") with a different serial. Probes cover the target, a derived fact, a second memo, and an abstention case (a room that does not exist); fail@5 / pass@20 |
+| `document_dilution_01` | Document Dilution | 5 | Eight memos; three decoys share the probe phrase ("cold-storage medical biobank chamber") with a different serial. Probes cover the target, the near-miss disclaimer (Room 5's redundant loop), a second memo, and an abstention case (a room that does not exist); fail@5 / pass@20 |
 | `document_cross_thread_01` | Document Cross-Thread | 6 | Document facts retrieved from a new session whose chat history contains nothing, plus a precision turn (identifiers must not leak into an unrelated answer) |
 
 ---
