@@ -730,50 +730,75 @@ turns:
 
 ### Design rationale & isolating read-time binding from retrieval reach
 
-While Stage 4.3 tests **missing the needle** (`total_episodes > top_k`), Stage 4.4 ([test-expansion-plan.md §4.4](file:///c:/Users/sgraz/Documents/Stefano/UNS/Tesis/agent-memory-benchmark/TODOs/test-expansion-plan.md#L189-L202)) isolates the complementary L2 failure mode: **retrieving multiple lookalike needles and binding the wrong attribute to the queried entity**.
+While Stage 4.3 tests **missing the needle** (`total_episodes > top_k`), Stage 4.4 ([test-expansion-plan.md §4.4](file:///c:/Users/sgraz/Documents/Stefano/UNS/Tesis/agent-memory-benchmark/TODOs/test-expansion-plan.md#L189-L202)) isolates the complementary L2 failure mode: **retrieving several lookalike needles and binding the wrong attribute to the queried entity**.
 
-To guarantee that 4.4 measures **read-time binding** rather than retrieval cutoff loss:
-1. **100% retrieval reach by construction (`5` pre-probe episodes $\le \text{DEFAULT\_TOP\_K} = 5$):**
-   Sessions `s1` (3 turns) and `s2` (2 turns) contain **exactly 5 turns total** before `s3` opens. Because `retrieve_node` in `s3` excludes `session_id="s3"` and fetches `top_k = 5` episodes from prior sessions, **all 5 episodes from `s1` and `s2` are guaranteed to be injected into `SystemMessage([Memory])` on every turn of `s3`**.
-2. **Three lookalike sibling entities sharing an identical syntactic schema:**
-   - **Entity A (`srv-alpha`, seeded at `T1` in `s1`):** `"Platform configuration note: server srv-alpha runs its admin console on port 7443 and uses maintenance window Tuesday 03:00 UTC; the platform team owns it."`
-   - **Sibling decoy (`srv-gamma`, seeded at `T3` in `s1`):** `"Platform configuration note: server srv-gamma runs its admin console on port 7999 and uses maintenance window Thursday 03:00 UTC; the platform team owns it."`
-   - **Entity B (`srv-beta`, seeded at `T4` in `s2`):** `"Platform configuration note: server srv-beta runs its admin console on port 7080 and uses maintenance window Wednesday 03:00 UTC; the platform team owns it."`
-   (Port values `7443`, `7080`, and `7999` avoid colliding with Stage 5.8's `8443`/`8080` fixtures.)
-3. **Mandatory paired commitment probes in `s3` (`T7` for `srv-alpha`, `T8` for `srv-beta`):**
-   - **Turn 6 (`s3`, Observational Open Probe, unasserted):** Asks for the admin console ports of `srv-alpha` and `srv-beta`.
-   - **Turn 7 (`s3`, Target Commitment Probe — `srv-alpha`):** Format-constrained single-port reply (`must_contain: "7443"`, `must_not_contain: "7080"`, `must_not_contain: "7999"`).
-   - **Turn 8 (`s3`, Paired Control Commitment Probe — `srv-beta`):** Format-constrained single-port reply (`must_contain: "7080"`, `must_not_contain: "7443"`, `must_not_contain: "7999"`).
-   Passing requires **both sides of the pair (`T7` turn-level pass $\land$ `T8` turn-level pass)**: an agent that transposes attributes, anchors on a single server, or dumps multiple ports fails at least one side.
+Two constraints pull in opposite directions and both are honored:
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant A as Agent (L2 / L3)
-    participant S as Episodic Store
+1. **Cross-turn coreference is the stress, not single-sentence cohesion.** Each server is introduced in turn `2k-1` (`"Platform inventory entry: we are registering server srv-alpha..."`) and receives its attributes in turn `2k` through anaphora (`"Admin console configuration for that server: its admin console runs on port 7443 and its maintenance window is Tuesday 03:00 UTC..."`). L2's `append_node` persists one episode per turn with **no write-time coreference resolution**, so the store ends up with 4 hostname-only chunks and 4 hostname-less attribute chunks whose embeddings are mutually interchangeable. L3 is expected to bind `(entity, attribute, value)` into self-contained records at write time.
+2. **8 pre-probe episodes vs `top_k = 5`.** The store cannot present every `(hostname, attribute)` pair, so the binding must be inferred, not copied.
 
-    Note over U,S: Session s1 (3 turns: ep_s1_t1..t3)
-    U->>A: T1: srv-alpha -> port 7443 (platform team)
-    U->>A: T2: Distractor (TCP vs UDP)
-    U->>A: T3: srv-gamma -> port 7999 (platform team)
+The four commitment probes cover **two attribute surfaces** on **two entities each**, so a numeric "pick one of the four lookalike ports" heuristic cannot score above chance:
 
-    Note over U,S: Session s2 (2 turns: ep_s2_t1..t2)
-    U->>A: T4: srv-beta -> port 7080 (platform team)
-    U->>A: T5: Distractor (TLS handshake)
+| Turn | Session | Probe | Surface | `must_contain` | `must_not_contain` |
+| :--: | :--: | :--- | :--- | :--- | :--- |
+| `T9` | `s3` | admin console port of `srv-alpha` | numeric | `7443` | `7080`, `7999`, `7555` |
+| `T10` | `s3` | admin console port of `srv-beta` | lexical | `7080` | `7443`, `7999`, `7555` |
+| `T11` | `s3` | maintenance-window weekday of `srv-gamma` | lexical | `Thursday` | `Tuesday`, `Wednesday`, `Friday` |
+| `T12` | `s3` | maintenance-window weekday of `srv-delta` | lexical | `Friday` | `Tuesday`, `Wednesday`, `Thursday` |
+| `T13` | `s4` | free-form: ports + windows of `srv-alpha` / `srv-beta` | — | *(observational)* | — |
 
-    Note over U,S: Session s3 (Paired Probes — all 5 s1+s2 episodes fit in top_k=5)
-    U->>A: T6 (Observational): Admin console ports for srv-alpha and srv-beta?
-    S->>A: Injects ep_s1_t1 (7443), ep_s1_t3 (7999), ep_s2_t1 (7080) simultaneously
-    U->>A: T7 (Commitment A): ONLY 4-digit port for srv-alpha (must be 7443, not 7080/7999)
-    U->>A: T8 (Commitment B): ONLY 4-digit port for srv-beta (must be 7080, not 7443/7999)
-```
+Every commitment probe also pins **both halves of its evidence pair** with two `must_retrieve_chunk` rules — `ep_s1_t2` + `ep_s1_t1` (T9), `ep_s2_t2` + `ep_s2_t1` (T10), `ep_s1_t4` + `ep_s1_t3` (T11), `ep_s2_t4` + `ep_s2_t3` (T12). A wrong answer with all retrieval rules passing is therefore **provably** a read-time binding failure, while a missing chunk is reported as plumbing (`coreference_severed_miss`) instead of being inferred from the answer.
+
+`T13` is **descriptive only and never scored**: it runs after `s3`, so its
+retrieval can include the model's own commitment answers (`ep_s3_t1..t4`)
+alongside the anonymous attribute chunks — a correct free-form table there may
+be copied from those stored answers rather than bound. `metadata.
+observational_probe_note` records the caveat in the YAML itself.
+
+### Revision 2026-11-03 (post-run hardening: R1 / R2 / R3)
+
+Run `20261103_144749` (deepseek-v4-pro @ L2, vector backend, `top_k = 5`, 50%) was the first time this scenario's L2 failure actually manifested — the previous `deepseek-v4-flash` run passed 100% by rank luck with **byte-identical retrieval** (same chunk IDs and scores to four decimals). Auditing it exposed three measurement defects, fixed in place:
+
+- **R1 — anchor removal.** The free-form observational probe used to be the *first* probe of `s3`, sharing the thread with the commitment probes. It answered `srv-alpha -> 7555` (wrong) and `T10` then repeated `7555` verbatim: the intra-session checkpointer turned the target probe into self-consistency, not binding. The observational probe is now `T13` in its own session `s4`, and `s3` opens directly on a commitment probe. `tests/test_stage4_scenarios.py::TestEntityBinding::test_commitment_probes_are_not_preceded_by_a_probe_in_their_thread` pins this.
+- **R2 — second attribute surface.** With two numeric probes, a "emit one of the four lookalike 4-digit values" heuristic scores exactly 50% by construction: in that run the correct port chunk ranked **#1** on `T10` but a decoy ranked **#1** on `T11`. `T11`/`T12` probe the maintenance-window weekday of the other two entities — same anonymous chunk, non-numeric surface — taking the sample from 2 to 4 independent probes and exposing cross-entity swaps in a different output format.
+- **R3 — causal attribution.** Each probe now carries the retrieval assertions described above. Side benefit: amnesic L0/L1 declines retrieve nothing, so they now fail those rules too and the raw assertion-level pass rate stops flattering them (`75%` → `50%`).
+
+### Validation run (2026-11-03, `20261103_151452`)
+
+First run of the hardened scenario (`deepseek-v4-pro`, L2, vector, `top_k = 5`):
+**21/24 assertions but 2/4 turn-level** — the gap between the two numbers is the
+reason the headline metric is turn-level.
+
+| Turn | Answer | Turn | Evidence chunks retrieved | Attribution |
+| :--: | :--- | :--- | :--- | :--- |
+| `T9` | `7443` | **pass 6/6** | both | bound correctly |
+| `T10` | `7080` | **pass 6/6** | both | bound correctly |
+| `T11` | decline | fail 5/6 | both | binding / abstention error |
+| `T12` | `Thursday` | fail 4/6 | both | `cross_entity_swap` (delta ← gamma) |
+
+All 8 `must_retrieve_chunk` rules passed, so both failures are attributable to
+**read time**, not to the cutoff — precisely what R3 was added for. `T9`/`T10`
+returned `7443`/`7080` on **byte-identical retrieval** to the pre-revision run
+(same chunk IDs and scores), where they returned `7555`/`7999`: the difference is
+R1, i.e. the removed intra-session anchor, not a different retrieval.
 
 ### Scoring & Headline Metric Rules
 
-- **Headline metric:** Report **joint paired pass (`T7` turn-level pass $\land$ `T8` turn-level pass)** alongside individual `T7` and `T8` turn-level passes.
-- **Why scenario `pass_rate` is not comparable across levels:** Each commitment turn carries 1 `must_contain` and 2 `must_not_contain` guards (6 assertions total across T7 and T8). An amnesic agent (L0, L1) declines both turns and scores **66.7% (4/6)** on raw assertion count while failing both turns (0% turn-level pass).
+- **Headline metric:** report **joint four-probe turn-level pass** (`T9 ∧ T10 ∧ T11 ∧ T12`, each passing all 6 of its assertions) alongside the four individual turn-level passes.
+- **Assertion arithmetic:** 4 probes × (1 `must_contain` + 3 `must_not_contain` + 2 `must_retrieve_chunk`) = **24 assertions**, of which 16 are text rules and 8 are retrieval rules.
+- **Why scenario `pass_rate` is not comparable across levels:** an amnesic decline (L0, L1) fails every `must_contain` and every `must_retrieve_chunk` but passes all 12 `must_not_contain` guards, scoring **50% (12/24)** on raw assertion count while failing all four turns (0% joint turn-level pass). Report the turn-level figure.
+
+### Free Failure-Attribution Ablation (`top_k = 5` vs `top_k = 3`)
+
+`metadata.ablation_arms` records the two arms. At `top_k = 3` at most three of the eight pre-probe episodes survive, so most probes lose one half of their evidence pair and must fail on `must_retrieve_chunk` rather than on the text rule — the arm separates **cutoff loss** from **binding error** without any code change:
+
+```bash
+python run.py -m deepseek-v4-pro -s entity_binding_01 -l 2 --top-k 5
+python run.py -m deepseek-v4-pro -s entity_binding_01 -l 2 --top-k 3
+```
 
 ### YAML Specification (`test_entity_binding_01.yaml`)
+
 
 ```yaml
 # ─────────────────────────────────────────────────────────────────
@@ -781,31 +806,84 @@ sequenceDiagram
 # ─────────────────────────────────────────────────────────────────
 # Stage 4.4 (TODOs/test-expansion-plan.md). Evaluates whether
 # attributes from stored near-duplicate facts about sibling entities
-# (srv-alpha -> 7443, srv-gamma -> 7999, srv-beta -> 7080,
-# srv-delta -> 7555) stay bound to the right entity when entity
-# introduction and attribute assignment are split across adjacent
-# turns via natural coreference ("that server" / "its").
+# (srv-alpha -> 7443/Tuesday, srv-gamma -> 7999/Thursday,
+# srv-beta -> 7080/Wednesday, srv-delta -> 7555/Friday) stay bound to
+# the right entity when entity introduction and attribute assignment
+# are split across adjacent turns via natural coreference
+# ("that server" / "its").
 #
 # Why cross-turn coreference exposes L2's turn-chunking boundary:
 #   In each 2-turn pair, Turn 2k-1 introduces the server hostname
 #   ("registering server srv-alpha...") and Turn 2k assigns its port
-#   via anaphora ("Configuration for that server: its admin console
-#   runs on port 7443... Reply 'Saved' only").
+#   and maintenance window via anaphora ("Admin console configuration
+#   for that server: its admin console runs on port 7443 and its
+#   maintenance window is Tuesday 03:00 UTC...").
 #   - L2's append_node persists each turn in isolation without
 #     write-time coreference resolution, producing 4 hostname chunks
-#     (no port) and 4 anonymous port chunks (no hostname). Because
-#     none of the 4 port chunks mention a hostname, retrieval cannot
-#     prefer the queried server's port chunk over sibling port chunks,
-#     and top_k = 5 cannot hold all 8 chunks needed to reconstruct
-#     every (hostname_turn, port_turn) pair.
+#     (no port, no weekday) and 4 anonymous attribute chunks (no
+#     hostname). Because none of the 4 attribute chunks mention a
+#     hostname, retrieval cannot prefer the queried server's chunk
+#     over sibling chunks, and top_k = 5 cannot hold all 8 chunks
+#     needed to reconstruct every (hostname_turn, attribute_turn) pair.
 #   - L3 resolves coreference at write time over the active session
-#     state, binding (srv-alpha, admin_console_port, 7443) into a
-#     single self-contained record.
+#     state, binding (srv-alpha, admin_console_port, 7443) and
+#     (srv-alpha, maintenance_window, Tuesday) into single
+#     self-contained records.
 #
-# Why paired commitment probes (T10 + T11) are mandatory:
-#   T10 probes srv-alpha (7443, not 7080/7999/7555) and T11 probes
-#   srv-beta (7080, not 7443/7999/7555). Passing requires satisfying
-#   BOTH sides of the pair.
+# ── REVISION 2026-11-03 (run 20261103_144749, deepseek-v4-pro, 50%) ──
+# Three hardenings, each closing a measurement defect this scenario
+# had when the L2 failure finally manifested:
+#
+#   R1 (anchor removal). The free-form observational probe used to be
+#      the FIRST probe of s3, sharing the thread with the commitment
+#      probes. It answered "srv-alpha -> 7555" (wrong) and T10 then
+#      repeated 7555 verbatim: the intra-session checkpointer turned
+#      the target probe into self-consistency, not binding. The
+#      observational probe is now turn 13 in its own session s4, and
+#      s3 opens directly on a commitment probe, so no probe turn can
+#      anchor a later one.
+#
+#   R2 (second attribute surface). With two numeric probes, any
+#      "emit one of the 4 lookalike 4-digit values" heuristic scores
+#      50% by construction: in that run the correct port chunk ranked
+#      #1 on T10 but the decoy ranked #1 on T11. Two additional
+#      probes ask for the MAINTENANCE WINDOW WEEKDAY of the other two
+#      entities (srv-gamma/srv-delta) — same binding, same anonymous
+#      chunk, non-numeric surface — taking the sample from 2 to 4
+#      independent probes and making cross-entity swaps visible in a
+#      different output format.
+#
+#   R3 (causal attribution). Each commitment probe now also carries
+#      two `must_retrieve_chunk` rules pinning BOTH halves of its
+#      evidence pair (the anonymous attribute chunk and the hostname
+#      chunk). A wrong answer with every retrieval rule passing is
+#      provably a read-time binding failure; a missing chunk is
+#      reported as plumbing (`coreference_severed_miss`) instead of
+#      being inferred from the answer. Side benefit: amnesic L0/L1
+#      declines now fail these rules too, so raw assertion-level
+#      pass_rate stops flattering them (was 75%, now 50%).
+#
+# Why paired commitment probes are mandatory:
+#   Each attribute is probed TWICE on two different entities
+#   (ports: srv-alpha T9 -> 7443, srv-beta T10 -> 7080; weekdays:
+#   srv-gamma T11 -> Thursday, srv-delta T12 -> Friday). Passing the
+#   scenario's headline metric requires all four turn-level passes,
+#   so transposition, single-entity anchoring and multi-value hedging
+#   all fail at least one side.
+#
+# ── VALIDATION RUN 20261103_151452 (deepseek-v4-pro, L2, top_k=5) ──
+# 21/24 assertions, but 2/4 turn-level — the assertion-level rate is
+# the flattering number, as documented in `headline_metric`:
+#   T9  7443          PASS 6/6   (same retrieval as the pre-revision
+#                                run, where the answer was 7555: R1
+#                                removed the anchor that caused it)
+#   T10 7080          PASS 6/6   (pre-revision: 7999)
+#   T11 decline       FAIL 5/6   both evidence chunks retrieved ->
+#                                binding/abstention error, not plumbing
+#   T12 "Thursday"    FAIL 4/6   cross_entity_swap: delta answered
+#                                with gamma's weekday; evidence retrieved
+# All 8 must_retrieve_chunk rules passed, so both failures are
+# attributable to read time, which is exactly what R3 was added for.
 # ─────────────────────────────────────────────────────────────────
 
 id: entity_binding_01
@@ -814,20 +892,30 @@ description: >
   Across sessions s1 (turns 1-4) and s2 (turns 5-8), the user registers four
   sibling servers owned by the platform team (srv-alpha, srv-gamma, srv-beta,
   srv-delta). Each server is introduced in one turn and assigned its admin
-  console port in the immediately following turn via coreference ("that
-  server" / "its": 7443, 7999, 7080, 7555). Because L2 chunks by turn without
-  write-time coreference resolution, the four port chunks lack server
-  hostnames and compete indistinguishably for top_k=5 alongside the four
-  hostname chunks. Session s3 runs an observational open probe (T9) followed
-  by paired single-port commitment probes for srv-alpha (T10) and srv-beta
-  (T11).
+  console port and maintenance window in the immediately following turn via
+  coreference ("that server" / "its": 7443+Tuesday, 7999+Thursday,
+  7080+Wednesday, 7555+Friday). Because L2 chunks by turn without write-time
+  coreference resolution, the four attribute chunks lack server hostnames and
+  compete indistinguishably for top_k=5 alongside the four hostname chunks.
+  Session s3 runs four commitment probes on two attribute surfaces (numeric
+  ports for srv-alpha/srv-beta, weekday names for srv-gamma/srv-delta), each
+  pinned by retrieval assertions on both halves of its evidence pair; session
+  s4 runs a single free-form observational probe in a clean thread.
 category: entity_binding
 metadata:
   difficulty: hard
   stage: "4.4"
-  sessions: ["s1", "s2", "s3"]
+  sessions: ["s1", "s2", "s3", "s4"]
   pre_probe_episodes: 8
   default_top_k: 5
+  probe_turns: [9, 10, 11, 12]
+  observational_probe_turn: 13
+  observational_probe_note: >
+    Descriptive only, never evidence. Turn 13 runs after s3, so its retrieval
+    can include the model's own commitment answers (ep_s3_t1..t4) alongside the
+    anonymous attribute chunks; a correct free-form table there may be copied
+    from those stored answers rather than bound. It is kept unasserted and in
+    its own thread, and must not be scored.
   entities:
     srv_alpha:
       entity_chunk_id: "ep_s1_t1"
@@ -835,51 +923,90 @@ metadata:
       session_id: "s1"
       port: "7443"
       maintenance_window: "Tuesday 03:00 UTC"
+      probes: [9]
     srv_gamma:
       entity_chunk_id: "ep_s1_t3"
       port_chunk_id: "ep_s1_t4"
       session_id: "s1"
       port: "7999"
       maintenance_window: "Thursday 03:00 UTC"
+      probes: [11]
     srv_beta:
       entity_chunk_id: "ep_s2_t1"
       port_chunk_id: "ep_s2_t2"
       session_id: "s2"
       port: "7080"
       maintenance_window: "Wednesday 03:00 UTC"
+      probes: [10]
     srv_delta:
       entity_chunk_id: "ep_s2_t3"
       port_chunk_id: "ep_s2_t4"
       session_id: "s2"
       port: "7555"
       maintenance_window: "Friday 03:00 UTC"
+      probes: [12]
+  ablation_arms:
+    top_k_5:
+      flag: "--top-k 5 (default)"
+      expectation: >
+        Evidence pairs must win a 5-of-8 competition; the two retrieval
+        assertions per probe report whether they did, separating cutoff loss
+        from a binding error.
+    top_k_3:
+      flag: "--top-k 3"
+      expectation: >
+        Control arm: at most three of the eight pre-probe episodes survive, so
+        most probes lose one half of their evidence pair and must fail on
+        must_retrieve_chunk rather than on the text rule. Any turn that still
+        emits the correct value here is binding from partial evidence.
   headline_metric: >
-    Report joint paired turn-level pass (BOTH Turn 10 AND Turn 11 pass all 4
-    of their assertions). Scenario pass_rate is NOT comparable across levels
-    because amnesic declines pass the 6 must_not_contain guards trivially
-    (L0 and L1 score 75% on raw assertion count while scoring 0% on
-    turn-level pass).
+    Report joint four-probe turn-level pass (T9 AND T10 AND T11 AND T12 each
+    pass ALL 6 of their assertions), alongside the four individual turn-level
+    passes. Scenario pass_rate is NOT comparable across levels because amnesic
+    declines pass the 12 must_not_contain guards trivially (L0 and L1 score
+    50% on raw assertion count while scoring 0% on turn-level pass).
   failure_taxonomy:
-    coreference_severed_miss: "Target server's anonymous port chunk (ep_s1_t2 or ep_s2_t2) or its paired hostname chunk falls outside top_k=5; model declines or guesses."
-    cross_entity_swap: "Outputs 7080/7999/7555 for srv-alpha (T10) or 7443/7999/7555 for srv-beta (T11) by binding an unlinked port chunk to the wrong hostname."
-    single_entity_anchoring: "Outputs the same port on both T10 and T11 — passes one side of the pair and fails the other."
-    amnesic_decline: "Fails must_contain on both T10 and T11; passes must_not_contain."
-  expected_level_0_behavior: "Fails both T10 and T11 (0% paired turn-level pass; 75% raw assertion pass_rate via must_not_contain). Stateless amnesia."
-  expected_level_1_behavior: "Fails both T10 and T11 (0% paired turn-level pass; 75% raw assertion pass_rate). Cross-thread amnesia in s3."
+    coreference_severed_miss: >
+      must_retrieve_chunk fails for the attribute chunk or for the hostname
+      chunk: the pairing never reached the model. Attribution: retrieval /
+      cutoff failure (plumbing), NOT a binding error — do not report it as one.
+    cross_entity_swap: >
+      Both halves retrieved, but the emitted value belongs to a sibling server
+      (ports: 7080/7999/7555 for srv-alpha, 7443/7999/7555 for srv-beta;
+      weekdays: Tuesday/Wednesday/Friday for srv-gamma, and
+      Tuesday/Thursday/Wednesday for srv-delta).
+    cross_attribute_swap: >
+      The queried entity's chunks are retrieved but the value comes from the
+      OTHER attribute surface of a sibling pair (e.g. a weekday emitted on a
+      port probe, or a port emitted on a weekday probe).
+    single_entity_anchoring: >
+      Emits the same value on both probes of one attribute pair (7443 on T9
+      and T10, or Thursday on T11 and T12) — one side must fail.
+    amnesic_decline: >
+      Fails all four must_contain rules; passes the must_not_contain guards
+      and fails the eight must_retrieve_chunk rules.
+    pedantry_echo: >
+      Passes must_contain but fails a must_not_contain guard by quoting a
+      sibling value despite the strict ONLY-instruction on every probe.
+  expected_level_0_behavior: "Fails all four commitment probes (0% joint turn-level pass; 50% raw assertion pass_rate via must_not_contain). Stateless amnesia."
+  expected_level_1_behavior: "Fails all four commitment probes (0% joint turn-level pass; 50% raw assertion pass_rate). Cross-thread amnesia in s3."
   expected_level_2_behavior: >
-    Vulnerable at top_k=5: because the 4 port chunks ('Configuration for that
-    server: its admin console runs on port XXXX...') lack server hostnames,
-    dense/BM25 retrieval cannot distinguish which port chunk belongs to the
+    Vulnerable at top_k=5: because the 4 anonymous attribute chunks
+    ('Admin console configuration for that server: its admin console runs on
+    port XXXX and its maintenance window is WEEKDAY 03:00 UTC...') lack server
+    hostnames, dense/BM25 retrieval cannot tell which chunk belongs to the
     queried server, and top_k=5 cannot fit all 8 chunks needed to pair every
-    turn=2k-1 hostname chunk with its turn=2k port chunk.
+    turn=2k-1 hostname chunk with its turn=2k attribute chunk. Expect partial
+    credit from rank luck across the four probes — report it per probe.
   expected_level_3_behavior: >
-    Passes both T10 and T11 if write-time reflection/extraction resolves
-    in-session coreference ('that server' -> srv-alpha / srv-beta) and stores
-    self-contained (entity, attribute, value) records.
+    Passes all four commitment probes if write-time reflection/extraction
+    resolves in-session coreference ('that server' -> srv-alpha / srv-beta /
+    srv-gamma / srv-delta) and stores self-contained
+    (entity, attribute, value) records.
   target_research_question: "P1"
 
 turns:
-  # ── Session s1: srv-alpha (T1-T2 -> 7443) and srv-gamma (T3-T4 -> 7999) ──
+  # ── Session s1: srv-alpha (T1-T2 -> 7443/Tuesday) and srv-gamma (T3-T4) ──
   - turn_number: 1
     session_id: s1
     role: user
@@ -904,7 +1031,7 @@ turns:
     content: "Admin console configuration for that server: its admin console runs on port 7999 and its maintenance window is Thursday 03:00 UTC. Reply with the single word 'Saved' only, nothing else."
     assertions: []
 
-  # ── Session s2: srv-beta (T5-T6 -> 7080) and srv-delta (T7-T8 -> 7555) ──
+  # ── Session s2: srv-beta (T5-T6 -> 7080/Wednesday) and srv-delta (T7-T8) ──
   - turn_number: 5
     session_id: s2
     role: user
@@ -929,16 +1056,11 @@ turns:
     content: "Admin console configuration for that server: its admin console runs on port 7555 and its maintenance window is Friday 03:00 UTC. Reply with the single word 'Saved' only, nothing else."
     assertions: []
 
-  # ── Session s3: Observational probe + paired commitment probes (T10 & T11) ──
-  # OPEN OBSERVATIONAL PROBE (unasserted; captures free-form binding across entities)
-  - turn_number: 9
-    session_id: s3
-    role: user
-    content: "Hi, new session. I'm reviewing the platform team's core cluster inventory. What admin console ports are configured for srv-alpha and srv-beta?"
-    assertions: []
+  # ── Session s3: four commitment probes, no prior probe in this thread ────
+  # (R1: s3 opens on a commitment probe so no earlier answer can anchor it.)
 
-  # COMMITMENT PROBE A — srv-alpha (must be 7443, not 7080, 7999, or 7555)
-  - turn_number: 10
+  # COMMITMENT PROBE A1 — admin console port of srv-alpha (7443, not 7080/7999/7555)
+  - turn_number: 9
     session_id: s3
     role: user
     content: "For the firewall rule table, reply with ONLY the 4-digit admin console port number for server srv-alpha (for example: 9000), nothing else."
@@ -955,9 +1077,13 @@ turns:
       - type: must_not_contain
         value: "7555"
         case_sensitive: false
+      - type: must_retrieve_chunk
+        value: "ep_s1_t2"
+      - type: must_retrieve_chunk
+        value: "ep_s1_t1"
 
-  # COMMITMENT PROBE B (PAIRED CONTROL) — srv-beta (must be 7080, not 7443, 7999, or 7555)
-  - turn_number: 11
+  # COMMITMENT PROBE A2 (PAIRED CONTROL) — admin console port of srv-beta
+  - turn_number: 10
     session_id: s3
     role: user
     content: "Next row: reply with ONLY the 4-digit admin console port number for server srv-beta (for example: 9000), nothing else."
@@ -974,9 +1100,65 @@ turns:
       - type: must_not_contain
         value: "7555"
         case_sensitive: false
-```
+      - type: must_retrieve_chunk
+        value: "ep_s2_t2"
+      - type: must_retrieve_chunk
+        value: "ep_s2_t1"
 
----
+  # COMMITMENT PROBE B1 — maintenance window weekday of srv-gamma (Thursday)
+  - turn_number: 11
+    session_id: s3
+    role: user
+    content: "For the maintenance-window table, reply with ONLY the full weekday name of the scheduled maintenance window for server srv-gamma (for example: Monday), nothing else."
+    assertions:
+      - type: must_contain
+        value: "Thursday"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "Tuesday"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "Wednesday"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "Friday"
+        case_sensitive: false
+      - type: must_retrieve_chunk
+        value: "ep_s1_t4"
+      - type: must_retrieve_chunk
+        value: "ep_s1_t3"
+
+  # COMMITMENT PROBE B2 (PAIRED CONTROL) — maintenance window weekday of srv-delta
+  - turn_number: 12
+    session_id: s3
+    role: user
+    content: "Next row: reply with ONLY the full weekday name of the scheduled maintenance window for server srv-delta (for example: Monday), nothing else."
+    assertions:
+      - type: must_contain
+        value: "Friday"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "Tuesday"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "Wednesday"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "Thursday"
+        case_sensitive: false
+      - type: must_retrieve_chunk
+        value: "ep_s2_t4"
+      - type: must_retrieve_chunk
+        value: "ep_s2_t3"
+
+  # ── Session s4: FREE-FORM OBSERVATIONAL PROBE (unasserted, clean thread) ──
+  # (R1: isolated session — its answer cannot anchor any commitment probe.)
+  - turn_number: 13
+    session_id: s4
+    role: user
+    content: "Hi, new session. I'm reviewing the platform team's core cluster inventory. What admin console ports and maintenance windows are configured for srv-alpha and srv-beta?"
+    assertions: []
+```
 
 ## Implementation Checklist (when approved)
 

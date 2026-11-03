@@ -90,9 +90,18 @@ def _turn(scenario, turn_number):
     return next(t for t in scenario.turns if t.turn_number == turn_number)
 
 
-def _turn_passes(response: str, rules) -> bool:
-    """Turn-level pass = every assertion on the turn passes (headline rule)."""
-    results = BenchmarkRunner.evaluate_assertions(response, rules)
+def _turn_passes(response: str, rules, retrieved_ids=()) -> bool:
+    """Turn-level pass = every assertion on the turn passes (headline rule).
+
+    ``retrieved_ids`` populates the canned retrieval telemetry that
+    ``must_retrieve_chunk`` rules are evaluated against, so a turn whose
+    evidence pair is pinned by retrieval assertions can be scored offline.
+    Text-only rule sets pass nothing here and keep their old behaviour.
+    """
+    episodes = [{"chunk_id": cid, "source": "chat"} for cid in retrieved_ids]
+    results = BenchmarkRunner.evaluate_assertions(
+        response, rules, retrieved_memories=episodes
+    )
     return all(r["passed"] for r in results)
 
 
@@ -391,21 +400,39 @@ class TestTopKSaturation:
 
 # ── 4.4 Cross-Entity Attribute Binding (Cross-Turn Coreference) ───────────────
 
+# s1/s2 seed 8 pre-probe episodes; s3 = 4 commitment probes in ONE clean
+# thread; s4 = the free-form observational probe, in its own session so its
+# answer can never anchor a scored probe (revision R1, 2026-11-03).
 BINDING_SESSION_LAYOUT = {
     "s1": [1, 2, 3, 4],
     "s2": [5, 6, 7, 8],
-    "s3": [9, 10, 11],
+    "s3": [9, 10, 11, 12],
+    "s4": [13],
 }
-# (entity_intro_turn, port_assignment_turn) -> (entity, port)
+# (entity_intro_turn, attribute_assignment_turn) -> (entity, port, weekday)
 BINDING_PAIRS = {
-    (1, 2): ("srv-alpha", "7443"),
-    (3, 4): ("srv-gamma", "7999"),
-    (5, 6): ("srv-beta", "7080"),
-    (7, 8): ("srv-delta", "7555"),
+    (1, 2): ("srv-alpha", "7443", "Tuesday"),
+    (3, 4): ("srv-gamma", "7999", "Thursday"),
+    (5, 6): ("srv-beta", "7080", "Wednesday"),
+    (7, 8): ("srv-delta", "7555", "Friday"),
 }
-BINDING_PROBES = {10: ("srv-alpha", "7443"), 11: ("srv-beta", "7080")}
+# Commitment probes: turn -> (entity, expected value). Two attribute surfaces
+# (numeric ports, weekday names) x two entities each (revision R2).
+PORT_PROBES = {9: ("srv-alpha", "7443"), 10: ("srv-beta", "7080")}
+WEEKDAY_PROBES = {11: ("srv-gamma", "Thursday"), 12: ("srv-delta", "Friday")}
+BINDING_PROBES = {**PORT_PROBES, **WEEKDAY_PROBES}
 ALL_SERVER_NAMES = ["srv-alpha", "srv-gamma", "srv-beta", "srv-delta"]
 ALL_PORTS = ["7443", "7999", "7080", "7555"]
+ALL_WEEKDAYS = ["Tuesday", "Thursday", "Wednesday", "Friday"]
+# Each probe pins BOTH halves of its evidence pair: (attribute chunk, hostname
+# chunk). Retrieval rules make the failure attribution causal (revision R3).
+PROBE_EVIDENCE = {
+    9: ("ep_s1_t2", "ep_s1_t1"),
+    10: ("ep_s2_t2", "ep_s2_t1"),
+    11: ("ep_s1_t4", "ep_s1_t3"),
+    12: ("ep_s2_t4", "ep_s2_t3"),
+}
+OBSERVATIONAL_PROBE = 13
 
 
 class TestEntityBinding:
@@ -414,7 +441,7 @@ class TestEntityBinding:
     def test_category(self, stage4):
         assert stage4[self.sid].category == "entity_binding"
 
-    def test_three_session_layout(self, stage4):
+    def test_four_session_layout(self, stage4):
         for session_id, expected in BINDING_SESSION_LAYOUT.items():
             actual = [
                 t.turn_number
@@ -424,8 +451,42 @@ class TestEntityBinding:
             assert actual == expected, session_id
 
     def test_pre_probe_turns_are_unasserted(self, stage4):
-        for turn_number in range(1, 10):
+        for turn_number in range(1, 9):
             assert _turn(stage4[self.sid], turn_number).assertions == []
+
+    def test_observational_probe_is_unasserted(self, stage4):
+        assert _turn(stage4[self.sid], OBSERVATIONAL_PROBE).assertions == []
+
+    def test_commitment_probes_are_not_preceded_by_a_probe_in_their_thread(
+        self, stage4
+    ):
+        # R1 regression guard: the observational probe used to open s3, and its
+        # (wrong) answer was then repeated verbatim by the next commitment probe
+        # — intra-session anchoring, not binding. The scored thread must open on
+        # a commitment probe and the observational probe must live elsewhere.
+        scenario = stage4[self.sid]
+        probes = set(BINDING_PROBES)
+        assert scenario.metadata["probe_turns"] == sorted(probes)
+        assert scenario.metadata["observational_probe_turn"] == OBSERVATIONAL_PROBE
+
+        scored_sessions = {
+            t.session_id for t in scenario.turns if t.turn_number in probes
+        }
+        assert scored_sessions == {"s3"}, scored_sessions
+        first_scored_turn = min(probes)
+        assert _turn(scenario, first_scored_turn).session_id == "s3"
+
+        observational_session = _turn(scenario, OBSERVATIONAL_PROBE).session_id
+        assert observational_session not in scored_sessions
+        assert OBSERVATIONAL_PROBE > max(probes)
+
+    def test_each_probe_pins_both_halves_of_its_evidence_pair(self, stage4):
+        # R3: retrieval assertions turn "wrong answer" into a causal claim.
+        assert set(PROBE_EVIDENCE) == set(BINDING_PROBES)
+        for probe, chunks in PROBE_EVIDENCE.items():
+            rules = _turn(stage4[self.sid], probe).assertions
+            retrieved = [r.value for r in rules if r.type == "must_retrieve_chunk"]
+            assert sorted(retrieved) == sorted(chunks)
 
     def test_eight_pre_probe_episodes_exceed_top_k(self, stage4):
         # 4 entities x 2 turns (entity intro + coreference port turn) = 8 episodes.
@@ -433,68 +494,109 @@ class TestEntityBinding:
         assert stage4[self.sid].metadata["default_top_k"] == 5
 
     def test_cross_turn_coreference_separation(self, stage4):
-        # Entity-intro turns (odd: 1, 3, 5, 7) must name their server and NO port;
-        # Port-assignment turns (even: 2, 4, 6, 8) must state the port via
-        # coreference ("that server" / "its") and contain NO server hostname.
+        # Entity-intro turns (odd: 1, 3, 5, 7) must name their server and NO
+        # attribute; attribute turns (even: 2, 4, 6, 8) must state port AND
+        # weekday via coreference ("that server" / "its") and contain NO
+        # server hostname.
         meta = stage4[self.sid].metadata["entities"]
         assert meta["srv_alpha"]["port"] == "7443"
         assert meta["srv_gamma"]["port"] == "7999"
         assert meta["srv_beta"]["port"] == "7080"
         assert meta["srv_delta"]["port"] == "7555"
 
-        for (intro_turn, port_turn), (entity, port) in BINDING_PAIRS.items():
+        for (intro_turn, attr_turn), (entity, port, weekday) in BINDING_PAIRS.items():
             intro_text = _turn(stage4[self.sid], intro_turn).content
-            port_text = _turn(stage4[self.sid], port_turn).content
+            attr_text = _turn(stage4[self.sid], attr_turn).content
             assert entity in intro_text, f"T{intro_turn} must name {entity}"
             for p in ALL_PORTS:
                 assert p not in intro_text, f"T{intro_turn} must not contain port {p}"
-            assert port in port_text, f"T{port_turn} must state port {port}"
-            assert "that server" in port_text.lower()
+            for wd in ALL_WEEKDAYS:
+                assert wd not in intro_text, f"T{intro_turn} must not contain {wd}"
+            assert port in attr_text, f"T{attr_turn} must state port {port}"
+            assert weekday in attr_text, f"T{attr_turn} must state weekday {weekday}"
+            assert "that server" in attr_text.lower()
             for srv in ALL_SERVER_NAMES:
-                assert srv not in port_text, (
-                    f"T{port_turn} must rely on coreference, not repeat {srv}"
+                assert srv not in attr_text, (
+                    f"T{attr_turn} must rely on coreference, not repeat {srv}"
                 )
 
     def test_identical_syntactic_schema_across_entity_and_port_turns(self, stage4):
         intro_skeletons = []
-        port_skeletons = []
-        for (intro_turn, port_turn), (entity, port) in BINDING_PAIRS.items():
+        attr_skeletons = []
+        for (intro_turn, attr_turn), (entity, port, _weekday) in BINDING_PAIRS.items():
             intro_text = _turn(stage4[self.sid], intro_turn).content
             intro_skeletons.append(intro_text.replace(entity, "SERVER"))
 
-            port_text = _turn(stage4[self.sid], port_turn).content
-            for weekday in ("Tuesday", "Thursday", "Wednesday", "Friday"):
-                port_text = port_text.replace(weekday, "WEEKDAY")
-            port_skeletons.append(port_text.replace(port, "PORT"))
+            attr_text = _turn(stage4[self.sid], attr_turn).content
+            for weekday in ALL_WEEKDAYS:
+                attr_text = attr_text.replace(weekday, "WEEKDAY")
+            attr_skeletons.append(attr_text.replace(port, "PORT"))
 
         assert len(set(intro_skeletons)) == 1, "All entity-intro turns must share one schema"
-        assert len(set(port_skeletons)) == 1, "All port turns must share one schema"
+        assert len(set(attr_skeletons)) == 1, "All attribute turns must share one schema"
+
+    def test_probe_prompts_are_symmetric_and_leak_no_answer(self, stage4):
+        # Two surfaces, two probes each: identical *instruction* skeleton inside
+        # a surface (the "table row" framing before "reply with ONLY" differs by
+        # design), and no probe prompt may contain the value it asks for.
+        for group, marker in ((PORT_PROBES, "4-digit"), (WEEKDAY_PROBES, "weekday")):
+            skeletons = []
+            for probe, (entity, expected) in group.items():
+                content = _turn(stage4[self.sid], probe).content
+                assert "ONLY" in content and marker in content
+                assert entity in content
+                assert expected not in content, f"T{probe} leaks its own answer"
+                instruction = content[content.index("reply with ONLY") :]
+                skeletons.append(
+                    instruction.replace(entity, "SERVER").replace(expected, "EXPECTED")
+                )
+            assert len(set(skeletons)) == 1, (
+                f"probes {sorted(group)} must share one instruction schema"
+            )
 
     def test_paired_probes_symmetric_assertions(self, stage4):
-        for probe, (entity, port) in BINDING_PROBES.items():
-            content = _turn(stage4[self.sid], probe).content
-            assert "ONLY" in content and "4-digit" in content
-            assert entity in content
+        # 1 must_contain + 3 sibling must_not_contain + 2 must_retrieve_chunk.
+        for probe, (entity, expected) in BINDING_PROBES.items():
             rules = _turn(stage4[self.sid], probe).assertions
-            assert len(rules) == 4
+            assert len(rules) == 6
             contains = [r.value for r in rules if r.type == "must_contain"]
             not_contains = [r.value for r in rules if r.type == "must_not_contain"]
-            assert contains == [port]
-            other_ports = set(ALL_PORTS) - {port}
-            assert sorted(not_contains) == sorted(other_ports)
+            assert contains == [expected]
+            siblings = set(ALL_PORTS if probe in PORT_PROBES else ALL_WEEKDAYS)
+            assert sorted(not_contains) == sorted(siblings - {expected})
 
     @pytest.mark.parametrize(
         ("probe", "response", "passes"),
         [
-            (10, "7443", True),   # correct alpha binding
-            (10, "7080", False),  # cross-entity swap (alpha -> beta port)
-            (10, "7999", False),  # wrong needle (gamma port)
-            (10, "7555", False),  # wrong needle (delta port)
-            (11, "7080", True),   # correct beta binding
-            (11, "7443", False),  # cross-entity swap (beta -> alpha port)
-            (10, "I don't have that info.", False),  # amnesic decline
+            (9, "7443", True),    # correct alpha port binding
+            (9, "7080", False),   # cross-entity swap (alpha -> beta port)
+            (9, "7999", False),   # wrong needle (gamma port)
+            (9, "7555", False),   # wrong needle (delta port)
+            (10, "7080", True),   # correct beta port binding
+            (10, "7443", False),  # cross-entity swap (beta -> alpha port)
+            (11, "Thursday", True),   # correct gamma weekday binding
+            (11, "Tuesday", False),   # cross-entity swap (gamma -> alpha weekday)
+            (12, "Friday", True),     # correct delta weekday binding
+            (12, "Thursday", False),  # cross-entity swap (delta -> gamma weekday)
+            (9, "I don't have that info.", False),  # amnesic decline
+            (11, "I don't have that info.", False),  # amnesic decline (weekday)
         ],
     )
     def test_probe_turn_level_scoring(self, stage4, probe, response, passes):
         rules = _turn(stage4[self.sid], probe).assertions
-        assert _turn_passes(response, rules) is passes
+        evidence = PROBE_EVIDENCE[probe]
+        assert _turn_passes(response, rules, evidence) is passes
+
+    @pytest.mark.parametrize("probe", sorted(PROBE_EVIDENCE))
+    def test_missing_evidence_chunk_fails_the_turn_even_with_the_right_answer(
+        self, stage4, probe
+    ):
+        # Attribution contract (R3): if either half of the pair is missing, the
+        # turn fails on must_retrieve_chunk — a plumbing failure, NOT a binding
+        # error. This is what stops a cutoff loss from being reported as one.
+        rules = _turn(stage4[self.sid], probe).assertions
+        expected = BINDING_PROBES[probe][1]
+        attr_chunk, entity_chunk = PROBE_EVIDENCE[probe]
+        assert _turn_passes(expected, rules, (attr_chunk, entity_chunk)) is True
+        assert _turn_passes(expected, rules, (attr_chunk,)) is False
+        assert _turn_passes(expected, rules, (entity_chunk,)) is False
