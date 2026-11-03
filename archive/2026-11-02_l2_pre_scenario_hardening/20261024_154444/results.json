@@ -1,0 +1,899 @@
+[
+  {
+    "run_id": "cross_thread_derived_01_deepseek-v4-flash_baseline_react_461310f4",
+    "scenario_id": "cross_thread_derived_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 11,
+    "total_assertions": 3,
+    "passed_assertions": 3,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 66299.05600019265,
+    "avg_latency_per_turn_ms": 6027.186909108423,
+    "total_tokens": 7081,
+    "prompt_tokens": 6600,
+    "completion_tokens": 481,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I'm coordinating vendor paperwork this quarter and want to keep a running log with you. First entry: the Halcyon NDA was signed back on January 9, 2024. Just confirm you've noted it.",
+        "agent_response": "Noted. The Halcyon NDA was signed on January 9, 2024. I'll keep this as the first entry in our vendor paperwork log. Let me know when you have the next entry.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 9511.01410004776,
+        "token_usage": {
+          "input_tokens": 120,
+          "output_tokens": 45,
+          "total_tokens": 165,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 120,
+        "completion_tokens": 45,
+        "total_tokens": 165,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 45,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 89,
+        "retrieval_latency_ms": 0.00600004568696022,
+        "append_latency_ms": 4843.765800003894,
+        "embedding_latency_ms": 4843.671999988146,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ]
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Side question: in two sentences, what's the difference between a purchase order and an invoice?",
+        "agent_response": "A purchase order is a document issued by a buyer to a seller, authorizing a transaction and specifying the items, quantities, and agreed prices. An invoice is a bill sent by the seller to the buyer after the goods or services are delivered, requesting payment for that transaction.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 5579.8968999879435,
+        "token_usage": {
+          "input_tokens": 187,
+          "output_tokens": 56,
+          "total_tokens": 243,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 187,
+        "completion_tokens": 56,
+        "total_tokens": 243,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 56,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 121,
+        "retrieval_latency_ms": 444.5666999090463,
+        "append_latency_ms": 1387.2458999976516,
+        "embedding_latency_ms": 1830.5904000299051,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t2"
+        ]
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Next log entry: the Halcyon supply contract was formally signed on January 20, 2024. No need to work anything out. Just confirm you've noted it.",
+        "agent_response": "Noted. The Halcyon supply contract was formally signed on January 20, 2024. I've added this as the second entry in our vendor paperwork log.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 5897.369400016032,
+        "token_usage": {
+          "input_tokens": 282,
+          "output_tokens": 36,
+          "total_tokens": 318,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 282,
+        "completion_tokens": 36,
+        "total_tokens": 318,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 36,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 111,
+        "retrieval_latency_ms": 795.8579000551254,
+        "append_latency_ms": 1449.175300076604,
+        "embedding_latency_ms": 2243.934099911712,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t3"
+        ]
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Next log entry: the Orion maintenance contract was signed on February 2, 2024, and our kickoff workshop with the Halcyon team is set for February 12, 2024. Just confirm you've noted both.",
+        "agent_response": "Noted. The Orion maintenance contract was signed on February 2, 2024, and the Halcyon kickoff workshop is scheduled for February 12, 2024. I've added both to the log.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 6429.415500024334,
+        "token_usage": {
+          "input_tokens": 369,
+          "output_tokens": 46,
+          "total_tokens": 415,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 369,
+        "completion_tokens": 46,
+        "total_tokens": 415,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 46,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 138,
+        "retrieval_latency_ms": 909.1641999548301,
+        "append_latency_ms": 2044.3329999689013,
+        "embedding_latency_ms": 2952.456299914047,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t4"
+        ]
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Last thing for today: can you suggest a clear file-naming convention for scanned documents?",
+        "agent_response": "Sure. A clear file-naming convention for scanned documents could be:\n\n**YYYY-MM-DD_VendorName_DocumentType_Version**\n\nFor example:\n- `2024-01-09_Halcyon_NDA_v1`\n- `2024-01-20_Halcyon_SupplyContract_v1`\n- `2024-02-02_Orion_MaintenanceContract_v1`\n\nThis keeps files sorted chronologically, makes them easy to search by vendor or document type, and allows for version control if revisions come in later.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 6790.121599915437,
+        "token_usage": {
+          "input_tokens": 436,
+          "output_tokens": 115,
+          "total_tokens": 551,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 436,
+        "completion_tokens": 115,
+        "total_tokens": 551,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 115,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 149,
+        "retrieval_latency_ms": 668.1726999813691,
+        "append_latency_ms": 2381.9184999447316,
+        "embedding_latency_ms": 3049.030999885872,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t5"
+        ]
+      },
+      {
+        "turn_number": 6,
+        "user_input": "New session. Today I'm going through contract terms for the vendor log. Quick one first: what does 'net 30' mean on an invoice, in one sentence?",
+        "agent_response": "Net 30 means the buyer has 30 days from the invoice date to pay the full amount without penalty.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 9496.44390004687,
+        "token_usage": {
+          "input_tokens": 749,
+          "output_tokens": 23,
+          "total_tokens": 772,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 749,
+        "completion_tokens": 23,
+        "total_tokens": 772,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 23,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2327,
+        "retrieved_context_tokens": 581,
+        "embedding_tokens": 100,
+        "retrieval_latency_ms": 1069.893000065349,
+        "append_latency_ms": 3068.133599939756,
+        "embedding_latency_ms": 4136.371599975973,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Next log entry: the Halcyon supply contract was formally signed on January 20, 2024. No need to work anything out. Just confirm you've noted it.\nAssistant: Noted. The Halcyon supply contract was formally signed on January 20, 2024. I've added this as the second entry in our vendor paperwork log.",
+            "score": 0.43408976800727705,
+            "rank": 1,
+            "char_count": 302,
+            "estimated_tokens": 75,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Side question: in two sentences, what's the difference between a purchase order and an invoice?\nAssistant: A purchase order is a document issued by a buyer to a seller, authorizing a transaction and specifying the items, quantities, and agreed prices. An invoice is a bill sent by the seller to the buyer after the goods or services are delivered, requesting payment for that transaction.",
+            "score": 0.3986716102775153,
+            "rank": 2,
+            "char_count": 394,
+            "estimated_tokens": 98,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: I'm coordinating vendor paperwork this quarter and want to keep a running log with you. First entry: the Halcyon NDA was signed back on January 9, 2024. Just confirm you've noted it.\nAssistant: Noted. The Halcyon NDA was signed on January 9, 2024. I'll keep this as the first entry in our vendor paperwork log. Let me know when you have the next entry.",
+            "score": 0.38856217729102827,
+            "rank": 3,
+            "char_count": 358,
+            "estimated_tokens": 89,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Last thing for today: can you suggest a clear file-naming convention for scanned documents?\nAssistant: Sure. A clear file-naming convention for scanned documents could be:\n\n**YYYY-MM-DD_VendorName_DocumentType_Version**\n\nFor example:\n- `2024-01-09_Halcyon_NDA_v1`\n- `2024-01-20_Halcyon_SupplyContract_v1`\n- `2024-02-02_Orion_MaintenanceContract_v1`\n\nThis keeps files sorted chronologically, makes them easy to search by vendor or document type, and allows for version control if revisions come in later.",
+            "score": 0.35718548723492155,
+            "rank": 4,
+            "char_count": 509,
+            "estimated_tokens": 127,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Next log entry: the Orion maintenance contract was signed on February 2, 2024, and our kickoff workshop with the Halcyon team is set for February 12, 2024. Just confirm you've noted both.\nAssistant: Noted. The Orion maintenance contract was signed on February 2, 2024, and the Halcyon kickoff workshop is scheduled for February 12, 2024. I've added both to the log.",
+            "score": 0.34167632536550774,
+            "rank": 5,
+            "char_count": 371,
+            "estimated_tokens": 92,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ]
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Log entry: under the Orion terms, deliverables are due 60 days after that contract's signing. Also, the Halcyon warranty runs for 90 days from delivery. Just confirm you've noted them.",
+        "agent_response": "Noted. Under the Orion maintenance contract (signed February 2, 2024), deliverables are due 60 days after signing. Under the Halcyon supply contract (signed January 20, 2024), the warranty runs for 90 days from delivery. I've added both to the log.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 6719.97580002062,
+        "token_usage": {
+          "input_tokens": 817,
+          "output_tokens": 65,
+          "total_tokens": 882,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 817,
+        "completion_tokens": 65,
+        "total_tokens": 882,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 65,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2327,
+        "retrieved_context_tokens": 581,
+        "embedding_tokens": 158,
+        "retrieval_latency_ms": 747.8783000260592,
+        "append_latency_ms": 1874.4033999973908,
+        "embedding_latency_ms": 2621.185400057584,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Next log entry: the Orion maintenance contract was signed on February 2, 2024, and our kickoff workshop with the Halcyon team is set for February 12, 2024. Just confirm you've noted both.\nAssistant: Noted. The Orion maintenance contract was signed on February 2, 2024, and the Halcyon kickoff workshop is scheduled for February 12, 2024. I've added both to the log.",
+            "score": 0.6111775893496224,
+            "rank": 1,
+            "char_count": 371,
+            "estimated_tokens": 92,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Next log entry: the Halcyon supply contract was formally signed on January 20, 2024. No need to work anything out. Just confirm you've noted it.\nAssistant: Noted. The Halcyon supply contract was formally signed on January 20, 2024. I've added this as the second entry in our vendor paperwork log.",
+            "score": 0.5885392048560851,
+            "rank": 2,
+            "char_count": 302,
+            "estimated_tokens": 75,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: I'm coordinating vendor paperwork this quarter and want to keep a running log with you. First entry: the Halcyon NDA was signed back on January 9, 2024. Just confirm you've noted it.\nAssistant: Noted. The Halcyon NDA was signed on January 9, 2024. I'll keep this as the first entry in our vendor paperwork log. Let me know when you have the next entry.",
+            "score": 0.5406901398487085,
+            "rank": 3,
+            "char_count": 358,
+            "estimated_tokens": 89,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Last thing for today: can you suggest a clear file-naming convention for scanned documents?\nAssistant: Sure. A clear file-naming convention for scanned documents could be:\n\n**YYYY-MM-DD_VendorName_DocumentType_Version**\n\nFor example:\n- `2024-01-09_Halcyon_NDA_v1`\n- `2024-01-20_Halcyon_SupplyContract_v1`\n- `2024-02-02_Orion_MaintenanceContract_v1`\n\nThis keeps files sorted chronologically, makes them easy to search by vendor or document type, and allows for version control if revisions come in later.",
+            "score": 0.290391105775055,
+            "rank": 4,
+            "char_count": 509,
+            "estimated_tokens": 127,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Side question: in two sentences, what's the difference between a purchase order and an invoice?\nAssistant: A purchase order is a document issued by a buyer to a seller, authorizing a transaction and specifying the items, quantities, and agreed prices. An invoice is a bill sent by the seller to the buyer after the goods or services are delivered, requesting payment for that transaction.",
+            "score": 0.28131434991412285,
+            "rank": 5,
+            "char_count": 394,
+            "estimated_tokens": 98,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ]
+      },
+      {
+        "turn_number": 8,
+        "user_input": "Log entry: under the Halcyon terms, delivery is due 100 calendar days after the contract signing date. Again, nothing to calculate yet. Just confirm you've noted it.",
+        "agent_response": "Noted. Under the Halcyon supply contract (signed January 20, 2024), delivery is due 100 calendar days after the signing date. I've added this to the log.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_not_contain",
+            "value": "April 29",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 4425.085199996829,
+        "token_usage": {
+          "input_tokens": 922,
+          "output_tokens": 42,
+          "total_tokens": 964,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 922,
+        "completion_tokens": 42,
+        "total_tokens": 964,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 42,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2327,
+        "retrieved_context_tokens": 581,
+        "embedding_tokens": 125,
+        "retrieval_latency_ms": 852.9660999774933,
+        "append_latency_ms": 1512.4103999696672,
+        "embedding_latency_ms": 2363.3618998574093,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Next log entry: the Halcyon supply contract was formally signed on January 20, 2024. No need to work anything out. Just confirm you've noted it.\nAssistant: Noted. The Halcyon supply contract was formally signed on January 20, 2024. I've added this as the second entry in our vendor paperwork log.",
+            "score": 0.6306275794441795,
+            "rank": 1,
+            "char_count": 302,
+            "estimated_tokens": 75,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: I'm coordinating vendor paperwork this quarter and want to keep a running log with you. First entry: the Halcyon NDA was signed back on January 9, 2024. Just confirm you've noted it.\nAssistant: Noted. The Halcyon NDA was signed on January 9, 2024. I'll keep this as the first entry in our vendor paperwork log. Let me know when you have the next entry.",
+            "score": 0.5339672214772211,
+            "rank": 2,
+            "char_count": 358,
+            "estimated_tokens": 89,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Next log entry: the Orion maintenance contract was signed on February 2, 2024, and our kickoff workshop with the Halcyon team is set for February 12, 2024. Just confirm you've noted both.\nAssistant: Noted. The Orion maintenance contract was signed on February 2, 2024, and the Halcyon kickoff workshop is scheduled for February 12, 2024. I've added both to the log.",
+            "score": 0.5147842581941556,
+            "rank": 3,
+            "char_count": 371,
+            "estimated_tokens": 92,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Last thing for today: can you suggest a clear file-naming convention for scanned documents?\nAssistant: Sure. A clear file-naming convention for scanned documents could be:\n\n**YYYY-MM-DD_VendorName_DocumentType_Version**\n\nFor example:\n- `2024-01-09_Halcyon_NDA_v1`\n- `2024-01-20_Halcyon_SupplyContract_v1`\n- `2024-02-02_Orion_MaintenanceContract_v1`\n\nThis keeps files sorted chronologically, makes them easy to search by vendor or document type, and allows for version control if revisions come in later.",
+            "score": 0.30712995233867263,
+            "rank": 4,
+            "char_count": 509,
+            "estimated_tokens": 127,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Side question: in two sentences, what's the difference between a purchase order and an invoice?\nAssistant: A purchase order is a document issued by a buyer to a seller, authorizing a transaction and specifying the items, quantities, and agreed prices. An invoice is a bill sent by the seller to the buyer after the goods or services are delivered, requesting payment for that transaction.",
+            "score": 0.29414418416066274,
+            "rank": 5,
+            "char_count": 394,
+            "estimated_tokens": 98,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t3"
+        ]
+      },
+      {
+        "turn_number": 9,
+        "user_input": "Log entry: Halcyon invoices are payable 30 days after delivery. Just confirm you've noted it.",
+        "agent_response": "Noted. Under the Halcyon supply contract, invoices are payable 30 days after delivery. I've added this to the log.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_not_contain",
+            "value": "April 29",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 4380.576100083999,
+        "token_usage": {
+          "input_tokens": 989,
+          "output_tokens": 29,
+          "total_tokens": 1018,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 989,
+        "completion_tokens": 29,
+        "total_tokens": 1018,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 29,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2327,
+        "retrieved_context_tokens": 581,
+        "embedding_tokens": 79,
+        "retrieval_latency_ms": 575.2292000688612,
+        "append_latency_ms": 882.8791999258101,
+        "embedding_latency_ms": 1456.7692999262363,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Next log entry: the Halcyon supply contract was formally signed on January 20, 2024. No need to work anything out. Just confirm you've noted it.\nAssistant: Noted. The Halcyon supply contract was formally signed on January 20, 2024. I've added this as the second entry in our vendor paperwork log.",
+            "score": 0.5992534014850486,
+            "rank": 1,
+            "char_count": 302,
+            "estimated_tokens": 75,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: I'm coordinating vendor paperwork this quarter and want to keep a running log with you. First entry: the Halcyon NDA was signed back on January 9, 2024. Just confirm you've noted it.\nAssistant: Noted. The Halcyon NDA was signed on January 9, 2024. I'll keep this as the first entry in our vendor paperwork log. Let me know when you have the next entry.",
+            "score": 0.5637842849891695,
+            "rank": 2,
+            "char_count": 358,
+            "estimated_tokens": 89,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Next log entry: the Orion maintenance contract was signed on February 2, 2024, and our kickoff workshop with the Halcyon team is set for February 12, 2024. Just confirm you've noted both.\nAssistant: Noted. The Orion maintenance contract was signed on February 2, 2024, and the Halcyon kickoff workshop is scheduled for February 12, 2024. I've added both to the log.",
+            "score": 0.5081587922025315,
+            "rank": 3,
+            "char_count": 371,
+            "estimated_tokens": 92,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Side question: in two sentences, what's the difference between a purchase order and an invoice?\nAssistant: A purchase order is a document issued by a buyer to a seller, authorizing a transaction and specifying the items, quantities, and agreed prices. An invoice is a bill sent by the seller to the buyer after the goods or services are delivered, requesting payment for that transaction.",
+            "score": 0.3976520078692298,
+            "rank": 4,
+            "char_count": 394,
+            "estimated_tokens": 98,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Last thing for today: can you suggest a clear file-naming convention for scanned documents?\nAssistant: Sure. A clear file-naming convention for scanned documents could be:\n\n**YYYY-MM-DD_VendorName_DocumentType_Version**\n\nFor example:\n- `2024-01-09_Halcyon_NDA_v1`\n- `2024-01-20_Halcyon_SupplyContract_v1`\n- `2024-02-02_Orion_MaintenanceContract_v1`\n\nThis keeps files sorted chronologically, makes them easy to search by vendor or document type, and allows for version control if revisions come in later.",
+            "score": 0.3638210533784512,
+            "rank": 5,
+            "char_count": 509,
+            "estimated_tokens": 127,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t4"
+        ]
+      },
+      {
+        "turn_number": 10,
+        "user_input": "Unrelated: what's the keyboard shortcut to lock a Windows screen?",
+        "agent_response": "The keyboard shortcut to lock a Windows screen is **Windows key + L**.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3805.531300022267,
+        "token_usage": {
+          "input_tokens": 1035,
+          "output_tokens": 16,
+          "total_tokens": 1051,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1035,
+        "completion_tokens": 16,
+        "total_tokens": 1051,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 16,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2327,
+        "retrieved_context_tokens": 581,
+        "embedding_tokens": 54,
+        "retrieval_latency_ms": 415.7009000191465,
+        "append_latency_ms": 820.558900013566,
+        "embedding_latency_ms": 1235.1253000088036,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Next log entry: the Orion maintenance contract was signed on February 2, 2024, and our kickoff workshop with the Halcyon team is set for February 12, 2024. Just confirm you've noted both.\nAssistant: Noted. The Orion maintenance contract was signed on February 2, 2024, and the Halcyon kickoff workshop is scheduled for February 12, 2024. I've added both to the log.",
+            "score": 0.23208118086947443,
+            "rank": 1,
+            "char_count": 371,
+            "estimated_tokens": 92,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Last thing for today: can you suggest a clear file-naming convention for scanned documents?\nAssistant: Sure. A clear file-naming convention for scanned documents could be:\n\n**YYYY-MM-DD_VendorName_DocumentType_Version**\n\nFor example:\n- `2024-01-09_Halcyon_NDA_v1`\n- `2024-01-20_Halcyon_SupplyContract_v1`\n- `2024-02-02_Orion_MaintenanceContract_v1`\n\nThis keeps files sorted chronologically, makes them easy to search by vendor or document type, and allows for version control if revisions come in later.",
+            "score": 0.22752680397960784,
+            "rank": 2,
+            "char_count": 509,
+            "estimated_tokens": 127,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Next log entry: the Halcyon supply contract was formally signed on January 20, 2024. No need to work anything out. Just confirm you've noted it.\nAssistant: Noted. The Halcyon supply contract was formally signed on January 20, 2024. I've added this as the second entry in our vendor paperwork log.",
+            "score": 0.21717912384410287,
+            "rank": 3,
+            "char_count": 302,
+            "estimated_tokens": 75,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Side question: in two sentences, what's the difference between a purchase order and an invoice?\nAssistant: A purchase order is a document issued by a buyer to a seller, authorizing a transaction and specifying the items, quantities, and agreed prices. An invoice is a bill sent by the seller to the buyer after the goods or services are delivered, requesting payment for that transaction.",
+            "score": 0.21029019919508746,
+            "rank": 4,
+            "char_count": 394,
+            "estimated_tokens": 98,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: I'm coordinating vendor paperwork this quarter and want to keep a running log with you. First entry: the Halcyon NDA was signed back on January 9, 2024. Just confirm you've noted it.\nAssistant: Noted. The Halcyon NDA was signed on January 9, 2024. I'll keep this as the first entry in our vendor paperwork log. Let me know when you have the next entry.",
+            "score": 0.1980649774552958,
+            "rank": 5,
+            "char_count": 358,
+            "estimated_tokens": 89,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t5"
+        ]
+      },
+      {
+        "turn_number": 11,
+        "user_input": "What's the latest date the Halcyon shipment can arrive and still be on time? Reply with the date only, in the format Month D, YYYY (for example: March 5, 2023).",
+        "agent_response": "April 29, 2024",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "April 29",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 3263.626200030558,
+        "token_usage": {
+          "input_tokens": 694,
+          "output_tokens": 8,
+          "total_tokens": 702,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 694,
+        "completion_tokens": 8,
+        "total_tokens": 702,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 8,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 2064,
+        "retrieved_context_tokens": 516,
+        "embedding_tokens": 88,
+        "retrieval_latency_ms": 756.4856999088079,
+        "append_latency_ms": 991.0977999679744,
+        "embedding_latency_ms": 1745.6737000029534,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s2_t4",
+            "session_id": "s2",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Log entry: Halcyon invoices are payable 30 days after delivery. Just confirm you've noted it.\nAssistant: Noted. Under the Halcyon supply contract, invoices are payable 30 days after delivery. I've added this to the log.",
+            "score": 0.6666755510469113,
+            "rank": 1,
+            "char_count": 225,
+            "estimated_tokens": 56,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t3",
+            "session_id": "s2",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Log entry: under the Halcyon terms, delivery is due 100 calendar days after the contract signing date. Again, nothing to calculate yet. Just confirm you've noted it.\nAssistant: Noted. Under the Halcyon supply contract (signed January 20, 2024), delivery is due 100 calendar days after the signing date. I've added this to the log.",
+            "score": 0.6429526654745176,
+            "rank": 2,
+            "char_count": 336,
+            "estimated_tokens": 84,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Log entry: under the Orion terms, deliverables are due 60 days after that contract's signing. Also, the Halcyon warranty runs for 90 days from delivery. Just confirm you've noted them.\nAssistant: Noted. Under the Orion maintenance contract (signed February 2, 2024), deliverables are due 60 days after signing. Under the Halcyon supply contract (signed January 20, 2024), the warranty runs for 90 days from delivery. I've added both to the log.",
+            "score": 0.5863768850464016,
+            "rank": 3,
+            "char_count": 450,
+            "estimated_tokens": 112,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Next log entry: the Halcyon supply contract was formally signed on January 20, 2024. No need to work anything out. Just confirm you've noted it.\nAssistant: Noted. The Halcyon supply contract was formally signed on January 20, 2024. I've added this as the second entry in our vendor paperwork log.",
+            "score": 0.5755272596123628,
+            "rank": 4,
+            "char_count": 302,
+            "estimated_tokens": 75,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: I'm coordinating vendor paperwork this quarter and want to keep a running log with you. First entry: the Halcyon NDA was signed back on January 9, 2024. Just confirm you've noted it.\nAssistant: Noted. The Halcyon NDA was signed on January 9, 2024. I'll keep this as the first entry in our vendor paperwork log. Let me know when you have the next entry.",
+            "score": 0.5360278918651517,
+            "rank": 5,
+            "char_count": 358,
+            "estimated_tokens": 89,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t1"
+        ]
+      }
+    ],
+    "timestamp": "2026-10-24T18:44:44.049150+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": "memory/cross_thread_derived_01_deepseek-v4-flash_baseline_react_461310f4",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 481,
+    "cached_prompt_tokens": 0,
+    "retrieved_context_tokens": 3421,
+    "embedding_tokens": 1212,
+    "total_retrieval_latency_ms": 7235.920700011775,
+    "total_append_latency_ms": 21255.921799805947,
+    "total_embedding_latency_ms": 28478.170999558643,
+    "ingestion_latency_ms": 0.0
+  }
+]

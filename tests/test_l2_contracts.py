@@ -79,14 +79,32 @@ class TestEpisodeRecord:
                 content="   ",
             )
 
-    def test_zero_turn_number_rejected(self):
-        with pytest.raises(ValueError, match="1-based"):
+    def test_zero_turn_number_rejected_for_chat(self):
+        with pytest.raises(ValueError, match="preloaded documents"):
             EpisodeRecord.from_content(
                 chunk_id="ep_s1_t0_0",
                 session_id="s1",
                 turn_number=0,
                 source="chat",
                 content="text",
+            )
+
+    def test_zero_turn_number_allowed_for_preloaded_document(self):
+        """Plan WS-D: ``turn_number=0`` marks a scenario-level preload."""
+        rec = EpisodeRecord.from_document(
+            chunk_id="doc_policy_v1",
+            content="# Policy\n\nSection text.",
+        )
+        assert rec.turn_number == 0
+        assert rec.source == "document"
+        assert rec.session_id == "corpus"
+
+    def test_negative_turn_number_rejected(self):
+        with pytest.raises(ValueError, match=">= 0"):
+            EpisodeRecord.from_document(
+                chunk_id="doc_x",
+                content="text",
+                turn_number=-1,
             )
 
 

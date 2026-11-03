@@ -1,0 +1,667 @@
+[
+  {
+    "run_id": "document_cross_thread_01_deepseek-v4-pro_baseline_react_eb84ecdd",
+    "scenario_id": "document_cross_thread_01",
+    "model_id": "deepseek-v4-pro",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 5,
+    "total_assertions": 3,
+    "passed_assertions": 3,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 51881.3476000214,
+    "avg_latency_per_turn_ms": 10376.26952000428,
+    "total_tokens": 6223,
+    "prompt_tokens": 5622,
+    "completion_tokens": 601,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Morning! I'm getting set up for the week — nothing urgent today.",
+        "agent_response": "Good morning! Sounds like a nice, calm start to the week. I'm here if you need anything — whether it's checking a port, reviewing an on-call schedule, or just a quick sanity check. Hope the setup goes smoothly!",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 12155.057099997066,
+        "token_usage": {
+          "input_tokens": 983,
+          "output_tokens": 133,
+          "total_tokens": 1116,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 745
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 983,
+        "completion_tokens": 133,
+        "total_tokens": 1116,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 133,
+        "cached_prompt_tokens": 745,
+        "retrieved_context_chars": 3753,
+        "retrieved_context_tokens": 938,
+        "embedding_tokens": 89,
+        "retrieval_latency_ms": 179.75929996464401,
+        "append_latency_ms": 2547.418900008779,
+        "embedding_latency_ms": 2723.0493999668397,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_ops_handbook_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Escalation contacts rotate every quarter. The on-call schedule is published on\nthe internal status page and is authoritative over this handbook.\n\n## 6. Backup windows\n\nFull backups run on Sunday between 01:00 and 04:00 local time. Incremental\nbackups run daily between 02:00 and 03:00. A restore drill is executed on the\nfirst Monday of every month and its result is recorded in the audit log.\n\nBackup jobs that overrun their window are killed rather than allowed to\nencroach on the morning batch jobs.\n\n## 7. Incident severity\n\nSeverity 1 incidents are customer-visible outages and require a page within\nfive minutes. Severity 2 incidents are degraded service and require a page\nwithin thirty minutes. Severity 3 incidents are handled during business hours.\n\nEvery Severity 1 incident produces a written post-incident review within five\nbusiness days.\n\n## 8. Maintenance slots\n\nStandard maintenance runs Tuesday and Thursday between 03:00 and 05:00 local\ntime. Emergency maintenance may be scheduled at any time with a Level-3\napproval. Rebooting a production-tier service is not a maintenance slot; it is\na change and follows the access policy.",
+            "score": 0.32618470624870527,
+            "rank": 1,
+            "char_count": 1146,
+            "estimated_tokens": 286,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_ops_handbook_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services\n\nThe block store listens on port 9411. The object store listens on port 9422.\nThe cold archive endpoint listens on port 9433. The replica synchronizer\nlistens on port 9444.\n\nCold archives are written once and read rarely. Retrieval requests are queued\nand may take up to four hours to complete.\n\n## 4. Facility and cooling\n\nThe Rosario facility hosts rows R1 through R8. Row R3 holds the cold-storage\nmedical biobank chamber, which must stay at minus eighty Celsius. Row R6 holds\nthe network core. The Buenos Aires facility holds only disaster-recovery\nreplicas and no primary workloads.\n\nFacility alarms route to the facilities mailbox. Environmental alarms above\n30 degrees Celsius escalate to the on-call rotation automatically.\n\n## 5. Escalation contacts\n\nThe escalation lead for the Rosario facility is Elena Rostova. The escalation\nlead for the Buenos Aires facility is Mateo Ferreira. The failover cluster\nidentifier for the disaster-recovery pair is `dr-atlas-04`.",
+            "score": 0.21088889370785305,
+            "rank": 2,
+            "char_count": 1137,
+            "estimated_tokens": 284,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_ops_handbook_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Northwind Operations Handbook: Service Ports and Endpoints\n\nThis handbook lists the listening ports for every internal Northwind service.\nPorts are allocated in blocks: telemetry services use 74xx, control-plane\nservices use 84xx, and storage services use 94xx. Do not reuse a port across\nenvironments; the service registry enforces uniqueness per environment.\n\n## 1. Telemetry pipeline\n\nThe log shipper listens on port 7411. The metrics collector listens on port\n7422. The trace aggregator listens on port 7433. The ingestion gateway for the\ntelemetry pipeline listens on port 7443. The retention compactor listens on\nport 7455.\n\nEach telemetry service exposes a health endpoint on `/healthz`, which returns\n`200 OK` once the service has replayed its local write-ahead log.\n\n## 2. Control plane\n\nThe scheduler listens on port 8411. The admission controller listens on port\n8422. The policy engine listens on port 8433. The audit relay listens on port\n8444. The certificate rotation agent listens on port 8455.\n\nThe control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services",
+            "score": 0.14598739637133976,
+            "rank": 3,
+            "char_count": 1178,
+            "estimated_tokens": 294,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Thanks, that's all for now. I'll come back in a new session later.",
+        "agent_response": "Sounds good! I'll be here whenever you're ready. Have a great week, and see you next session. 👋",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 9263.278099999297,
+        "token_usage": {
+          "input_tokens": 1054,
+          "output_tokens": 100,
+          "total_tokens": 1154,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 740
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 1054,
+        "completion_tokens": 100,
+        "total_tokens": 1154,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 100,
+        "cached_prompt_tokens": 740,
+        "retrieved_context_chars": 3753,
+        "retrieved_context_tokens": 938,
+        "embedding_tokens": 60,
+        "retrieval_latency_ms": 224.73170002922416,
+        "append_latency_ms": 2407.425199984573,
+        "embedding_latency_ms": 2631.4225000096485,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_ops_handbook_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services\n\nThe block store listens on port 9411. The object store listens on port 9422.\nThe cold archive endpoint listens on port 9433. The replica synchronizer\nlistens on port 9444.\n\nCold archives are written once and read rarely. Retrieval requests are queued\nand may take up to four hours to complete.\n\n## 4. Facility and cooling\n\nThe Rosario facility hosts rows R1 through R8. Row R3 holds the cold-storage\nmedical biobank chamber, which must stay at minus eighty Celsius. Row R6 holds\nthe network core. The Buenos Aires facility holds only disaster-recovery\nreplicas and no primary workloads.\n\nFacility alarms route to the facilities mailbox. Environmental alarms above\n30 degrees Celsius escalate to the on-call rotation automatically.\n\n## 5. Escalation contacts\n\nThe escalation lead for the Rosario facility is Elena Rostova. The escalation\nlead for the Buenos Aires facility is Mateo Ferreira. The failover cluster\nidentifier for the disaster-recovery pair is `dr-atlas-04`.",
+            "score": 0.2599646970529716,
+            "rank": 1,
+            "char_count": 1137,
+            "estimated_tokens": 284,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_ops_handbook_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Escalation contacts rotate every quarter. The on-call schedule is published on\nthe internal status page and is authoritative over this handbook.\n\n## 6. Backup windows\n\nFull backups run on Sunday between 01:00 and 04:00 local time. Incremental\nbackups run daily between 02:00 and 03:00. A restore drill is executed on the\nfirst Monday of every month and its result is recorded in the audit log.\n\nBackup jobs that overrun their window are killed rather than allowed to\nencroach on the morning batch jobs.\n\n## 7. Incident severity\n\nSeverity 1 incidents are customer-visible outages and require a page within\nfive minutes. Severity 2 incidents are degraded service and require a page\nwithin thirty minutes. Severity 3 incidents are handled during business hours.\n\nEvery Severity 1 incident produces a written post-incident review within five\nbusiness days.\n\n## 8. Maintenance slots\n\nStandard maintenance runs Tuesday and Thursday between 03:00 and 05:00 local\ntime. Emergency maintenance may be scheduled at any time with a Level-3\napproval. Rebooting a production-tier service is not a maintenance slot; it is\na change and follows the access policy.",
+            "score": 0.2585266467499326,
+            "rank": 2,
+            "char_count": 1146,
+            "estimated_tokens": 286,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_ops_handbook_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Northwind Operations Handbook: Service Ports and Endpoints\n\nThis handbook lists the listening ports for every internal Northwind service.\nPorts are allocated in blocks: telemetry services use 74xx, control-plane\nservices use 84xx, and storage services use 94xx. Do not reuse a port across\nenvironments; the service registry enforces uniqueness per environment.\n\n## 1. Telemetry pipeline\n\nThe log shipper listens on port 7411. The metrics collector listens on port\n7422. The trace aggregator listens on port 7433. The ingestion gateway for the\ntelemetry pipeline listens on port 7443. The retention compactor listens on\nport 7455.\n\nEach telemetry service exposes a health endpoint on `/healthz`, which returns\n`200 OK` once the service has replayed its local write-ahead log.\n\n## 2. Control plane\n\nThe scheduler listens on port 8411. The admission controller listens on port\n8422. The policy engine listens on port 8433. The audit relay listens on port\n8444. The certificate rotation agent listens on port 8455.\n\nThe control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services",
+            "score": 0.21621871046934701,
+            "rank": 3,
+            "char_count": 1178,
+            "estimated_tokens": 294,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t2"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Back in a new session. Which port does the telemetry ingestion gateway listen on?",
+        "agent_response": "The telemetry ingestion gateway listens on port **7443**.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "7443",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 8042.2748000128195,
+        "token_usage": {
+          "input_tokens": 1166,
+          "output_tokens": 81,
+          "total_tokens": 1247,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 868
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1166,
+        "completion_tokens": 81,
+        "total_tokens": 1247,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 81,
+        "cached_prompt_tokens": 868,
+        "retrieved_context_chars": 4382,
+        "retrieved_context_tokens": 1095,
+        "embedding_tokens": 59,
+        "retrieval_latency_ms": 188.28670005314052,
+        "append_latency_ms": 2346.1467000306584,
+        "embedding_latency_ms": 2533.6894000065513,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_ops_handbook_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Northwind Operations Handbook: Service Ports and Endpoints\n\nThis handbook lists the listening ports for every internal Northwind service.\nPorts are allocated in blocks: telemetry services use 74xx, control-plane\nservices use 84xx, and storage services use 94xx. Do not reuse a port across\nenvironments; the service registry enforces uniqueness per environment.\n\n## 1. Telemetry pipeline\n\nThe log shipper listens on port 7411. The metrics collector listens on port\n7422. The trace aggregator listens on port 7433. The ingestion gateway for the\ntelemetry pipeline listens on port 7443. The retention compactor listens on\nport 7455.\n\nEach telemetry service exposes a health endpoint on `/healthz`, which returns\n`200 OK` once the service has replayed its local write-ahead log.\n\n## 2. Control plane\n\nThe scheduler listens on port 8411. The admission controller listens on port\n8422. The policy engine listens on port 8433. The audit relay listens on port\n8444. The certificate rotation agent listens on port 8455.\n\nThe control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services",
+            "score": 0.6689426316191716,
+            "rank": 1,
+            "char_count": 1178,
+            "estimated_tokens": 294,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Thanks, that's all for now. I'll come back in a new session later.\nAssistant: Sounds good! I'll be here whenever you're ready. Have a great week, and see you next session. 👋",
+            "score": 0.4132391178771948,
+            "rank": 2,
+            "char_count": 179,
+            "estimated_tokens": 44,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Morning! I'm getting set up for the week — nothing urgent today.\nAssistant: Good morning! Sounds like a nice, calm start to the week. I'm here if you need anything — whether it's checking a port, reviewing an on-call schedule, or just a quick sanity check. Hope the setup goes smoothly!",
+            "score": 0.4131194923554682,
+            "rank": 3,
+            "char_count": 292,
+            "estimated_tokens": 73,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_ops_handbook_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services\n\nThe block store listens on port 9411. The object store listens on port 9422.\nThe cold archive endpoint listens on port 9433. The replica synchronizer\nlistens on port 9444.\n\nCold archives are written once and read rarely. Retrieval requests are queued\nand may take up to four hours to complete.\n\n## 4. Facility and cooling\n\nThe Rosario facility hosts rows R1 through R8. Row R3 holds the cold-storage\nmedical biobank chamber, which must stay at minus eighty Celsius. Row R6 holds\nthe network core. The Buenos Aires facility holds only disaster-recovery\nreplicas and no primary workloads.\n\nFacility alarms route to the facilities mailbox. Environmental alarms above\n30 degrees Celsius escalate to the on-call rotation automatically.\n\n## 5. Escalation contacts\n\nThe escalation lead for the Rosario facility is Elena Rostova. The escalation\nlead for the Buenos Aires facility is Mateo Ferreira. The failover cluster\nidentifier for the disaster-recovery pair is `dr-atlas-04`.",
+            "score": 0.40081046022846534,
+            "rank": 4,
+            "char_count": 1137,
+            "estimated_tokens": 284,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_ops_handbook_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Escalation contacts rotate every quarter. The on-call schedule is published on\nthe internal status page and is authoritative over this handbook.\n\n## 6. Backup windows\n\nFull backups run on Sunday between 01:00 and 04:00 local time. Incremental\nbackups run daily between 02:00 and 03:00. A restore drill is executed on the\nfirst Monday of every month and its result is recorded in the audit log.\n\nBackup jobs that overrun their window are killed rather than allowed to\nencroach on the morning batch jobs.\n\n## 7. Incident severity\n\nSeverity 1 incidents are customer-visible outages and require a page within\nfive minutes. Severity 2 incidents are degraded service and require a page\nwithin thirty minutes. Severity 3 incidents are handled during business hours.\n\nEvery Severity 1 incident produces a written post-incident review within five\nbusiness days.\n\n## 8. Maintenance slots\n\nStandard maintenance runs Tuesday and Thursday between 03:00 and 05:00 local\ntime. Emergency maintenance may be scheduled at any time with a Level-3\napproval. Rebooting a production-tier service is not a maintenance slot; it is\na change and follows the access policy.",
+            "score": 0.2729404155078729,
+            "rank": 5,
+            "char_count": 1146,
+            "estimated_tokens": 286,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Who is the escalation lead for the Rosario facility?",
+        "agent_response": "The escalation lead for the Rosario facility is **Elena Rostova**.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Rostova",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 9952.73650001036,
+        "token_usage": {
+          "input_tokens": 1192,
+          "output_tokens": 84,
+          "total_tokens": 1276,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 944
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1192,
+        "completion_tokens": 84,
+        "total_tokens": 1276,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 84,
+        "cached_prompt_tokens": 944,
+        "retrieved_context_chars": 4382,
+        "retrieved_context_tokens": 1095,
+        "embedding_tokens": 47,
+        "retrieval_latency_ms": 149.6352999820374,
+        "append_latency_ms": 2329.445300041698,
+        "embedding_latency_ms": 2478.349299984984,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_ops_handbook_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services\n\nThe block store listens on port 9411. The object store listens on port 9422.\nThe cold archive endpoint listens on port 9433. The replica synchronizer\nlistens on port 9444.\n\nCold archives are written once and read rarely. Retrieval requests are queued\nand may take up to four hours to complete.\n\n## 4. Facility and cooling\n\nThe Rosario facility hosts rows R1 through R8. Row R3 holds the cold-storage\nmedical biobank chamber, which must stay at minus eighty Celsius. Row R6 holds\nthe network core. The Buenos Aires facility holds only disaster-recovery\nreplicas and no primary workloads.\n\nFacility alarms route to the facilities mailbox. Environmental alarms above\n30 degrees Celsius escalate to the on-call rotation automatically.\n\n## 5. Escalation contacts\n\nThe escalation lead for the Rosario facility is Elena Rostova. The escalation\nlead for the Buenos Aires facility is Mateo Ferreira. The failover cluster\nidentifier for the disaster-recovery pair is `dr-atlas-04`.",
+            "score": 0.5142542063928202,
+            "rank": 1,
+            "char_count": 1137,
+            "estimated_tokens": 284,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Morning! I'm getting set up for the week — nothing urgent today.\nAssistant: Good morning! Sounds like a nice, calm start to the week. I'm here if you need anything — whether it's checking a port, reviewing an on-call schedule, or just a quick sanity check. Hope the setup goes smoothly!",
+            "score": 0.3062268912359759,
+            "rank": 2,
+            "char_count": 292,
+            "estimated_tokens": 73,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_ops_handbook_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Escalation contacts rotate every quarter. The on-call schedule is published on\nthe internal status page and is authoritative over this handbook.\n\n## 6. Backup windows\n\nFull backups run on Sunday between 01:00 and 04:00 local time. Incremental\nbackups run daily between 02:00 and 03:00. A restore drill is executed on the\nfirst Monday of every month and its result is recorded in the audit log.\n\nBackup jobs that overrun their window are killed rather than allowed to\nencroach on the morning batch jobs.\n\n## 7. Incident severity\n\nSeverity 1 incidents are customer-visible outages and require a page within\nfive minutes. Severity 2 incidents are degraded service and require a page\nwithin thirty minutes. Severity 3 incidents are handled during business hours.\n\nEvery Severity 1 incident produces a written post-incident review within five\nbusiness days.\n\n## 8. Maintenance slots\n\nStandard maintenance runs Tuesday and Thursday between 03:00 and 05:00 local\ntime. Emergency maintenance may be scheduled at any time with a Level-3\napproval. Rebooting a production-tier service is not a maintenance slot; it is\na change and follows the access policy.",
+            "score": 0.30080775052360514,
+            "rank": 3,
+            "char_count": 1146,
+            "estimated_tokens": 286,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Thanks, that's all for now. I'll come back in a new session later.\nAssistant: Sounds good! I'll be here whenever you're ready. Have a great week, and see you next session. 👋",
+            "score": 0.2701608619166105,
+            "rank": 4,
+            "char_count": 179,
+            "estimated_tokens": 44,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_ops_handbook_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Northwind Operations Handbook: Service Ports and Endpoints\n\nThis handbook lists the listening ports for every internal Northwind service.\nPorts are allocated in blocks: telemetry services use 74xx, control-plane\nservices use 84xx, and storage services use 94xx. Do not reuse a port across\nenvironments; the service registry enforces uniqueness per environment.\n\n## 1. Telemetry pipeline\n\nThe log shipper listens on port 7411. The metrics collector listens on port\n7422. The trace aggregator listens on port 7433. The ingestion gateway for the\ntelemetry pipeline listens on port 7443. The retention compactor listens on\nport 7455.\n\nEach telemetry service exposes a health endpoint on `/healthz`, which returns\n`200 OK` once the service has replayed its local write-ahead log.\n\n## 2. Control plane\n\nThe scheduler listens on port 8411. The admission controller listens on port\n8422. The policy engine listens on port 8433. The audit relay listens on port\n8444. The certificate rotation agent listens on port 8455.\n\nThe control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services",
+            "score": 0.23895448006417258,
+            "rank": 5,
+            "char_count": 1178,
+            "estimated_tokens": 294,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 5,
+        "user_input": "And what is the failover cluster identifier for the disaster-recovery pair?",
+        "agent_response": "The escalation lead for the Rosario facility is **Elena Rostova**, and the failover cluster identifier for the disaster-recovery pair is **`dr-atlas-04`**.",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "dr-atlas-04",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 12468.001100001857,
+        "token_usage": {
+          "input_tokens": 1227,
+          "output_tokens": 203,
+          "total_tokens": 1430,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 870
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1227,
+        "completion_tokens": 203,
+        "total_tokens": 1430,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 203,
+        "cached_prompt_tokens": 870,
+        "retrieved_context_chars": 4382,
+        "retrieved_context_tokens": 1095,
+        "embedding_tokens": 80,
+        "retrieval_latency_ms": 197.9628000408411,
+        "append_latency_ms": 2510.4518000152893,
+        "embedding_latency_ms": 2707.674599951133,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_ops_handbook_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services\n\nThe block store listens on port 9411. The object store listens on port 9422.\nThe cold archive endpoint listens on port 9433. The replica synchronizer\nlistens on port 9444.\n\nCold archives are written once and read rarely. Retrieval requests are queued\nand may take up to four hours to complete.\n\n## 4. Facility and cooling\n\nThe Rosario facility hosts rows R1 through R8. Row R3 holds the cold-storage\nmedical biobank chamber, which must stay at minus eighty Celsius. Row R6 holds\nthe network core. The Buenos Aires facility holds only disaster-recovery\nreplicas and no primary workloads.\n\nFacility alarms route to the facilities mailbox. Environmental alarms above\n30 degrees Celsius escalate to the on-call rotation automatically.\n\n## 5. Escalation contacts\n\nThe escalation lead for the Rosario facility is Elena Rostova. The escalation\nlead for the Buenos Aires facility is Mateo Ferreira. The failover cluster\nidentifier for the disaster-recovery pair is `dr-atlas-04`.",
+            "score": 0.5555452176414568,
+            "rank": 1,
+            "char_count": 1137,
+            "estimated_tokens": 284,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_ops_handbook_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Northwind Operations Handbook: Service Ports and Endpoints\n\nThis handbook lists the listening ports for every internal Northwind service.\nPorts are allocated in blocks: telemetry services use 74xx, control-plane\nservices use 84xx, and storage services use 94xx. Do not reuse a port across\nenvironments; the service registry enforces uniqueness per environment.\n\n## 1. Telemetry pipeline\n\nThe log shipper listens on port 7411. The metrics collector listens on port\n7422. The trace aggregator listens on port 7433. The ingestion gateway for the\ntelemetry pipeline listens on port 7443. The retention compactor listens on\nport 7455.\n\nEach telemetry service exposes a health endpoint on `/healthz`, which returns\n`200 OK` once the service has replayed its local write-ahead log.\n\n## 2. Control plane\n\nThe scheduler listens on port 8411. The admission controller listens on port\n8422. The policy engine listens on port 8433. The audit relay listens on port\n8444. The certificate rotation agent listens on port 8455.\n\nThe control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services",
+            "score": 0.36111911816795406,
+            "rank": 2,
+            "char_count": 1178,
+            "estimated_tokens": 294,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_ops_handbook_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Escalation contacts rotate every quarter. The on-call schedule is published on\nthe internal status page and is authoritative over this handbook.\n\n## 6. Backup windows\n\nFull backups run on Sunday between 01:00 and 04:00 local time. Incremental\nbackups run daily between 02:00 and 03:00. A restore drill is executed on the\nfirst Monday of every month and its result is recorded in the audit log.\n\nBackup jobs that overrun their window are killed rather than allowed to\nencroach on the morning batch jobs.\n\n## 7. Incident severity\n\nSeverity 1 incidents are customer-visible outages and require a page within\nfive minutes. Severity 2 incidents are degraded service and require a page\nwithin thirty minutes. Severity 3 incidents are handled during business hours.\n\nEvery Severity 1 incident produces a written post-incident review within five\nbusiness days.\n\n## 8. Maintenance slots\n\nStandard maintenance runs Tuesday and Thursday between 03:00 and 05:00 local\ntime. Emergency maintenance may be scheduled at any time with a Level-3\napproval. Rebooting a production-tier service is not a maintenance slot; it is\na change and follows the access policy.",
+            "score": 0.33988256828833296,
+            "rank": 3,
+            "char_count": 1146,
+            "estimated_tokens": 286,
+            "metadata": {
+              "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+              "doc_id": "ops_handbook",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+              "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+              "parent_chunk_id": "doc_ops_handbook",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Thanks, that's all for now. I'll come back in a new session later.\nAssistant: Sounds good! I'll be here whenever you're ready. Have a great week, and see you next session. 👋",
+            "score": 0.26883115020010806,
+            "rank": 4,
+            "char_count": 179,
+            "estimated_tokens": 44,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Morning! I'm getting set up for the week — nothing urgent today.\nAssistant: Good morning! Sounds like a nice, calm start to the week. I'm here if you need anything — whether it's checking a port, reviewing an on-call schedule, or just a quick sanity check. Hope the setup goes smoothly!",
+            "score": 0.24342827391577246,
+            "rank": 5,
+            "char_count": 292,
+            "estimated_tokens": 73,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t3"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      }
+    ],
+    "timestamp": "2026-11-02T14:20:21.583163+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": 1200,
+    "chunk_overlap": 200,
+    "memory_snapshot_path": "memory/document_cross_thread_01_deepseek-v4-pro_baseline_react_eb84ecdd",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 601,
+    "cached_prompt_tokens": 4167,
+    "retrieved_context_tokens": 5161,
+    "embedding_tokens": 1199,
+    "total_retrieval_latency_ms": 940.3758000698872,
+    "total_append_latency_ms": 12140.887900080997,
+    "total_embedding_latency_ms": 21148.331499949563,
+    "ingestion_latency_ms": 8074.534600018524,
+    "documents_ingested": 1,
+    "ingested_chars": 3300,
+    "ingested_chunks": 3,
+    "corpus_chunks": 8,
+    "corpus_chars": 4472
+  }
+]

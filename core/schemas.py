@@ -12,7 +12,7 @@ from typing import Annotated, Any, Literal, Sequence
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing_extensions import TypedDict
 
 
@@ -41,8 +41,8 @@ class L2AgentState(TypedDict):
     runner code serves L0/L1 (channels absent) and L2 (channels present).
 
     Channels:
-        retrieved_context_chars: Char length of the formatted
-            ``[Memory ...]`` block injected into ``model_node``.
+        retrieved_context_chars: Char length of the memory block injected into
+            ``model_node`` (content only; chunks separated by a ``-----`` rule).
         retrieved_context_tokens: Token estimate of that block.
         retrieval_latency_ms: Time spent in ``retrieve_node``.
         append_latency_ms: Time spent in ``append_node`` (chat episodes).
@@ -67,18 +67,84 @@ class L2AgentState(TypedDict):
 
 
 class AssertionRule(BaseModel):
-    """A single assertion to evaluate against an agent's response text.
+    """A single assertion to evaluate against a turn's outcome.
+
+    Two families (plan WS-D §Q4):
+
+    - **Text assertions** — evaluated against the agent's response text:
+      ``must_contain`` (presence) and ``must_not_contain`` (absence).
+    - **Retrieval assertions** — evaluated against the turn's
+      ``retrieved_memories`` telemetry (L2+ only; L0/L1 retrieve nothing, so
+      positive retrieval assertions fail and negative ones pass):
+      ``must_retrieve_chunk`` / ``must_not_retrieve_chunk`` match a
+      case-insensitive substring of ``chunk_id`` (so ``doc_policy_v1`` also
+      matches its sub-chunks ``doc_policy_v1_c2``);
+      ``must_retrieve_source`` / ``must_not_retrieve_source`` match the exact
+      ``source`` tag (``chat`` or ``document``).
+
+    Retrieval assertions make retrieval failures causal: a top-k dilution test
+    can prove the needle chunk never reached the model instead of inferring it
+    from a wrong answer.
 
     Attributes:
-        type: The assertion operator — ``must_contain`` checks for presence,
-              ``must_not_contain`` checks for absence.
-        value: The substring or keyword to search for in the response.
+        type: The assertion operator (see the two families above).
+        value: The substring/keyword (text rules), chunk-ID fragment
+            (``*_chunk``), or source tag (``*_source``).
         case_sensitive: Whether the match should be case-sensitive.
     """
 
-    type: Literal["must_contain", "must_not_contain"]
+    type: Literal[
+        "must_contain",
+        "must_not_contain",
+        "must_retrieve_chunk",
+        "must_not_retrieve_chunk",
+        "must_retrieve_source",
+        "must_not_retrieve_source",
+    ]
     value: str
     case_sensitive: bool = False
+
+
+class DocumentSpec(BaseModel):
+    """A document to be ingested into the agent's memory (plan WS-D).
+
+    Documents are the harness's second memory-ingestion channel, alongside
+    chat turns: they are chunked and appended to the active
+    ``EpisodicMemoryBackend`` with ``source="document"`` **without ever
+    invoking the chat model** (embedding cost only).
+
+    A spec is either *file-backed* (``path``) or *inline* (``content``) —
+    never both. Paths are resolved by the runner relative to the scenario
+    YAML file first, then ``datasets/documents/``.
+
+    Attributes:
+        doc_id: Stable document identifier. Deterministic chunk IDs derive
+            from it (``doc_<doc_id>`` for scenario-level preloads,
+            ``doc_<doc_id>_t<turn>`` for ``system_event`` ingestions), so a
+            revision re-ingested under the same ``doc_id`` collides on
+            purpose — append-only semantics for L2, mutation for L3.
+        path: File path (absolute, or relative to the scenario YAML /
+            ``datasets/documents/``).
+        content: Inline document text (mutually exclusive with ``path``).
+        metadata: Free-form provenance (``title``, ``version``, ...) copied
+            into every ``EpisodeRecord`` chunk this document produces.
+    """
+
+    doc_id: str = Field(min_length=1)
+    path: str | None = None
+    content: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _exactly_one_source(self) -> "DocumentSpec":
+        has_path = bool(self.path and self.path.strip())
+        has_content = bool(self.content and self.content.strip())
+        if has_path == has_content:
+            raise ValueError(
+                f"DocumentSpec '{self.doc_id}' must define exactly one of "
+                "'path' or 'content' (non-empty)."
+            )
+        return self
 
 
 class ConversationTurn(BaseModel):
@@ -97,10 +163,12 @@ class ConversationTurn(BaseModel):
               but forget across sessions. Existing single-session YAMLs
               omit the key and default to ``"default"`` — 100% backward
               compatible.
-        attachments: Optional file paths for ``system_event`` document
-              ingestion (plan §5.3, deferred to a later milestone).
-              Resolved relative to the scenario YAML file or
-              ``datasets/documents/``.
+        attachments: File paths ingested into memory on a ``system_event``
+              turn (plan WS-D). Each file is read, chunked and appended to
+              the active ``EpisodicMemoryBackend`` with
+              ``source="document"`` — the chat model is never invoked.
+              Resolved relative to the scenario YAML file, falling back to
+              ``datasets/documents/``. Empty on ``user`` turns.
     """
 
     turn_number: int
@@ -109,6 +177,23 @@ class ConversationTurn(BaseModel):
     assertions: list[AssertionRule] = Field(default_factory=list)
     session_id: str = "default"
     attachments: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _attachments_only_on_system_events(self) -> "ConversationTurn":
+        """Document ingestion is bound to ``system_event`` turns.
+
+        A ``user`` turn with attachments would be silently ignored at run
+        time (the runner only ingests on ``system_event``), which is exactly
+        the "contract you don't honor" failure mode the audit flagged. Fail
+        at load time instead, naming the scenario author's mistake.
+        """
+        if self.role == "user" and self.attachments:
+            raise ValueError(
+                f"Turn {self.turn_number}: 'attachments' is only valid on "
+                "role='system_event' turns. Declare documents under the "
+                "scenario's top-level 'documents:' key for preloads."
+            )
+        return self
 
 
 class BenchmarkScenario(BaseModel):
@@ -122,6 +207,17 @@ class BenchmarkScenario(BaseModel):
                   ``needle_haystack``).
         turns: Ordered list of conversation turns.
         metadata: Optional extra metadata (difficulty, research question, etc.).
+        documents: Scenario-level document corpus (plan WS-D). Every entry is
+              ingested ONCE per benchmark tuple, before the first turn, with
+              ``source="document"`` — the chat model is never invoked. This
+              turns "context volume" into a declarative scenario parameter:
+              a corpus of N documents competes with chat episodes for the
+              retrieval ``top_k`` budget. Empty for scenarios without
+              documents (100% backward compatible).
+        source_path: Absolute path of the YAML file this scenario was loaded
+              from (set by ``BenchmarkRunner.load_scenarios``). Used to
+              resolve relative ``documents[].path`` / ``attachments``
+              entries. Excluded from serialization so exports stay portable.
     """
 
     id: str
@@ -130,6 +226,8 @@ class BenchmarkScenario(BaseModel):
     category: str
     turns: list[ConversationTurn]
     metadata: dict[str, Any] = Field(default_factory=dict)
+    documents: list[DocumentSpec] = Field(default_factory=list)
+    source_path: str | None = Field(default=None, exclude=True)
 
 
 # ── Execution Result Schemas ─────────────────────────────────────────────────
@@ -170,8 +268,9 @@ class TurnResult(BaseModel):
         visible_output_tokens: ``max(0, completion_tokens - reasoning_tokens)``.
         cached_prompt_tokens: Prefix-cache hit tokens
               (``input_token_details.cache_read``).
-        retrieved_context_chars: Char length of the ``[Memory ...]`` block
-              injected by ``retrieve_node`` (0 for L0/L1).
+        retrieved_context_chars: Char length of the memory block injected by
+              ``retrieve_node`` (0 for L0/L1). Content only since 2026-11-02 —
+              no provenance header (see the L2 stress plan §8.1).
         retrieved_context_tokens: Token estimate of that block.
         embedding_tokens: Tokens sent to the embedding API this turn
               (retrieve + append; 0 for L0/L1 and the markdown backend).
@@ -184,6 +283,14 @@ class TurnResult(BaseModel):
               ``score``, ``rank``, ``content``, ``estimated_tokens``).
         appended_chunk_ids: Chunk IDs written to the backend this turn —
               links directly into ``memory/<run_id>/`` snapshots.
+        ingested_documents: Document IDs ingested on this turn (``doc_id``
+              values). Non-empty only for ``system_event`` turns with a
+              memory backend attached.
+        ingested_chars: Characters ingested on this turn (before chunking).
+        ingested_chunk_ids: Chunk IDs produced by document ingestion this
+              turn. Kept separate from ``appended_chunk_ids`` so chat
+              persistence and document ingestion can be audited
+              independently.
     """
 
     turn_number: int
@@ -213,6 +320,10 @@ class TurnResult(BaseModel):
     embedding_latency_ms: float = 0.0
     retrieved_memories: list[dict[str, Any]] = Field(default_factory=list)
     appended_chunk_ids: list[str] = Field(default_factory=list)
+    # ── Plan WS-D document ingestion (0/[] for chat turns and L0/L1) ──────
+    ingested_documents: list[str] = Field(default_factory=list)
+    ingested_chars: int = 0
+    ingested_chunk_ids: list[str] = Field(default_factory=list)
 
 
 class BenchmarkRunSummary(BaseModel):
@@ -260,9 +371,20 @@ class BenchmarkRunSummary(BaseModel):
         total_retrieval_latency_ms: Cumulative ``retrieve_node`` time.
         total_append_latency_ms: Cumulative ``append_node`` time.
         total_embedding_latency_ms: Cumulative embedding-API wait.
-        ingestion_latency_ms: Time spent on ``system_event`` document
-              ingestion turns — kept separate so large-file ingestion does
-              not skew ``avg_latency_per_turn_ms``.
+        ingestion_latency_ms: Time spent ingesting documents (chunking +
+              embedding + indexing) — scenario-level corpus preload AND
+              ``system_event`` turns. Kept separate so large-file ingestion
+              does not skew ``avg_latency_per_turn_ms``, which now averages
+              over chat (``role="user"``) turns only.
+        documents_ingested: Number of distinct documents ingested for this
+              tuple (preload + ``system_event``), regardless of chunk count.
+        ingested_chars: Characters ingested before chunking (corpus volume).
+        ingested_chunks: Chunks produced by document ingestion.
+        corpus_chunks: Total chunks present in the backend at snapshot time
+              (chat + documents). ``None`` when the backend exposes no
+              ``corpus_stats()`` (e.g. a test double).
+        corpus_chars: Total characters stored in the backend at snapshot
+              time; ``None`` when unavailable.
     """
 
     run_id: str
@@ -302,3 +424,9 @@ class BenchmarkRunSummary(BaseModel):
     total_append_latency_ms: float = 0.0
     total_embedding_latency_ms: float = 0.0
     ingestion_latency_ms: float = 0.0
+    # ── Plan WS-D document-ingestion metrics ───────────────────────────────
+    documents_ingested: int = 0
+    ingested_chars: int = 0
+    ingested_chunks: int = 0
+    corpus_chunks: int | None = None
+    corpus_chars: int | None = None

@@ -1,0 +1,293 @@
+[
+  {
+    "run_id": "document_dilution_01_deepseek-v4-pro_baseline_react_c329fad8",
+    "scenario_id": "document_dilution_01",
+    "model_id": "deepseek-v4-pro",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 2,
+    "total_assertions": 1,
+    "passed_assertions": 1,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 25994.248900038656,
+    "avg_latency_per_turn_ms": 12997.124450019328,
+    "total_tokens": 1427,
+    "prompt_tokens": 1094,
+    "completion_tokens": 333,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Hi — I'm auditing facility documentation today. Nothing needed yet.",
+        "agent_response": "Hi there — sounds good. I have the rack power audit notes for Rooms 1, 4, 6, 7, and 8 on hand. Just let me know when you're ready to review anything or need details.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 17124.429400020745,
+        "token_usage": {
+          "input_tokens": 525,
+          "output_tokens": 200,
+          "total_tokens": 725,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 410
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 525,
+        "completion_tokens": 200,
+        "total_tokens": 725,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 200,
+        "cached_prompt_tokens": 410,
+        "retrieved_context_chars": 1468,
+        "retrieved_context_tokens": 367,
+        "embedding_tokens": 78,
+        "retrieval_latency_ms": 243.47210000269115,
+        "append_latency_ms": 2590.1487999944948,
+        "embedding_latency_ms": 2832.664300047327,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_power_audit_room8",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Rack power audit — Room 8.\nUPS unit serial: UPS-6M90.\nLoad profile: steady at 18 percent. Battery string replaced in 2023.\nNotes: spares and lab benches. No production dependency.\n",
+            "score": 0.389835425356783,
+            "rank": 1,
+            "char_count": 180,
+            "estimated_tokens": 45,
+            "metadata": {
+              "doc_id": "power_audit_room8",
+              "sha256": "849fa9a043d9107920e2ed8c88656ddb22d819f85af0cffe8bd103e388f3398d"
+            }
+          },
+          {
+            "chunk_id": "doc_power_audit_room6",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Rack power audit — Room 6.\nUPS unit serial: UPS-5H28.\nLoad profile: steady at 47 percent. Battery string replaced in 2024.\nNotes: object store front ends. Transfers are coordinated with storage.\n",
+            "score": 0.38236876485992416,
+            "rank": 2,
+            "char_count": 195,
+            "estimated_tokens": 48,
+            "metadata": {
+              "doc_id": "power_audit_room6",
+              "sha256": "0dd33105ae67ec3ffb929d72cec7a5ff6aed13a8fac720af1bc119fce9069af4"
+            }
+          },
+          {
+            "chunk_id": "doc_power_audit_room1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Rack power audit — Room 1.\nUPS unit serial: UPS-2K19.\nLoad profile: steady at 38 percent. Battery string replaced in 2025.\nNotes: general compute only. No storage or cooling dependency.\n",
+            "score": 0.37542902448588794,
+            "rank": 3,
+            "char_count": 186,
+            "estimated_tokens": 46,
+            "metadata": {
+              "doc_id": "power_audit_room1",
+              "sha256": "3cd0f20235be68de163a13562a780484dfadaca2eaac292e6bacdeb5e5c53535"
+            }
+          },
+          {
+            "chunk_id": "doc_power_audit_room7",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Rack power audit — Room 7.\nUPS unit serial: UPS-8J64.\nLoad profile: steady at 33 percent. Battery string replaced in 2024.\nNotes: medical imaging archive. Retains studies for seven years; no\nlow-temperature storage in this room.\n",
+            "score": 0.3681984952423036,
+            "rank": 4,
+            "char_count": 229,
+            "estimated_tokens": 57,
+            "metadata": {
+              "doc_id": "power_audit_room7",
+              "sha256": "cc357e2ce5966ee88b37efa36ddeb4283f9c89105fff72f53b56c3eb6be630f5"
+            }
+          },
+          {
+            "chunk_id": "doc_power_audit_room4",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Rack power audit — Room 4.\nUPS unit serial: UPS-9D13.\nLoad profile: steady at 27 percent. Battery string replaced in 2023.\nNotes: staging cluster. Load may be shed without notice.\n",
+            "score": 0.3667523830060158,
+            "rank": 5,
+            "char_count": 180,
+            "estimated_tokens": 45,
+            "metadata": {
+              "doc_id": "power_audit_room4",
+              "sha256": "4097d4ac41425988cec374d1b95aac5bc4c6f43017de37fdee8ff78f1261ce84"
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Which UPS unit supplies power to the cold-storage medical biobank chamber?",
+        "agent_response": "The cold-storage medical biobank chamber is powered by the UPS unit with serial number **UPS-7C42** (located in Room 3).",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "UPS-7C42",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 8869.819500017911,
+        "token_usage": {
+          "input_tokens": 569,
+          "output_tokens": 133,
+          "total_tokens": 702,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 427
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 569,
+        "completion_tokens": 133,
+        "total_tokens": 702,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 133,
+        "cached_prompt_tokens": 427,
+        "retrieved_context_chars": 1660,
+        "retrieved_context_tokens": 415,
+        "embedding_tokens": 71,
+        "retrieval_latency_ms": 253.63240001024678,
+        "append_latency_ms": 2558.362899988424,
+        "embedding_latency_ms": 2809.642300067935,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_power_audit_room3",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Rack power audit — Room 3.\nUPS unit serial: UPS-7C42.\nLoad profile: steady at 61 percent. Battery string replaced in 2025.\nNotes: this room powers the cold-storage medical biobank chamber that\nholds frozen biological tissue samples at minus eighty Celsius. Any\ntransfer of load must be approved by the facilities escalation lead.\n",
+            "score": 0.825375711647028,
+            "rank": 1,
+            "char_count": 330,
+            "estimated_tokens": 82,
+            "metadata": {
+              "doc_id": "power_audit_room3",
+              "sha256": "cf8da69d28ad28b2fc8cc4904d74b47830961b2e41bd1752f659456bc75ef967"
+            }
+          },
+          {
+            "chunk_id": "doc_power_audit_room7",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Rack power audit — Room 7.\nUPS unit serial: UPS-8J64.\nLoad profile: steady at 33 percent. Battery string replaced in 2024.\nNotes: medical imaging archive. Retains studies for seven years; no\nlow-temperature storage in this room.\n",
+            "score": 0.6668530931915845,
+            "rank": 2,
+            "char_count": 229,
+            "estimated_tokens": 57,
+            "metadata": {
+              "doc_id": "power_audit_room7",
+              "sha256": "cc357e2ce5966ee88b37efa36ddeb4283f9c89105fff72f53b56c3eb6be630f5"
+            }
+          },
+          {
+            "chunk_id": "doc_power_audit_room5",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Rack power audit — Room 5.\nUPS unit serial: UPS-3F57.\nLoad profile: steady at 52 percent. Battery string replaced in 2025.\nNotes: cold-aisle containment for the network core. Temperature alarms\nescalate to the on-call rotation.\n",
+            "score": 0.6244622295414705,
+            "rank": 3,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {
+              "doc_id": "power_audit_room5",
+              "sha256": "05a24398dfb3520a083b3138106b7cd1345b4fbd74bb700b08204796b81cc2a1"
+            }
+          },
+          {
+            "chunk_id": "doc_power_audit_room6",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Rack power audit — Room 6.\nUPS unit serial: UPS-5H28.\nLoad profile: steady at 47 percent. Battery string replaced in 2024.\nNotes: object store front ends. Transfers are coordinated with storage.\n",
+            "score": 0.6209586762697578,
+            "rank": 4,
+            "char_count": 195,
+            "estimated_tokens": 48,
+            "metadata": {
+              "doc_id": "power_audit_room6",
+              "sha256": "0dd33105ae67ec3ffb929d72cec7a5ff6aed13a8fac720af1bc119fce9069af4"
+            }
+          },
+          {
+            "chunk_id": "doc_power_audit_room8",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Rack power audit — Room 8.\nUPS unit serial: UPS-6M90.\nLoad profile: steady at 18 percent. Battery string replaced in 2023.\nNotes: spares and lab benches. No production dependency.\n",
+            "score": 0.6051098069335142,
+            "rank": 5,
+            "char_count": 180,
+            "estimated_tokens": 45,
+            "metadata": {
+              "doc_id": "power_audit_room8",
+              "sha256": "849fa9a043d9107920e2ed8c88656ddb22d819f85af0cffe8bd103e388f3398d"
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      }
+    ],
+    "timestamp": "2026-11-02T14:32:15.316188+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": 1200,
+    "chunk_overlap": 200,
+    "memory_snapshot_path": "memory/document_dilution_01_deepseek-v4-pro_baseline_react_c329fad8",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 333,
+    "cached_prompt_tokens": 837,
+    "retrieved_context_tokens": 782,
+    "embedding_tokens": 576,
+    "total_retrieval_latency_ms": 497.10450001293793,
+    "total_append_latency_ms": 5148.511699982919,
+    "total_embedding_latency_ms": 12639.784900122322,
+    "ingestion_latency_ms": 6997.859499999322,
+    "documents_ingested": 8,
+    "ingested_chars": 1719,
+    "ingested_chunks": 8,
+    "corpus_chunks": 10,
+    "corpus_chars": 2181
+  }
+]

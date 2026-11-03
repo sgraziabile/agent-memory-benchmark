@@ -64,42 +64,48 @@ DEFAULT_TOP_K = 5
 # ── Memory-block formatting ──────────────────────────────────────────────────
 
 
+#: Separator between retrieved chunks in the injected memory block.
+#:
+#: Deliberately carries **no provenance**. Rank, ``chunk_id``, ``session_id``,
+#: ``turn_number``, ``source`` and ``score`` stay in ``retrieved_memories``
+#: telemetry and in the run snapshots — auditable, but never shown to the model.
+#: Three of them are active confounds:
+#:
+#: * ``score`` hands the model the retriever's confidence, which biases
+#:   contradiction/authority tests toward "most similar wins" (stress-plan R5).
+#: * ``turn``/``session`` hand it a free **recency oracle** — in
+#:   ``document_addendum_revision_01`` T4 the addendum chunk reads ``turn=2``
+#:   next to ``turn=0`` policy chunks, so "newer" is readable off the header.
+#: * the ``chunk_id`` itself encodes both (``doc_addendum_1_t2``, ``ep_s1_t2``),
+#:   which is why it is no longer inlined either.
+#:
+#: A plain rule also removes the citation-looking ``[Memory #1]`` marker the model
+#: once echoed into its own answer, which then became a ``source="chat"`` chunk
+#: (run 20261102_153150, ``ep_s2_t2``).
+_MEMORY_SEPARATOR = "\n\n-----\n\n"
+
+
 def _format_memory_block(episodes: list[dict[str, Any]]) -> str:
-    """Format retrieved episodes as the injected ``[Memory ...]`` block.
+    """Format retrieved episodes as the memory block injected into the prompt.
 
-    Each episode becomes a provenance header followed by its content, per
-    the plan's §3.3 format::
-
-        [Memory #1 | id=ep_s1_t2 | session=s1 | turn=2 | source=chat | score=0.83]
-        <episode content>
+    The block is **content only**: episodes are concatenated in rank order and
+    separated by :data:`_MEMORY_SEPARATOR`. No per-episode header is emitted —
+    see the constant's docstring for the confounds this removes. Provenance is
+    still exported per turn (``retrieved_memories``) and per run
+    (``memory/<run_id>/episodes.json``), so nothing is lost for auditing.
 
     An empty episode list formats to ``""`` — ``model_node`` then skips the
     ``SystemMessage`` injection entirely (no wasted tokens on empty blocks).
 
     The same formatter is used by ``retrieve_node`` (telemetry sizing) and
-    ``model_node`` (injection), so the reported
-    ``retrieved_context_chars`` is always the exact block length the model
-    saw.
+    ``model_node`` (injection), so the reported ``retrieved_context_chars`` is
+    always the exact block length the model saw.
     """
     if not episodes:
         return ""
-
-    parts: list[str] = []
-    for episode in episodes:
-        parts.append(
-            "[Memory #{rank} | id={chunk_id} | session={session_id} | "
-            "turn={turn_number} | source={source} | score={score:.4f}]\n"
-            "{content}".format(
-                rank=episode.get("rank", 0),
-                chunk_id=episode.get("chunk_id", "?"),
-                session_id=episode.get("session_id", "?"),
-                turn_number=episode.get("turn_number", 0),
-                source=episode.get("source", "?"),
-                score=float(episode.get("score", 0.0)),
-                content=episode.get("content", ""),
-            )
-        )
-    return "\n\n".join(parts)
+    return _MEMORY_SEPARATOR.join(
+        str(episode.get("content", "")) for episode in episodes
+    )
 
 
 # ── Message helpers ───────────────────────────────────────────────────────────
@@ -143,7 +149,7 @@ def retrieve_node(state: L2AgentState, config: RunnableConfig) -> dict[str, Any]
     current session's chat episodes excluded (the checkpointer already keeps
     those in-context; ``source="document"`` chunks are never excluded).
 
-    The formatted ``[Memory ...]`` block is *sized here* (chars/tokens) but
+    The formatted memory block is *sized here* (chars/tokens) but
     *re-formatted in* ``model_node`` — both call the same ``_format_memory_block``
     so the reported ``retrieved_context_chars`` is always the exact block
     length the model saw.

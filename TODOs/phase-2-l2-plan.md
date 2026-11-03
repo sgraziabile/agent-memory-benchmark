@@ -49,6 +49,11 @@ flowchart LR
      User: ...
      Assistant: ...
      ```
+     > **Superseded (2026-11-02):** the injected block is now **content-only** — chunks separated by a
+     > `-----` rule, with no provenance header. `score`/`turn`/`session` were active confounds and the
+     > `chunk_id` encoded them; provenance stays in `retrieved_memories` telemetry and in the run
+     > snapshots. See
+     > [`phase-2-l2-document-stress-plan.md`](phase-2-l2-document-stress-plan.md) §8.1.
 
 2. **`model_node` (Prefix-Cache-Preserving Context Injection):**
    - Constructs the ephemeral message list sent to `model.invoke()` in the following exact order:

@@ -336,6 +336,37 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
             embedding_tokens=estimate_tokens(query) if self._chunks else 0,
         )
 
+    # ── Introspection (plan WS-D) ────────────────────────────────────
+
+    def corpus_stats(self) -> dict[str, Any]:
+        """Store-size snapshot used for per-run dilution reporting.
+
+        Context-heavy document tests are only interpretable alongside the
+        size of the store the retriever had to search: a ``top_k`` of 5 over
+        12 chunks is a different experiment from 5 over 300. Read from the
+        in-memory mirror, so this never triggers an embedding call.
+
+        Returns:
+            ``total_chunks`` / ``total_chars`` / ``total_estimated_tokens``
+            plus ``chat_chunks`` / ``document_chunks`` and their char totals.
+            The runner reads ``total_chunks`` / ``total_chars`` guardedly, so
+            any backend may implement this without breaking the harness.
+        """
+        chunks = list(self._chunks.values())
+        document_chunks = [c for c in chunks if c.get("source") == "document"]
+        chat_chunks = [c for c in chunks if c.get("source") == "chat"]
+        return {
+            "total_chunks": len(chunks),
+            "total_chars": sum(c.get("char_count", 0) for c in chunks),
+            "total_estimated_tokens": sum(
+                c.get("estimated_tokens", 0) for c in chunks
+            ),
+            "chat_chunks": len(chat_chunks),
+            "chat_chars": sum(c.get("char_count", 0) for c in chat_chunks),
+            "document_chunks": len(document_chunks),
+            "document_chars": sum(c.get("char_count", 0) for c in document_chunks),
+        }
+
     # ── EpisodicMemoryBackend: reset ─────────────────────────────────
 
     def reset(self) -> None:
@@ -365,11 +396,14 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
     def export_snapshot(
         self, dest_dir: Path, run_metadata: dict[str, Any]
     ) -> Path:
-        """Write ``manifest.json`` + ``episodes.json`` under ``dest_dir``.
+        """Write ``manifest.json`` + ``episodes.json`` + ``documents.json``.
 
         The episodes file is a human-auditable dump of every stored chunk
         (including per-chunk ``vector_l2_norm`` for index sanity checks);
-        the manifest records run identity and backend configuration.
+        ``documents.json`` contains only ``source="document"`` chunks (plan
+        WS-D); the manifest records run identity, backend configuration,
+        per-source counts, and the ingested-document provenance supplied by
+        the runner in ``run_metadata``.
         """
         dest_dir = Path(dest_dir)
         dest_dir.mkdir(parents=True, exist_ok=True)
@@ -379,6 +413,11 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
             entry = dict(self._chunks[chunk_id])
             entry["vector_l2_norm"] = self._vector_l2_norm(chunk_id)
             episodes.append(entry)
+
+        # Plan WS-D: documents are first-class evidence, not just chunks with
+        # a tag — they get their own artifact so a run can be audited without
+        # filtering ``episodes.json`` by hand.
+        document_episodes = [e for e in episodes if e.get("source") == "document"]
 
         manifest = {
             "backend": "vector",
@@ -391,6 +430,12 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
                 "chunk_size": self._chunk_size,
                 "chunk_overlap": self._chunk_overlap,
             },
+            "by_source": {
+                "chat": sum(1 for e in episodes if e.get("source") == "chat"),
+                "document": len(document_episodes),
+            },
+            "document_chunks": len(document_episodes),
+            "document_chars": sum(e["char_count"] for e in document_episodes),
             "total_chunks": len(episodes),
             "total_chars": sum(e["char_count"] for e in episodes),
             "total_estimated_tokens": sum(e["estimated_tokens"] for e in episodes),
@@ -401,5 +446,7 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
             json.dump(manifest, fh, indent=2, ensure_ascii=False)
         with open(dest_dir / "episodes.json", "w", encoding="utf-8") as fh:
             json.dump(episodes, fh, indent=2, ensure_ascii=False)
+        with open(dest_dir / "documents.json", "w", encoding="utf-8") as fh:
+            json.dump(document_episodes, fh, indent=2, ensure_ascii=False)
 
         return dest_dir

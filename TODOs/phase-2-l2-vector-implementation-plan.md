@@ -71,7 +71,7 @@
 ## Milestone 4 — L2 Graph (`retrieve_node → model_node → append_node`)
 
 - **`agents/level_2_episodic_rag/graph.py`:**
-  - `retrieve_node`: query backend with current user turn text, `exclude_session_id=current` for chat episodes; format `[Memory #1 | id=... | session=... | turn=... | source=... | score=...]` provenance blocks
+  - `retrieve_node`: query backend with current user turn text, `exclude_session_id=current` for chat episodes; format the memory block (content-only since 2026-11-02 — no provenance header; see `phase-2-l2-document-stress-plan.md` §8.1)
   - `model_node`: prefix-cache-preserving injection — `[SystemMessage(system_prompt), *prior_thread_messages, SystemMessage(retrieved_memories_block), latest_human_message]`; ephemeral SystemMessages never persisted into `MemorySaver` state
   - `append_node`: persist formatted turn `User: {input}\nAssistant: {response}` (chunked if oversized) with `session_id`, `turn_number`, `source="chat"`, `timestamp`
   - `MemorySaver` checkpointer for intra-session short-term state

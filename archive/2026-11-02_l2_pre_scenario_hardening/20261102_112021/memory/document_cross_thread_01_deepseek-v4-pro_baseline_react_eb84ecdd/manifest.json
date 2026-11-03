@@ -1,0 +1,44 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "document_cross_thread_01_deepseek-v4-pro_baseline_react_eb84ecdd",
+    "scenario_id": "document_cross_thread_01",
+    "model_id": "deepseek-v4-pro",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "documents": [
+      {
+        "doc_id": "ops_handbook",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+        "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+        "char_count": 3300,
+        "estimated_tokens": 825
+      }
+    ],
+    "document_ingestion": {
+      "documents_ingested": 1,
+      "ingested_chars": 3300,
+      "ingested_chunks": 3,
+      "ingestion_latency_ms": 8074.534600018524,
+      "ingestion_embedding_tokens": 864
+    }
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "by_source": {
+    "chat": 5,
+    "document": 3
+  },
+  "document_chunks": 3,
+  "document_chars": 3461,
+  "total_chunks": 8,
+  "total_chars": 4472,
+  "total_estimated_tokens": 1116,
+  "snapshot_timestamp": "2026-11-02T14:21:21.542998+00:00"
+}

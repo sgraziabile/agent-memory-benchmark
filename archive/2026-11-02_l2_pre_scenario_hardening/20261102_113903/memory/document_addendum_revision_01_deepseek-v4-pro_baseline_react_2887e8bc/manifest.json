@@ -1,0 +1,58 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "document_addendum_revision_01_deepseek-v4-pro_baseline_react_2887e8bc",
+    "scenario_id": "document_addendum_revision_01",
+    "model_id": "deepseek-v4-pro",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "documents": [
+      {
+        "doc_id": "policy_v1",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\policy_v1.md",
+        "sha256": "4136fdd45ace1926331fae8eeb170e8d0d000350158b74f81b7dec9437208096",
+        "char_count": 3160,
+        "estimated_tokens": 790
+      },
+      {
+        "doc_id": "evt_s1",
+        "source_path": null,
+        "sha256": "f695d936986a60bedd655707fccf0e48a7971dedf9344742b13406c061447558",
+        "char_count": 102,
+        "estimated_tokens": 25
+      },
+      {
+        "doc_id": "addendum_1",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\addendum_1.md",
+        "sha256": "4dac2c5a79ce64e0735da96455e6355575276986f710976e5677cd23e7edcd6f",
+        "char_count": 1195,
+        "estimated_tokens": 298
+      }
+    ],
+    "document_ingestion": {
+      "documents_ingested": 3,
+      "ingested_chars": 4457,
+      "ingested_chunks": 6,
+      "ingestion_latency_ms": 9302.929199999198,
+      "ingestion_embedding_tokens": 1182
+    }
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "by_source": {
+    "chat": 3,
+    "document": 6
+  },
+  "document_chunks": 6,
+  "document_chars": 4736,
+  "total_chunks": 9,
+  "total_chars": 6145,
+  "total_estimated_tokens": 1533,
+  "snapshot_timestamp": "2026-11-02T14:39:50.898662+00:00"
+}

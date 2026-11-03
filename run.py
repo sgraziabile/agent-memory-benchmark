@@ -79,7 +79,11 @@ def _resolve_backend_choice(raw: str) -> str:
 
 
 def _build_memory_backend(
-    backend_name: str, embedding_model_id: str
+    backend_name: str,
+    embedding_model_id: str,
+    *,
+    chunk_size: int = 1200,
+    chunk_overlap: int = 200,
 ) -> VectorMemoryBackend:
     """Construct the requested ``EpisodicMemoryBackend`` (L2+ levels only).
 
@@ -87,10 +91,20 @@ def _build_memory_backend(
     embedding client (:func:`create_embeddings`) with its declared
     dimensionality (:func:`get_embedding_dims`) so the ``InMemoryStore``
     index is never built with a hardcoded vector size.
+
+    ``chunk_size`` / ``chunk_overlap`` are exposed on the CLI (plan WS-D) so
+    context-heavy document runs can sweep chunking without code edits; the
+    backend validates that ``chunk_overlap < chunk_size``.
     """
     embeddings = create_embeddings(embedding_model_id)
     dims = get_embedding_dims(embedding_model_id)
-    return VectorMemoryBackend(embeddings, dims, embedding_id=embedding_model_id)
+    return VectorMemoryBackend(
+        embeddings,
+        dims,
+        embedding_id=embedding_model_id,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -141,6 +155,29 @@ def build_parser() -> argparse.ArgumentParser:
         help="Embedding model ID from the 'embeddings:' section of configs/models.yaml (vector backend only)",
     )
     parser.add_argument(
+        "--top-k",
+        type=int,
+        default=DEFAULT_TOP_K,
+        help="Retrieval cut-off for L2+ (0 disables retrieval entirely — a no-memory control)",
+    )
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        default=1200,
+        help="Max characters per chunk before splitting (L2+ ingestion and long turns)",
+    )
+    parser.add_argument(
+        "--chunk-overlap",
+        type=int,
+        default=200,
+        help="Character overlap between adjacent chunks (must be < --chunk-size)",
+    )
+    parser.add_argument(
+        "--no-documents",
+        action="store_true",
+        help="Ignore scenario-declared documents and system_event attachments (control runs)",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",
@@ -187,7 +224,11 @@ def main() -> int:
         scenarios = runner.load_scenarios()
         print("\nAvailable Scenarios (datasets/conversations/):")
         for sc in scenarios:
-            print(f"  - {sc.id:22s} ({sc.category}) — {len(sc.turns)} turns: {sc.name}")
+            docs = f", {len(sc.documents)} docs" if sc.documents else ""
+            print(
+                f"  - {sc.id:22s} ({sc.category}) — "
+                f"{len(sc.turns)} turns{docs}: {sc.name}"
+            )
         return 0
 
     if args.list_prompts:
@@ -211,6 +252,19 @@ def main() -> int:
         backend_name = _resolve_backend_choice(args.backend)
     except ValueError as exc:
         print(f"Error: {exc}")
+        return 1
+
+    # ── Memory knobs (plan WS-D) ─────────────────────────────────────────
+    # Validated once, before any run, so a bad sweep parameter can never
+    # burn embedding tokens on the first tuple before failing.
+    if args.top_k < 0:
+        print("Error: --top-k must be >= 0 (0 disables retrieval entirely).")
+        return 1
+    if args.chunk_size <= 0:
+        print("Error: --chunk-size must be > 0.")
+        return 1
+    if args.chunk_overlap < 0 or args.chunk_overlap >= args.chunk_size:
+        print("Error: --chunk-overlap must be >= 0 and < --chunk-size.")
         return 1
 
     # ── Filter setup ─────────────────────────────────────────────────
@@ -261,7 +315,14 @@ def main() -> int:
         getattr(AGENT_REGISTRY[lid], "requires_memory_backend", False)
         for lid in level_ids
     ):
-        print(f"  Backend:  {backend_name} (embedding model: {args.embedding_model})")
+        print(
+            f"  Backend:  {backend_name} (embedding model: {args.embedding_model})"
+        )
+        print(
+            f"  Memory:   top_k={args.top_k}, chunk_size={args.chunk_size}, "
+            f"chunk_overlap={args.chunk_overlap}, "
+            f"documents={'off' if args.no_documents else 'on'}"
+        )
     print("=" * 60 + "\n")
 
     # ── Execute one pass per level ────────────────────────────────────
@@ -288,7 +349,10 @@ def main() -> int:
         if getattr(agent, "requires_memory_backend", False):
             try:
                 memory_backend = _build_memory_backend(
-                    backend_name, args.embedding_model
+                    backend_name,
+                    args.embedding_model,
+                    chunk_size=args.chunk_size,
+                    chunk_overlap=args.chunk_overlap,
                 )
             except Exception as exc:
                 print(
@@ -296,16 +360,20 @@ def main() -> int:
                     f"backend with embedding model {args.embedding_model!r}: {exc}"
                 )
                 return 1
-            # top_k defaults to the L2 graph's DEFAULT_TOP_K so the summary
-            # identity records the retrieval cut-off actually in effect.
+            # Identity recorded in every summary/manifest: top_k and chunking
+            # are swept dimensions for context-heavy document scenarios, so
+            # they must travel with the results (plan WS-D).
             memory_backend_config = {
                 "backend": backend_name,
                 "embedding_model_id": args.embedding_model,
-                "top_k": DEFAULT_TOP_K,
+                "top_k": args.top_k,
+                "chunk_size": args.chunk_size,
+                "chunk_overlap": args.chunk_overlap,
             }
             print(
                 f"  Memory backend: {backend_name} "
-                f"(embedding: {args.embedding_model}, top_k={DEFAULT_TOP_K})"
+                f"(embedding: {args.embedding_model}, top_k={args.top_k}, "
+                f"chunk_size={args.chunk_size}, chunk_overlap={args.chunk_overlap})"
             )
 
         if inline_model:
@@ -327,6 +395,7 @@ def main() -> int:
                     memory_backend=memory_backend,
                     memory_backend_config=memory_backend_config,
                     snapshot_dir=snapshot_dir,
+                    documents_enabled=not args.no_documents,
                 )
                 if memory_backend is not None:
                     memory_backend.reset()
@@ -342,6 +411,7 @@ def main() -> int:
                     export=False,
                     memory_backend=memory_backend,
                     memory_backend_config=memory_backend_config,
+                    documents_enabled=not args.no_documents,
                 )
             )
 

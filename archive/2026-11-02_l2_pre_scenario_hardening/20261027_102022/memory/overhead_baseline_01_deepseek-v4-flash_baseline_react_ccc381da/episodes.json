@@ -1,0 +1,122 @@
+[
+  {
+    "chunk_id": "ep_s1_t1",
+    "session_id": "s1",
+    "turn_number": 1,
+    "source": "chat",
+    "content": "User: Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else.\nAssistant: Au",
+    "char_count": 152,
+    "estimated_tokens": 38,
+    "timestamp": "2026-10-27T13:20:23.694019+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999999055982876
+  },
+  {
+    "chunk_id": "ep_s1_t2",
+    "session_id": "s1",
+    "turn_number": 2,
+    "source": "chat",
+    "content": "User: Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else.\nAssistant: 6",
+    "char_count": 125,
+    "estimated_tokens": 31,
+    "timestamp": "2026-10-27T13:20:31.614734+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999999491509741
+  },
+  {
+    "chunk_id": "ep_s1_t3",
+    "session_id": "s1",
+    "turn_number": 3,
+    "source": "chat",
+    "content": "User: Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else.\nAssistant: Tokyo",
+    "char_count": 124,
+    "estimated_tokens": 31,
+    "timestamp": "2026-10-27T13:20:33.726584+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999995761390066
+  },
+  {
+    "chunk_id": "ep_s1_t4",
+    "session_id": "s1",
+    "turn_number": 4,
+    "source": "chat",
+    "content": "User: Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else.\nAssistant: 0",
+    "char_count": 177,
+    "estimated_tokens": 44,
+    "timestamp": "2026-10-27T13:20:35.626520+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.000000202730518
+  },
+  {
+    "chunk_id": "ep_s1_t5",
+    "session_id": "s1",
+    "turn_number": 5,
+    "source": "chat",
+    "content": "User: Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else.\nAssistant: Mercury",
+    "char_count": 148,
+    "estimated_tokens": 37,
+    "timestamp": "2026-10-27T13:20:37.736236+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.000000288596661
+  },
+  {
+    "chunk_id": "ep_s2_t1",
+    "session_id": "s2",
+    "turn_number": 1,
+    "source": "chat",
+    "content": "User: Baseline check six: how many continents are there on Earth in the standard seven-continent model? Reply with the digits only, nothing else.\nAssistant: 7",
+    "char_count": 158,
+    "estimated_tokens": 39,
+    "timestamp": "2026-10-27T13:20:39.652192+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999999730833727
+  },
+  {
+    "chunk_id": "ep_s2_t2",
+    "session_id": "s2",
+    "turn_number": 2,
+    "source": "chat",
+    "content": "User: Baseline check seven: what is the chemical symbol for oxygen on the periodic table? Reply with the one-letter symbol only, nothing else.\nAssistant: O",
+    "char_count": 155,
+    "estimated_tokens": 38,
+    "timestamp": "2026-10-27T13:20:42.914575+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999996571143472
+  },
+  {
+    "chunk_id": "ep_s2_t3",
+    "session_id": "s2",
+    "turn_number": 3,
+    "source": "chat",
+    "content": "User: Baseline check eight: what is the capital city of France? Reply with the city name only, nothing else.\nAssistant: Paris",
+    "char_count": 125,
+    "estimated_tokens": 31,
+    "timestamp": "2026-10-27T13:20:44.885495+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.0000001804808276
+  },
+  {
+    "chunk_id": "ep_s2_t4",
+    "session_id": "s2",
+    "turn_number": 4,
+    "source": "chat",
+    "content": "User: Baseline check nine: how many hours are there in one standard Earth day? Reply with the digits only, nothing else.\nAssistant: 24",
+    "char_count": 134,
+    "estimated_tokens": 33,
+    "timestamp": "2026-10-27T13:20:46.601074+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.0000000698532934
+  },
+  {
+    "chunk_id": "ep_s2_t5",
+    "session_id": "s2",
+    "turn_number": 5,
+    "source": "chat",
+    "content": "User: Baseline check ten: what is the positive square root of 81? Reply with the digits only, nothing else.\nAssistant: 9",
+    "char_count": 120,
+    "estimated_tokens": 30,
+    "timestamp": "2026-10-27T13:20:56.687052+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999999064437185
+  }
+]
