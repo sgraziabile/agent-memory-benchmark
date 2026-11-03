@@ -4,6 +4,15 @@
 
 Measures how different persistence strategies affect logical consistency, belief revision, and information retention across multi-turn conversations — built with [LangGraph](https://langchain-ai.github.io/langgraph/), Pydantic v2, and a multi-provider model factory.
 
+> **Theoretical basis.** The memory ladder evaluated by this harness (levels **L0–L4**, see
+> [Agent Levels Roadmap](#agent-levels-roadmap)) was derived from the **CoALA** framework —
+> *Cognitive Architectures for Language Agents*
+> ([Sumers, Yao, Narasimhan & Griffiths, 2024](https://arxiv.org/abs/2309.02427), TMLR) — which
+> factorizes a language agent into modular memory components (working, episodic, semantic and
+> procedural memory), a structured action space and a decision-making loop. L0 and L1 correspond to
+> the no-memory and working-memory rungs, L2 to episodic memory, and L3/L4 extend the taxonomy with
+> reflection and an explicit belief state. Procedural memory (tools and prompts) is out of scope here.
+
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![LangGraph](https://img.shields.io/badge/LangGraph-%E2%89%A50.2.0-orange.svg)](https://langchain-ai.github.io/langgraph/)
@@ -21,6 +30,7 @@ Measures how different persistence strategies affect logical consistency, belief
 - [Sample Results](#sample-results)
 - [Agent Levels Roadmap](#agent-levels-roadmap)
 - [Project Structure](#project-structure)
+- [Research Log](#research-log)
 - [Tech Stack](#tech-stack)
 - [License](#license)
 
@@ -57,18 +67,18 @@ No graph or node has a model or prompt hardcoded at build time. All parameters a
 ```mermaid
 flowchart LR
     subgraph configs["⚙️ Configuration"]
-        M["models.yaml\n(8 models, NanoGPT subscription)"]
+        M["models.yaml\n(8 chat + 3 embedding models,\nmulti-provider)"]
         P["prompts.yaml\n(3 system prompts)"]
     end
 
     subgraph data["📋 Datasets"]
-        S["Scenario YAMLs\n(6 test cases)"]
+        S["Scenario YAMLs\n(27 scenarios, 5 themes)"]
     end
 
     subgraph runner["🔄 BenchmarkRunner"]
         CP["Cartesian Product\nS × P × M"]
         RS["run_single()"]
-        AE["Assertion Engine\nmust_contain\nmust_not_contain"]
+        AE["Assertion Engine\ntext: must_contain / must_not_contain\nretrieval: must_retrieve_* / must_not_retrieve_*"]
     end
 
     subgraph export["📊 Export"]
@@ -128,11 +138,52 @@ sequenceDiagram
     Runner->>Runner: export (JSON + CSV + MD)
 ```
 
+### Cross-session retrieval semantics (L2)
+
+`retrieve_node` calls `backend.retrieve(query, top_k, exclude_session_id=<current session id>)`
+(`agents/level_2_episodic_rag/graph.py`), and the backend drops **only** `source="chat"` chunks whose
+`session_id` is the current one (`agents/level_2_episodic_rag/backends/vector.py`). Two consequences
+decide how every result must be read:
+
+- L2 retrieves **chat turns from other sessions** plus **every** `source="document"` chunk. That is
+  what makes cross-thread recall possible — and it is also why a superseded answer can come back as
+  competing evidence against the document that supersedes it.
+- A scenario that keeps `session_id` fixed for all turns retrieves **zero** chat episodes: it measures
+  L1 (the checkpointer) plus write overhead, not the store. Only multi-session scenarios
+  (`s1 → s2 → …`) exercise L2's retrieval.
+
+| Run shape | Retrieved episodes | What the run actually measures |
+|---|---|---|
+| L0 | — | the model alone |
+| L1 | — | intra-thread context (`MemorySaver`) |
+| L2, single session | documents only (0 chat episodes) | L1 + append/embedding overhead |
+| L2, multi-session | other sessions' chat + all documents | the episodic store and its slot competition |
+
+### What L2 does not do
+
+These are the properties the higher levels are meant to add; they are also the mechanism behind the
+document-memory results in [`notes/`](notes/), so they are worth stating before any comparison:
+
+- **No update or delete.** The store is append-only: a corrected or superseded fact becomes a second
+  chunk, and both compete for the same `top_k` slots.
+- **No preference signal.** One flat vector index over documents *and* chat, ranked by pure cosine
+  similarity. `session_id`, `turn_number` and `source` are stored in the payload but never score, so
+  recency and authority are invisible to retrieval.
+- **No similarity floor.** `retrieve()` always returns `k` chunks, even on a chit-chat turn with no
+  informational need (memory pollution).
+- **No provenance in the prompt.** Since 2026-11-02 the injected memory block is **content only**: no
+  `id`, `session`, `turn`, `source` or `score` header. Attribution lives in the telemetry
+  (`retrieved_memories`), not in what the model sees.
+- **No document priority.** A short chat echo whose text *is* the question plus the answer can outrank
+  a long document chunk on the same topic, so a probe can be answered from the model's own previous
+  answer instead of from the file.
+
 ---
 
 ## Benchmark Scenarios
 
-Six scenarios designed to stress-test different memory failure modes:
+**27 scenarios** across five themes. The tables below document the ones cited most often; the source
+of truth is `datasets/conversations/` (`python run.py --list-scenarios`):
 
 | Scenario | Category | Turns | Difficulty | Research Question | What It Tests |
 |----------|----------|:-----:|:----------:|:-----------------:|---------------|
@@ -153,9 +204,19 @@ to) chat turns. See [`datasets/documents/README.md`](datasets/documents/README.m
 | Scenario | Category | Turns | What It Tests |
 |----------|----------|:-----:|---------------|
 | `document_needle_01` | Document Needle | 5 | A fact buried in a preloaded document must be recalled in a later session. The corpus (7 document chunks with the adjacent `ops_handbook.md`) now exceeds `top_k=5`, so the retriever must **select**; a precision turn checks the identifier never leaks unprompted |
-| `document_addendum_revision_01` | Document Revision | 5 | A mid-conversation `system_event` supersedes a document section; every post-event probe pins the addendum chunk, and an addendum-only fact (the 2026-10-01 compliance window) is probed from a fresh session |
-| `document_dilution_01` | Document Dilution | 6 | Nine memos (eight audits + a scope note); three decoys share the probe phrase ("cold-storage medical biobank chamber") with a different serial. Probes cover the target, the near-miss disclaimer (Room 5's redundant loop), a second memo, refusal without over-disclosure, and a scope-note ticket (`FAC-2291`); fail@5 / pass@20 |
+| `document_addendum_revision_01` | Document Revision | 5 | A mid-conversation `system_event` supersedes a document section; every post-event probe pins the addendum chunk, and an addendum-only fact (the 2026-10-01 compliance window) is probed from a fresh session. Its cross-thread probe needs `top_k ≥ 3`: the addendum chunk ranks 3rd, behind the model's own previous answers |
+| `document_dilution_01` | Document Dilution | 6 | Nine memos (eight audits + a scope note); three decoys share the probe phrase ("cold-storage medical biobank chamber") with a different serial. Probes cover the target, the near-miss disclaimer (Room 5's redundant loop), a second memo, refusal without over-disclosure, and a scope-note ticket (`FAC-2291`). Measured flat across `top_k` (9/9 at `k=1, 2, 5`) |
 | `document_cross_thread_01` | Document Cross-Thread | 6 | Document facts retrieved from a new session whose chat history contains nothing, plus a precision turn (identifiers must not leak into an unrelated answer) |
+
+### Scenario families
+
+| Theme (`datasets/conversations/…`) | Scenarios | Focus |
+|---|---:|---|
+| `logical_consistency/` | 10 | belief revision, contradictions, modus tollens, document revision, explicit forget, entity binding, hallucination control |
+| `retention_persistence/` | 8 | attrition, needle-in-haystack, document needle / dilution / cross-thread, top-k saturation |
+| `compositional_reasoning/` | 5 | multi-hop and derived-fact probes, in-context controls |
+| `robustness_security/` | 3 | adversarial forget, memory injection |
+| `computational_cost/` | 1 | P3 overhead baseline |
 
 ---
 
@@ -165,6 +226,9 @@ to) chat turns. See [`datasets/documents/README.md`](datasets/documents/README.m
 
 - Python 3.10+
 - At least one LLM API key (Google AI Studio is free)
+- **For L2 runs with local embeddings:** [Ollama](https://ollama.com) and
+  `ollama pull qwen3-embedding:0.6b` — the embedding model used by every run documented in
+  [`notes/`](notes/). Set `OLLAMA_BASE_URL` if it is not `http://localhost:11434`.
 
 ### Installation
 
@@ -192,6 +256,29 @@ pytest tests/ -v              # Run harness tests (no API keys needed)
 python run.py --list-models   # List registered models
 python run.py --list-scenarios
 ```
+
+### Reproduce the documented runs
+
+Every number quoted in [`notes/`](notes/) was produced with the configuration below. Quote it
+alongside the results: several identity fields are **not** visible in `summary.md`.
+
+```bash
+python run.py --level 2 --scenario document_addendum_revision_01 \
+    --model deepseek-v4-pro --prompt baseline_react \
+    --backend vector --embedding-model qwen3-embedding-0.6b --top-k 5
+```
+
+| Identity field | Value in the documented runs | Exported in |
+|---|---|---|
+| `agent_level` | `level_2_episodic_rag` | `results.json`, `summary.csv` |
+| `memory_backend` | `vector` | `results.json`, `summary.csv` |
+| `embedding_model_id` | `qwen3-embedding-0.6b` (Ollama, 1024 dims) | `results.json`, `summary.csv` |
+| `top_k` / `chunk_size` / `chunk_overlap` | `5` / `1200` / `200` | `results.json`, `summary.csv` |
+| `corpus_chunks` | backend size at snapshot time (documents + chat episodes) | `results.json`, `summary.csv` |
+| per-chunk provenance | `rank`, `score`, `source`, `char_count` | `results.json` → `turn_results[].retrieved_memories` |
+
+> `summary.md` only carries scenario / model / prompt / level / turns / pass-rate / latency / tokens /
+> errors. For `top_k`, the embedding model or the corpus size, read `summary.csv` (or `results.json`).
 
 ---
 
@@ -233,9 +320,12 @@ embedding tokens only. Sweep the retrieval/chunking axes from the CLI:
 # Preload a document corpus and probe it (default top_k = 5)
 python run.py --model qwen3.6-27b --scenario document_needle_01 --level 2
 
-# Retrieval-cutoff ablation: fail@5 → pass@20 proves a top-k miss
+# Retrieval-cutoff sweep. Measured behaviour (notes/2026-11-03_l2_document_topk_ablation.md):
+#   document_dilution_01          → flat: 9/9 at k = 1, 2 and 5
+#   document_addendum_revision_01 → needs k >= 3: at k <= 2 its gold chunk falls outside the
+#                                   window and the turn is answered from the model's own chat echo
 python run.py --model qwen3.6-27b --scenario document_dilution_01 --level 2 --top-k 5
-python run.py --model qwen3.6-27b --scenario document_dilution_01 --level 2 --top-k 20
+python run.py --model qwen3.6-27b --scenario document_addendum_revision_01 --level 2 --top-k 2
 
 # Chunking ablation
 python run.py --model qwen3.6-27b --scenario document_needle_01 --level 2 \
@@ -277,6 +367,10 @@ Results are exported automatically to `outputs/runs/<timestamp>/` in three forma
 
 ## Sample Results
 
+> **Historical sample.** The table below is from the first L0 sweep (`gemini-3.5-flash-lite`, before
+> the scenario-hardening pass) and is kept as an illustration of the amnesic baseline — not as the
+> current state of the benchmark. For L2 results see [`notes/`](notes/).
+
 ### Level 0 Baseline — `gemini-3.5-flash-lite` × `baseline_react`
 
 These results demonstrate the **amnesic baseline** (no checkpointer, no memory, no persistence):
@@ -298,13 +392,14 @@ These results demonstrate the **amnesic baseline** (no checkpointer, no memory, 
 
 ## Agent Levels Roadmap
 
-The harness evaluates agents across an **ablation ladder** of increasing persistence:
+The harness evaluates agents across an **ablation ladder** of increasing persistence, derived from the
+memory taxonomy of [CoALA](https://arxiv.org/abs/2309.02427) (Sumers et al., 2024):
 
 | Level | Name | Persistence | Status |
 |:-----:|------|-------------|:------:|
 | **L0** | Reactive (Amnesic) | None — stateless baseline | ✅ Implemented |
 | **L1** | Working Memory | `MemorySaver` checkpointer — within-thread persistence | ✅ Implemented |
-| **L2** | Episodic Naive RAG | Cross-thread accumulative (*append-only*) store (`VectorDB` / `.md`) | 🚧 Next ([Plan](TODOs/phase-2-l2-plan.md)) |
+| **L2** | Episodic Naive RAG | Cross-thread accumulative (*append-only*) store — `vector` backend implemented, `markdown`/BM25 deferred | ✅ Implemented ([Plan](TODOs/phase-2-l2-plan.md)) |
 | **L3** | Reflective Memory | L2 + active CRUD mutation & LLM-as-a-Judge conflict resolution | 🔲 Planned |
 | **L4** | Structured Belief State | L3 + explicit belief graph with revision operators | 🔲 Planned |
 
@@ -344,16 +439,47 @@ agent-memory-benchmark/
 ├── outputs/
 │   ├── runs/                            # Timestamped results (JSON + CSV + Markdown + memory/)
 │   └── by_theme/                        # Runs reorganized by theme/category (generated)
+├── archive/                             # Deprecated runs kept for provenance
+├── notes/                               # Experiment write-ups (results, caveats, next steps)
+├── TODOs/                               # Phase plans, stress-test designs, open decisions
 ├── scripts/
 │   ├── add_scenario.py                  # Materialize YAML blocks from a stage spec
-│   └── generate_corpus.py               # Deterministic synthetic document corpus
-├── tests/
-│   └── test_document_ingestion.py       # WS-D harness tests (no API keys needed)
+│   ├── generate_corpus.py               # Deterministic synthetic document corpus
+│   ├── organize_datasets.py             # Reorganize scenario YAMLs by theme
+│   ├── reorganize_outputs.py            # Group runs by theme under outputs/by_theme/
+│   └── token_report.py                  # Token/latency breakdown per run
+├── tests/                               # Harness, L2 and scenario-shape tests (no API keys)
+│   ├── test_document_ingestion.py       # Document scenarios + ingestion
+│   ├── test_harness_m3.py               # Telemetry capture
+│   ├── test_harness_m5.py               # Backend injection and CLI flags
+│   ├── test_l2_contracts.py             # EpisodeRecord + backend protocol
+│   ├── test_l2_graph.py                 # L2 graph behaviour
+│   ├── test_l2_vector_backend.py        # Chunking, ranking, telemetry
+│   ├── test_scaffolding.py              # Base agent/harness contracts
+│   ├── test_stage4_scenarios.py         # Stage 4 scenario-shape guards
+│   └── test_stage5_scenarios.py         # Stage 5 scenario-shape guards
 ├── .env.example                         # Environment variable template
 ├── pyproject.toml                       # Dependencies and build config
 ├── SPEC.md                              # Technical specification (Spanish)
 └── README.md                            # This file
 ```
+
+---
+
+## Research Log
+
+The README documents the harness; the **results, caveats and next steps** live in [`notes/`](notes/).
+
+| Note | What it covers |
+|---|---|
+| [`2026-10-30_l2_episodic_rag_summary.md`](notes/2026-10-30_l2_episodic_rag_summary.md) | First L2 sweep (14 valid runs): cross-thread recall closes P1, non-monotonic reasoning is the ceiling, P3 cost quantified, and the runs that never exercise the store |
+| [`2026-11-03_l2_document_topk_ablation.md`](notes/2026-11-03_l2_document_topk_ablation.md) | `top_k ∈ {1, 2, 5}` on both document scenarios: dilution is flat (9/9 at every `k`), addendum is cutoff-coupled — its gold chunk ranks 3rd, behind the model's own chat echo |
+| [`2026-10-14_l1_three_model_comparison.md`](notes/2026-10-14_l1_three_model_comparison.md) | L1 across three models |
+| [`2026-10-09_adversarial_forget_summary.md`](notes/2026-10-09_adversarial_forget_summary.md) | Adversarial forget (P2) |
+
+Design documents — open decisions, defect logs (X1–X10), rules R1–R10 and the staged experiment
+matrix — are in [`TODOs/`](TODOs/); the document-memory stress plan is
+[`TODOs/phase-2-l2-document-stress-plan.md`](TODOs/phase-2-l2-document-stress-plan.md).
 
 ---
 
