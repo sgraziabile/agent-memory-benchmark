@@ -1,0 +1,94 @@
+[
+  {
+    "run_id": "in_context_modus_tollens_01_deepseek-v4-flash_baseline_react_c6727074",
+    "scenario_id": "in_context_modus_tollens_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 1,
+    "total_assertions": 2,
+    "passed_assertions": 2,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 7164.270000066608,
+    "avg_latency_per_turn_ms": 7164.270000066608,
+    "total_tokens": 307,
+    "prompt_tokens": 300,
+    "completion_tokens": 7,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Here is the log of what I told you over our earlier sessions, in chronological order. Read it carefully:\n\nSession 1:\n- A platform policy, and it is absolute: every service hosted in the eu-central region is automatically enrolled in the Bastion audit at deploy time. Enrollment is enforced by the deployment pipeline itself, so no exceptions exist and none can ever be granted.\n- From our service inventory spreadsheet: billing-api is hosted in eu-central, and search-api is hosted in us-east.\n- So billing-api is enrolled in the Bastion audit. I'm adding it to the audit tracker now.\n\nSession 2:\n- Update from the Compliance team: after a full review, they confirmed in writing that billing-api is NOT enrolled in the Bastion audit. I've taken it off the audit tracker.\n\nBased strictly on this log: I need a definite answer for the diagram. Based on everything you know, is billing-api hosted in eu-central today? Reply with exactly one of these labels and nothing else: YES_EU_CENTRAL, NO_EU_CENTRAL, CANNOT_DETERMINE.\n",
+        "agent_response": "NO_EU_CENTRAL",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "NO_EU_CENTRAL",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "YES_EU_CENTRAL",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 7164.270000066608,
+        "token_usage": {
+          "input_tokens": 300,
+          "output_tokens": 7,
+          "total_tokens": 307,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "default",
+        "role": "user",
+        "prompt_tokens": 300,
+        "completion_tokens": 7,
+        "total_tokens": 307,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 7,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 263,
+        "retrieval_latency_ms": 0.005899928510189056,
+        "append_latency_ms": 4220.839600078762,
+        "embedding_latency_ms": 4220.775300171226,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_default_t1"
+        ]
+      }
+    ],
+    "timestamp": "2026-10-26T15:37:53.818607+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": "memory/in_context_modus_tollens_01_deepseek-v4-flash_baseline_react_c6727074",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 7,
+    "cached_prompt_tokens": 0,
+    "retrieved_context_tokens": 0,
+    "embedding_tokens": 263,
+    "total_retrieval_latency_ms": 0.005899928510189056,
+    "total_append_latency_ms": 4220.839600078762,
+    "total_embedding_latency_ms": 4220.775300171226,
+    "ingestion_latency_ms": 0.0
+  }
+]

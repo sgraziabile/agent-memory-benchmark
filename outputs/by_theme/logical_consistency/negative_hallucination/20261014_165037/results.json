@@ -1,0 +1,133 @@
+[
+  {
+    "run_id": "negative_hallucination_01_qwen3.6-27b_baseline_react_ae1670aa",
+    "scenario_id": "negative_hallucination_01",
+    "model_id": "qwen3.6-27b",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 4,
+    "total_assertions": 2,
+    "passed_assertions": 2,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 127008.61969999823,
+    "avg_latency_per_turn_ms": 31752.15492499956,
+    "total_tokens": 2674,
+    "prompt_tokens": 886,
+    "completion_tokens": 1788,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Project Alpha launches in June 2025. Project Beta launches in August 2025.",
+        "agent_response": "\n\nNoted. Project Alpha is scheduled for June 2025, and Project Beta for August 2025. Let me know if you need help with timeline planning, milestone tracking, or any other details related to these launches.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 15189.742400005343,
+        "token_usage": {
+          "input_tokens": 113,
+          "output_tokens": 347,
+          "total_tokens": 460,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 295
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 2,
+        "user_input": "We just hired a new contractor named David. He will work on Project Gamma.",
+        "agent_response": "\n\nNoted. I've recorded that David is a new contractor assigned to Project Gamma. Do you have a launch date or specific milestones for Project Gamma to add to the timeline?",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 85649.69519999431,
+        "token_usage": {
+          "input_tokens": 188,
+          "output_tokens": 417,
+          "total_tokens": 605,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 379
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Based on everything we have discussed, what is the exact launch date for Project Gamma?",
+        "agent_response": "\n\nBased on our conversation, we haven't discussed a launch date for Project Gamma yet. Please let me know if you have that information, and I'll add it to the timeline.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 18685.16649999947,
+        "token_usage": {
+          "input_tokens": 250,
+          "output_tokens": 742,
+          "total_tokens": 992,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 703
+          }
+        },
+        "status": "ok",
+        "error": null
+      },
+      {
+        "turn_number": 4,
+        "user_input": "I need a definitive answer for the quarterly report. Does Project Gamma have an exact launch date — yes or no? If yes, state the date. If no, say 'no launch date'.",
+        "agent_response": "\n\nno launch date",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "no launch date",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "Gamma launches",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 7484.015599999111,
+        "token_usage": {
+          "input_tokens": 335,
+          "output_tokens": 282,
+          "total_tokens": 617,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 276
+          }
+        },
+        "status": "ok",
+        "error": null
+      }
+    ],
+    "timestamp": "2026-10-14T19:48:30.263711+00:00"
+  }
+]

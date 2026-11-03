@@ -40,23 +40,143 @@ agent-memory-benchmark/
 │   ├── models.yaml                 # Registro unificado de proveedores y modelos
 │   └── prompts.yaml                # Banco de system prompts e invariantes epistémicas
 ├── datasets/
+│   ├── documents/                  # Corpus documental (WS-D): fixtures .md + README + generated/
 │   └── conversations/              # Casos de prueba YAML, organizados por tema
-│       ├── logical_consistency/    # belief_revision, explicit_forget, in_context_control
-│       ├── retention_persistence/  # attrition, needle_haystack
-│       └── compositional_reasoning/ # temporal_multi_hop (más temas vacíos planificados)
+│       ├── logical_consistency/    # belief_revision, document_revision, explicit_forget, in_context_control, negative_hallucination
+│       ├── retention_persistence/  # attrition, in_context_needle, needle_haystack, document_needle, document_dilution
+│       ├── compositional_reasoning/ # in_context_multihop, temporal_multi_hop
+│       ├── robustness_security/    # adversarial_forget, memory_injection
+│       └── computational_cost/     # pruebas de sobrecosto de latencia y tokens (P3)
 ├── core/
 │   ├── __init__.py
-│   ├── model_factory.py            # Instanciador dinámico multi-proveedor
+│   ├── documents.py                # Resolución, lectura y records de documentos (WS-D)
+│   ├── model_factory.py            # Instanciador dinámico multi-proveedor (LLMs y Embeddings)
 │   ├── schemas.py                  # Modelos Pydantic y TypedDicts para Estado y Tests
 │   └── runner.py                   # Orquestador del producto cartesiano y logging
 ├── agents/
 │   ├── __init__.py
 │   ├── base.py                     # Interfaz abstracta BaseBenchmarkAgent
-│   └── level_0_reactive/           # FASE ACTUAL: Baseline amnésico (Stateless)
+│   ├── level_0_reactive/           # L0: Baseline amnésico (Stateless)
+│   │   ├── __init__.py
+│   │   └── graph.py
+│   ├── level_1_working_memory/     # L1: Memoria de trabajo intra-hilo (MemorySaver)
+│   │   ├── __init__.py
+│   │   └── graph.py
+│   └── level_2_episodic_rag/       # L2: Memoria episódica cross-thread (Naive RAG)
 │       ├── __init__.py
-│       └── graph.py
+│       ├── graph.py                # retrieve → model → append
+│       └── backends/               # Contrato EpisodicMemoryBackend + VectorMemoryBackend
 ├── outputs/
-│   └── runs/                       # Resultados crudos (JSONL) y consolidados (CSV)
-├── tests/                          # Pruebas de integración del arnés (pytest)
+│   ├── runs/                       # Resultados crudos (JSON), consolidados (CSV) y resúmenes (MD)
+│   └── by_theme/                   # Corridas reorganizadas por eje temático
+├── tests/                          # Pruebas deterministas de integración del arnés (pytest)
 ├── pyproject.toml                  # Dependencias y configuración de packaging
 └── SPEC.md                         # Este documento de especificación
+```
+
+---
+
+## 4. Escalera de Ablación de Persistencia (`L0`–`L4`)
+
+El arnés evalúa agentes a través de cinco niveles progresivos donde cada nivel introduce un único mecanismo de memoria:
+
+| Nivel | Identificador | Mecanismo de Persistencia | Alcance y Comportamiento | Estado |
+|:-----:|---------------|---------------------------|--------------------------|:------:|
+| **L0** | `level_0_reactive` | Ninguno (*Stateless*) | Baseline amnésico; solo dispone del turno actual. | ✅ Implementado |
+| **L1** | `level_1_working_memory` | `MemorySaver` (*Checkpointer*) | Memoria de trabajo **intra-hilo** (`thread_id`); pierde el contexto entre sesiones. | ✅ Implementado |
+| **L2** | `level_2_episodic_rag` | Memoria Episódica Acumulativa (*Naive RAG*) | Persistencia **inter-sesión** (*cross-thread*) **append-only** (sin edición ni borrado) sobre backend **VectorDB** (el backend `.md`/BM25 queda fuera de alcance). Ingesta dos canales: turnos de chat e **ingesta de documentos** (§5). | ✅ Implementado (backend `vector`) |
+| **L3** | `level_3_reflective_memory` | Memoria con Mutación (CRUD) y Reflexión | Incorpora operadores de actualización/eliminación y un mecanismo *LLM-as-a-Judge* para resolver contradicciones ($A$ vs. $\neg A$). | 🔲 Planificado |
+| **L4** | `level_4_belief_state` | Estado de Creencias Estructurado | Representación simbólica/estructurada de hechos y reglas con operadores explícitos de revisión de creencias. | 🔲 Planificado |
+
+---
+
+## 5. Ingesta de Documentos a Memoria (WS-D)
+
+Los documentos son el **segundo canal de ingesta** del arnés: se fragmentan y
+se anexan al backend episódico activo con `source="document"` **sin invocar
+nunca al modelo de chat**. El costo de ingesta es exclusivamente de embeddings.
+
+### 5.1 Canales
+
+| Canal | Declaración YAML | Momento de ingesta | `session_id` / `turn_number` |
+|---|---|---|---|
+| **Precarga de corpus** | `documents:` (lista de `doc_id` + `path` \| `content`) | Una vez por tupla, **antes del turno 1** | `corpus` / `0` |
+| **Evento de sistema** | `role: system_event` + `attachments:` (+ `content` inline) | Al alcanzar ese turno de la secuencia | sesión del turno / `turn_number` del turno |
+
+```yaml
+documents:
+  - doc_id: policy_v1
+    path: policy_v1.md            # relativo al YAML, luego datasets/documents/
+    metadata: {title: "Access Policy"}
+
+turns:
+  - turn_number: 2
+    session_id: s1
+    role: system_event
+    content: "Compliance publicó el Addendum 1; deroga la sección 3.2."
+    attachments: ["addendum_1.md"]
+```
+
+### 5.2 IDs de chunk deterministas
+
+| Canal | `chunk_id` |
+|---|---|
+| Precarga | `doc_<doc_id>` (el backend añade `_c<i>` al fragmentar) |
+| `system_event` (archivo) | `doc_<stem>_t<turn>` |
+| `system_event` (contenido inline) | `doc_evt_<session>_t<turn>` |
+
+Los IDs son estables entre corridas, de modo que reingestar el mismo documento
+es idempotente. Reingestar el mismo `doc_id` con **contenido distinto** viola la
+restricción *append-only* del backend y falla de forma explícita: es
+exactamente la colisión que L3 deberá resolver con operadores `UPDATE`/`DELETE`.
+
+### 5.3 Semántica por nivel de ablación
+
+| Nivel | Precarga | `system_event` | Consecuencia |
+|---|---|---|---|
+| **L0** | se ignora (+warning) | no-op histórico | los probes documentales fallan (piso de la ablación) |
+| **L1** | se ignora (+warning) | no-op histórico | falla: el documento no vive en el hilo del checkpointer |
+| **L2+** | anexa (`source="document"`) | anexa en ese turno | recuperable desde cualquier sesión posterior |
+
+### 5.4 Telemetría y artefactos
+
+- `TurnResult`: `ingested_documents`, `ingested_chars`, `ingested_chunk_ids`
+  (además de `append_latency_ms` / `embedding_latency_ms` / `embedding_tokens`).
+- `BenchmarkRunSummary`: `documents_ingested`, `ingested_chars`,
+  `ingested_chunks`, `corpus_chunks`, `corpus_chars`, `ingestion_latency_ms`.
+- Los turnos `system_event` **nunca** entran en el denominador de aserciones ni
+  en `avg_latency_per_turn_ms` (solo turnos `role="user"`).
+- Snapshot (`outputs/runs/<ts>/memory/<run_id>/`): `manifest.json` (incluye
+  `by_source`, `document_chunks` y `run_metadata.documents` con `sha256`),
+  `episodes.json` y `documents.json`.
+
+### 5.5 Controles de CLI
+
+`--top-k` (0 desactiva la recuperación), `--chunk-size`, `--chunk-overlap` y
+`--no-documents` (corrida de control con corpus vacío). Los cuatro valores
+quedan registrados en `results.json`/`summary.csv` como identidad del run.
+
+### 5.6 Fixtures y generación
+
+`datasets/documents/` contiene el corpus versionado (`policy_v1.md`,
+`addendum_1.md`, `ops_handbook.md`) y su README. Para corpus grandes y
+reproducibles, `scripts/generate_corpus.py` genera N documentos deterministas
+a partir de una semilla, con una *needle* plantada en un documento conocido y
+un `corpus_manifest.json` con `sha256` por archivo.
+
+
+### 5.7 Aserciones de recuperación (opcionales)
+
+Además de las aserciones textuales (`must_contain` / `must_not_contain`),
+`AssertionRule` admite reglas evaluadas contra la telemetría de recuperación
+del turno (`retrieved_memories`), lo que vuelve **causal** un fallo de
+`top_k`:
+
+| Tipo | Semántica |
+|---|---|
+| `must_retrieve_chunk` / `must_not_retrieve_chunk` | substring (case-insensitive) del `chunk_id`; `doc_policy_v1` también coincide con sus sub-chunks `doc_policy_v1_c2` |
+| `must_retrieve_source` / `must_not_retrieve_source` | etiqueta exacta de origen (`chat` / `document`) |
+
+En L0/L1 no hay recuperación: las reglas positivas fallan y las negativas
+pasan de forma determinista. Los detalles exportados incluyen
+`matched_chunks` con los IDs que satisfacieron la regla.

@@ -1,0 +1,22 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "in_context_modus_tollens_01_deepseek-v4-flash_baseline_react_c6727074",
+    "scenario_id": "in_context_modus_tollens_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag"
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "total_chunks": 1,
+  "total_chars": 1052,
+  "total_estimated_tokens": 263,
+  "snapshot_timestamp": "2026-10-26T15:38:00.982793+00:00"
+}

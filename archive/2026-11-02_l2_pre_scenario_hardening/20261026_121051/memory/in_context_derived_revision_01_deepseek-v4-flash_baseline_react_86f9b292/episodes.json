@@ -1,0 +1,14 @@
+[
+  {
+    "chunk_id": "ep_default_t1",
+    "session_id": "default",
+    "turn_number": 1,
+    "source": "chat",
+    "content": "User: Here is the log of what I told you over our earlier sessions, in chronological order. Read it carefully:\n\nSession 1:\n- Our change-control policy, which is fixed and applies to every server without exception: rebooting a prod-tier server requires Level-3 authorization, rebooting a staging-tier server requires Level-1 authorization, and dev-tier servers can be rebooted with no authorization at all.\n- Fleet inventory for the runbook: srv-alpha is a prod-tier server, srv-beta is prod-tier as well, and srv-gamma is a dev-tier box.\n- So srv-alpha needs Level-3 authorization for any reboot. I'm writing that into the runbook now.\n\nSession 2:\n- Inventory update: as of this morning, srv-alpha has been migrated to the staging tier.\n\nBased strictly on this log: I need a single answer for the change ticket. Which authorization level is required today to reboot srv-alpha? Reply with the level only, in the form Level-N.\n\nAssistant: Level-1",
+    "char_count": 944,
+    "estimated_tokens": 236,
+    "timestamp": "2026-10-26T15:10:55.174140+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.000000097452236
+  }
+]

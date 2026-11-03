@@ -37,6 +37,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from agents import AGENT_REGISTRY, resolve_level_ids
+from agents.level_2_episodic_rag.backends.vector import VectorMemoryBackend
+from agents.level_2_episodic_rag.graph import DEFAULT_TOP_K
+from core.model_factory import create_embeddings, get_embedding_dims
 from core.runner import BenchmarkRunner
 
 
@@ -49,12 +52,63 @@ def setup_logging(verbose: bool = False) -> None:
     )
 
 
-def main() -> int:
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
-    if hasattr(sys.stderr, "reconfigure"):
-        sys.stderr.reconfigure(encoding="utf-8")
+def _resolve_backend_choice(raw: str) -> str:
+    """Validate the ``--backend`` argument; return the single backend name.
 
+    Comma-separated values (e.g. ``vector,markdown``) are reserved for a
+    future multi-backend milestone — they are parsed here and rejected
+    loudly so the flag's syntax stays stable when that lands.
+
+    Raises:
+        ValueError: on empty input, multiple backends, or an unknown name.
+    """
+    backends = [b.strip() for b in raw.split(",") if b.strip()]
+    if not backends:
+        raise ValueError("No memory backend specified — use --backend vector.")
+    if len(backends) > 1:
+        raise ValueError(
+            f"Multi-backend runs ({raw!r}) are not supported yet — run one "
+            "backend per invocation."
+        )
+    if backends[0] != "vector":
+        raise ValueError(
+            f"Memory backend {backends[0]!r} is not implemented yet. "
+            "Available backends: vector"
+        )
+    return backends[0]
+
+
+def _build_memory_backend(
+    backend_name: str,
+    embedding_model_id: str,
+    *,
+    chunk_size: int = 1200,
+    chunk_overlap: int = 200,
+) -> VectorMemoryBackend:
+    """Construct the requested ``EpisodicMemoryBackend`` (L2+ levels only).
+
+    ``vector`` → :class:`VectorMemoryBackend` backed by the registry
+    embedding client (:func:`create_embeddings`) with its declared
+    dimensionality (:func:`get_embedding_dims`) so the ``InMemoryStore``
+    index is never built with a hardcoded vector size.
+
+    ``chunk_size`` / ``chunk_overlap`` are exposed on the CLI (plan WS-D) so
+    context-heavy document runs can sweep chunking without code edits; the
+    backend validates that ``chunk_overlap < chunk_size``.
+    """
+    embeddings = create_embeddings(embedding_model_id)
+    dims = get_embedding_dims(embedding_model_id)
+    return VectorMemoryBackend(
+        embeddings,
+        dims,
+        embedding_id=embedding_model_id,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    )
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser (extracted for testability)."""
     parser = argparse.ArgumentParser(
         description="agent-memory-benchmark: Experimental harness runner",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -88,6 +142,42 @@ def main() -> int:
         help="Agent level(s): number (0-4), full registry name, 'all', or comma-separated list",
     )
     parser.add_argument(
+        "--backend",
+        "-b",
+        type=str,
+        default="vector",
+        help="Memory backend for levels that require one (L2+): 'vector' (default). Comma-separated lists are reserved for future multi-backend runs",
+    )
+    parser.add_argument(
+        "--embedding-model",
+        type=str,
+        default="qwen3-embedding-8b",
+        help="Embedding model ID from the 'embeddings:' section of configs/models.yaml (vector backend only)",
+    )
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=DEFAULT_TOP_K,
+        help="Retrieval cut-off for L2+ (0 disables retrieval entirely — a no-memory control)",
+    )
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        default=1200,
+        help="Max characters per chunk before splitting (L2+ ingestion and long turns)",
+    )
+    parser.add_argument(
+        "--chunk-overlap",
+        type=int,
+        default=200,
+        help="Character overlap between adjacent chunks (must be < --chunk-size)",
+    )
+    parser.add_argument(
+        "--no-documents",
+        action="store_true",
+        help="Ignore scenario-declared documents and system_event attachments (control runs)",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",
@@ -108,8 +198,16 @@ def main() -> int:
         action="store_true",
         help="List all available system prompts and exit",
     )
+    return parser
 
-    args = parser.parse_args()
+
+def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
+
+    args = build_parser().parse_args()
     setup_logging(args.verbose)
 
     runner = BenchmarkRunner()
@@ -126,7 +224,11 @@ def main() -> int:
         scenarios = runner.load_scenarios()
         print("\nAvailable Scenarios (datasets/conversations/):")
         for sc in scenarios:
-            print(f"  - {sc.id:22s} ({sc.category}) — {len(sc.turns)} turns: {sc.name}")
+            docs = f", {len(sc.documents)} docs" if sc.documents else ""
+            print(
+                f"  - {sc.id:22s} ({sc.category}) — "
+                f"{len(sc.turns)} turns{docs}: {sc.name}"
+            )
         return 0
 
     if args.list_prompts:
@@ -141,6 +243,28 @@ def main() -> int:
         level_ids = resolve_level_ids(args.level)
     except ValueError as exc:
         print(f"Error: {exc}")
+        return 1
+
+    # ── Memory backend resolution (validated once, before any run) ──
+    # Only levels with requires_memory_backend=True actually construct one;
+    # L0/L1 never need an embedding API key (full backward compatibility).
+    try:
+        backend_name = _resolve_backend_choice(args.backend)
+    except ValueError as exc:
+        print(f"Error: {exc}")
+        return 1
+
+    # ── Memory knobs (plan WS-D) ─────────────────────────────────────────
+    # Validated once, before any run, so a bad sweep parameter can never
+    # burn embedding tokens on the first tuple before failing.
+    if args.top_k < 0:
+        print("Error: --top-k must be >= 0 (0 disables retrieval entirely).")
+        return 1
+    if args.chunk_size <= 0:
+        print("Error: --chunk-size must be > 0.")
+        return 1
+    if args.chunk_overlap < 0 or args.chunk_overlap >= args.chunk_size:
+        print("Error: --chunk-overlap must be >= 0 and < --chunk-size.")
         return 1
 
     # ── Filter setup ─────────────────────────────────────────────────
@@ -187,6 +311,18 @@ def main() -> int:
     print(f"  Model:    {args.model}")
     print(f"  Prompt:   {args.prompt}")
     print(f"  Scenario: {args.scenario}")
+    if any(
+        getattr(AGENT_REGISTRY[lid], "requires_memory_backend", False)
+        for lid in level_ids
+    ):
+        print(
+            f"  Backend:  {backend_name} (embedding model: {args.embedding_model})"
+        )
+        print(
+            f"  Memory:   top_k={args.top_k}, chunk_size={args.chunk_size}, "
+            f"chunk_overlap={args.chunk_overlap}, "
+            f"documents={'off' if args.no_documents else 'on'}"
+        )
     print("=" * 60 + "\n")
 
     # ── Execute one pass per level ────────────────────────────────────
@@ -201,7 +337,53 @@ def main() -> int:
         agent = AGENT_REGISTRY[level_id]()
         graph = agent.build_graph()
 
+        # ── Memory backend lifecycle (plan §4.3, Milestone 5) ─────────
+        # Constructed ONLY for levels that require one, so L0/L1 never
+        # touches the embedding API (backward compatible, no keys needed).
+        # The backend + identity dict flow into run_matrix / run_single,
+        # which inject them via config["configurable"] for the graph,
+        # export the snapshot before returning, and reset after each
+        # tuple for isolation.
+        memory_backend = None
+        memory_backend_config: dict | None = None
+        if getattr(agent, "requires_memory_backend", False):
+            try:
+                memory_backend = _build_memory_backend(
+                    backend_name,
+                    args.embedding_model,
+                    chunk_size=args.chunk_size,
+                    chunk_overlap=args.chunk_overlap,
+                )
+            except Exception as exc:
+                print(
+                    f"Error: Could not construct {backend_name!r} memory "
+                    f"backend with embedding model {args.embedding_model!r}: {exc}"
+                )
+                return 1
+            # Identity recorded in every summary/manifest: top_k and chunking
+            # are swept dimensions for context-heavy document scenarios, so
+            # they must travel with the results (plan WS-D).
+            memory_backend_config = {
+                "backend": backend_name,
+                "embedding_model_id": args.embedding_model,
+                "top_k": args.top_k,
+                "chunk_size": args.chunk_size,
+                "chunk_overlap": args.chunk_overlap,
+            }
+            print(
+                f"  Memory backend: {backend_name} "
+                f"(embedding: {args.embedding_model}, top_k={args.top_k}, "
+                f"chunk_size={args.chunk_size}, chunk_overlap={args.chunk_overlap})"
+            )
+
         if inline_model:
+            # Inline path mirrors run_matrix: snapshots land under the
+            # shared run dir's memory/ tree, and the backend is reset
+            # after every scenario (the snapshot was already exported
+            # inside run_single, before it returned).
+            snapshot_dir = None
+            if memory_backend is not None:
+                snapshot_dir = runner.ensure_shared_run_dir() / "memory"
             for sc in scenarios:
                 summary = runner.run_single(
                     scenario=sc,
@@ -210,7 +392,13 @@ def main() -> int:
                     model_id=args.model,
                     agent_graph=graph,
                     agent_level=agent.level,
+                    memory_backend=memory_backend,
+                    memory_backend_config=memory_backend_config,
+                    snapshot_dir=snapshot_dir,
+                    documents_enabled=not args.no_documents,
                 )
+                if memory_backend is not None:
+                    memory_backend.reset()
                 all_results.append(summary)
         else:
             all_results.extend(
@@ -221,6 +409,9 @@ def main() -> int:
                     prompt_ids=prompt_ids,
                     model_ids=model_ids,
                     export=False,
+                    memory_backend=memory_backend,
+                    memory_backend_config=memory_backend_config,
+                    documents_enabled=not args.no_documents,
                 )
             )
 

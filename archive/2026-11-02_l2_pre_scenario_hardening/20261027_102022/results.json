@@ -1,0 +1,1878 @@
+[
+  {
+    "run_id": "overhead_baseline_01_deepseek-v4-flash_baseline_react_a34ac5fa",
+    "scenario_id": "overhead_baseline_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_0_reactive",
+    "total_turns": 10,
+    "total_assertions": 10,
+    "passed_assertions": 10,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 17644.99200042337,
+    "avg_latency_per_turn_ms": 1764.4992000423372,
+    "total_tokens": 1031,
+    "prompt_tokens": 1010,
+    "completion_tokens": 21,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else.",
+        "agent_response": "Au",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Au",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 4276.2969001196325,
+        "token_usage": {
+          "input_tokens": 103,
+          "output_tokens": 2,
+          "total_tokens": 105,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 103,
+        "completion_tokens": 2,
+        "total_tokens": 105,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else.",
+        "agent_response": "6",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "6",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1283.1455999985337,
+        "token_usage": {
+          "input_tokens": 99,
+          "output_tokens": 2,
+          "total_tokens": 101,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 99,
+        "completion_tokens": 2,
+        "total_tokens": 101,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else.",
+        "agent_response": "Tokyo",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Tokyo",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1373.4387001022696,
+        "token_usage": {
+          "input_tokens": 98,
+          "output_tokens": 2,
+          "total_tokens": 100,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 98,
+        "completion_tokens": 2,
+        "total_tokens": 100,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else.",
+        "agent_response": "0",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "0",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1483.86780009605,
+        "token_usage": {
+          "input_tokens": 104,
+          "output_tokens": 2,
+          "total_tokens": 106,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 104,
+        "completion_tokens": 2,
+        "total_tokens": 106,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else.",
+        "agent_response": "Mercury",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Mercury",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1369.6916999761015,
+        "token_usage": {
+          "input_tokens": 102,
+          "output_tokens": 3,
+          "total_tokens": 105,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 102,
+        "completion_tokens": 3,
+        "total_tokens": 105,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 3,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 6,
+        "user_input": "Baseline check six: how many continents are there on Earth in the standard seven-continent model? Reply with the digits only, nothing else.",
+        "agent_response": "7",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "7",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 2033.3555999677628,
+        "token_usage": {
+          "input_tokens": 104,
+          "output_tokens": 2,
+          "total_tokens": 106,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 104,
+        "completion_tokens": 2,
+        "total_tokens": 106,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Baseline check seven: what is the chemical symbol for oxygen on the periodic table? Reply with the one-letter symbol only, nothing else.",
+        "agent_response": "O",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "O",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1455.0691000185907,
+        "token_usage": {
+          "input_tokens": 103,
+          "output_tokens": 2,
+          "total_tokens": 105,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 103,
+        "completion_tokens": 2,
+        "total_tokens": 105,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 8,
+        "user_input": "Baseline check eight: what is the capital city of France? Reply with the city name only, nothing else.",
+        "agent_response": "Paris",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Paris",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1493.0750001221895,
+        "token_usage": {
+          "input_tokens": 98,
+          "output_tokens": 2,
+          "total_tokens": 100,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 98,
+        "completion_tokens": 2,
+        "total_tokens": 100,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 9,
+        "user_input": "Baseline check nine: how many hours are there in one standard Earth day? Reply with the digits only, nothing else.",
+        "agent_response": "24",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "24",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1354.3175000231713,
+        "token_usage": {
+          "input_tokens": 100,
+          "output_tokens": 2,
+          "total_tokens": 102,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 100,
+        "completion_tokens": 2,
+        "total_tokens": 102,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 10,
+        "user_input": "Baseline check ten: what is the positive square root of 81? Reply with the digits only, nothing else.",
+        "agent_response": "9",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "9",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1522.7340999990702,
+        "token_usage": {
+          "input_tokens": 99,
+          "output_tokens": 2,
+          "total_tokens": 101,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 99,
+        "completion_tokens": 2,
+        "total_tokens": 101,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      }
+    ],
+    "timestamp": "2026-10-27T13:19:48.852151+00:00",
+    "memory_backend": "none",
+    "embedding_model_id": null,
+    "top_k": null,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": null,
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 21,
+    "cached_prompt_tokens": 0,
+    "retrieved_context_tokens": 0,
+    "embedding_tokens": 0,
+    "total_retrieval_latency_ms": 0.0,
+    "total_append_latency_ms": 0.0,
+    "total_embedding_latency_ms": 0.0,
+    "ingestion_latency_ms": 0.0
+  },
+  {
+    "run_id": "overhead_baseline_01_deepseek-v4-flash_baseline_react_4097fdeb",
+    "scenario_id": "overhead_baseline_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_1_working_memory",
+    "total_turns": 10,
+    "total_assertions": 10,
+    "passed_assertions": 10,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 15007.819900056347,
+    "avg_latency_per_turn_ms": 1500.7819900056347,
+    "total_tokens": 1661,
+    "prompt_tokens": 1640,
+    "completion_tokens": 21,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else.",
+        "agent_response": "Au",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Au",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1747.5203999783844,
+        "token_usage": {
+          "input_tokens": 103,
+          "output_tokens": 2,
+          "total_tokens": 105,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 103,
+        "completion_tokens": 2,
+        "total_tokens": 105,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else.",
+        "agent_response": "6",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "6",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1298.4958000015467,
+        "token_usage": {
+          "input_tokens": 132,
+          "output_tokens": 2,
+          "total_tokens": 134,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 132,
+        "completion_tokens": 2,
+        "total_tokens": 134,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else.",
+        "agent_response": "Tokyo",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Tokyo",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1537.5547998119146,
+        "token_usage": {
+          "input_tokens": 160,
+          "output_tokens": 2,
+          "total_tokens": 162,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 160,
+        "completion_tokens": 2,
+        "total_tokens": 162,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else.",
+        "agent_response": "0",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "0",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1824.0165000315756,
+        "token_usage": {
+          "input_tokens": 194,
+          "output_tokens": 2,
+          "total_tokens": 196,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 194,
+        "completion_tokens": 2,
+        "total_tokens": 196,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else.",
+        "agent_response": "Mercury",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Mercury",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1667.1478000935167,
+        "token_usage": {
+          "input_tokens": 226,
+          "output_tokens": 3,
+          "total_tokens": 229,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 226,
+        "completion_tokens": 3,
+        "total_tokens": 229,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 3,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 6,
+        "user_input": "Baseline check six: how many continents are there on Earth in the standard seven-continent model? Reply with the digits only, nothing else.",
+        "agent_response": "7",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "7",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1415.1228000409901,
+        "token_usage": {
+          "input_tokens": 104,
+          "output_tokens": 2,
+          "total_tokens": 106,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 104,
+        "completion_tokens": 2,
+        "total_tokens": 106,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Baseline check seven: what is the chemical symbol for oxygen on the periodic table? Reply with the one-letter symbol only, nothing else.",
+        "agent_response": "O",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "O",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1290.8028000965714,
+        "token_usage": {
+          "input_tokens": 137,
+          "output_tokens": 2,
+          "total_tokens": 139,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 137,
+        "completion_tokens": 2,
+        "total_tokens": 139,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 8,
+        "user_input": "Baseline check eight: what is the capital city of France? Reply with the city name only, nothing else.",
+        "agent_response": "Paris",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Paris",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1610.338700003922,
+        "token_usage": {
+          "input_tokens": 165,
+          "output_tokens": 2,
+          "total_tokens": 167,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 165,
+        "completion_tokens": 2,
+        "total_tokens": 167,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 9,
+        "user_input": "Baseline check nine: how many hours are there in one standard Earth day? Reply with the digits only, nothing else.",
+        "agent_response": "24",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "24",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1311.3649999722838,
+        "token_usage": {
+          "input_tokens": 195,
+          "output_tokens": 2,
+          "total_tokens": 197,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 195,
+        "completion_tokens": 2,
+        "total_tokens": 197,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      },
+      {
+        "turn_number": 10,
+        "user_input": "Baseline check ten: what is the positive square root of 81? Reply with the digits only, nothing else.",
+        "agent_response": "9",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "9",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1305.455300025642,
+        "token_usage": {
+          "input_tokens": 224,
+          "output_tokens": 2,
+          "total_tokens": 226,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 224,
+        "completion_tokens": 2,
+        "total_tokens": 226,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 0,
+        "retrieval_latency_ms": 0.0,
+        "append_latency_ms": 0.0,
+        "embedding_latency_ms": 0.0,
+        "retrieved_memories": [],
+        "appended_chunk_ids": []
+      }
+    ],
+    "timestamp": "2026-10-27T13:20:06.567577+00:00",
+    "memory_backend": "none",
+    "embedding_model_id": null,
+    "top_k": null,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": null,
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 21,
+    "cached_prompt_tokens": 0,
+    "retrieved_context_tokens": 0,
+    "embedding_tokens": 0,
+    "total_retrieval_latency_ms": 0.0,
+    "total_append_latency_ms": 0.0,
+    "total_embedding_latency_ms": 0.0,
+    "ingestion_latency_ms": 0.0
+  },
+  {
+    "run_id": "overhead_baseline_01_deepseek-v4-flash_baseline_react_ccc381da",
+    "scenario_id": "overhead_baseline_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 10,
+    "total_assertions": 10,
+    "passed_assertions": 10,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 36637.22899998538,
+    "avg_latency_per_turn_ms": 3663.722899998538,
+    "total_tokens": 3246,
+    "prompt_tokens": 3225,
+    "completion_tokens": 21,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else.",
+        "agent_response": "Au",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Au",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 6357.937399996445,
+        "token_usage": {
+          "input_tokens": 103,
+          "output_tokens": 2,
+          "total_tokens": 105,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 103,
+        "completion_tokens": 2,
+        "total_tokens": 105,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 38,
+        "retrieval_latency_ms": 0.004800036549568176,
+        "append_latency_ms": 4979.519400047138,
+        "embedding_latency_ms": 4979.457000037655,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ]
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else.",
+        "agent_response": "6",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "6",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 3210.8720999676734,
+        "token_usage": {
+          "input_tokens": 132,
+          "output_tokens": 2,
+          "total_tokens": 134,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 132,
+        "completion_tokens": 2,
+        "total_tokens": 134,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 57,
+        "retrieval_latency_ms": 221.28860000520945,
+        "append_latency_ms": 271.8403998296708,
+        "embedding_latency_ms": 492.38259973935783,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t2"
+        ]
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else.",
+        "agent_response": "Tokyo",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Tokyo",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 2091.678600059822,
+        "token_usage": {
+          "input_tokens": 160,
+          "output_tokens": 2,
+          "total_tokens": 162,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 160,
+        "completion_tokens": 2,
+        "total_tokens": 162,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 56,
+        "retrieval_latency_ms": 205.2439998369664,
+        "append_latency_ms": 243.23019990697503,
+        "embedding_latency_ms": 447.8525002487004,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t3"
+        ]
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else.",
+        "agent_response": "0",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "0",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1916.7667999863625,
+        "token_usage": {
+          "input_tokens": 194,
+          "output_tokens": 2,
+          "total_tokens": 196,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 194,
+        "completion_tokens": 2,
+        "total_tokens": 196,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 83,
+        "retrieval_latency_ms": 242.903099860996,
+        "append_latency_ms": 267.4799000378698,
+        "embedding_latency_ms": 509.6220001578331,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t4"
+        ]
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else.",
+        "agent_response": "Mercury",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Mercury",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 2108.4485000465065,
+        "token_usage": {
+          "input_tokens": 226,
+          "output_tokens": 3,
+          "total_tokens": 229,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 226,
+        "completion_tokens": 3,
+        "total_tokens": 229,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 3,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 67,
+        "retrieval_latency_ms": 222.7449999190867,
+        "append_latency_ms": 266.2088999059051,
+        "embedding_latency_ms": 488.3377000223845,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t5"
+        ]
+      },
+      {
+        "turn_number": 6,
+        "user_input": "Baseline check six: how many continents are there on Earth in the standard seven-continent model? Reply with the digits only, nothing else.",
+        "agent_response": "7",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "7",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1920.9843999706209,
+        "token_usage": {
+          "input_tokens": 421,
+          "output_tokens": 2,
+          "total_tokens": 423,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 421,
+        "completion_tokens": 2,
+        "total_tokens": 423,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1119,
+        "retrieved_context_tokens": 279,
+        "embedding_tokens": 73,
+        "retrieval_latency_ms": 233.8280000258237,
+        "append_latency_ms": 272.5331000983715,
+        "embedding_latency_ms": 505.70820015855134,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else.\nAssistant: 6",
+            "score": 0.4299855367307516,
+            "rank": 1,
+            "char_count": 125,
+            "estimated_tokens": 31,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else.\nAssistant: Tokyo",
+            "score": 0.42761093205576906,
+            "rank": 2,
+            "char_count": 124,
+            "estimated_tokens": 31,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else.\nAssistant: Mercury",
+            "score": 0.42244800333000987,
+            "rank": 3,
+            "char_count": 148,
+            "estimated_tokens": 37,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else.\nAssistant: 0",
+            "score": 0.3793811390797249,
+            "rank": 4,
+            "char_count": 177,
+            "estimated_tokens": 44,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else.\nAssistant: Au",
+            "score": 0.28994498980734096,
+            "rank": 5,
+            "char_count": 152,
+            "estimated_tokens": 38,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ]
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Baseline check seven: what is the chemical symbol for oxygen on the periodic table? Reply with the one-letter symbol only, nothing else.",
+        "agent_response": "O",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "O",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 3251.0680998675525,
+        "token_usage": {
+          "input_tokens": 454,
+          "output_tokens": 2,
+          "total_tokens": 456,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 454,
+        "completion_tokens": 2,
+        "total_tokens": 456,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1119,
+        "retrieved_context_tokens": 279,
+        "embedding_tokens": 72,
+        "retrieval_latency_ms": 250.91789988800883,
+        "append_latency_ms": 260.5932999867946,
+        "embedding_latency_ms": 510.77990024350584,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else.\nAssistant: Au",
+            "score": 0.5923781827251704,
+            "rank": 1,
+            "char_count": 152,
+            "estimated_tokens": 38,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else.\nAssistant: Mercury",
+            "score": 0.44206881570169965,
+            "rank": 2,
+            "char_count": 148,
+            "estimated_tokens": 37,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else.\nAssistant: Tokyo",
+            "score": 0.42050478630605903,
+            "rank": 3,
+            "char_count": 124,
+            "estimated_tokens": 31,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else.\nAssistant: 0",
+            "score": 0.3826575802470869,
+            "rank": 4,
+            "char_count": 177,
+            "estimated_tokens": 44,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else.\nAssistant: 6",
+            "score": 0.3211027720843884,
+            "rank": 5,
+            "char_count": 125,
+            "estimated_tokens": 31,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ]
+      },
+      {
+        "turn_number": 8,
+        "user_input": "Baseline check eight: what is the capital city of France? Reply with the city name only, nothing else.",
+        "agent_response": "Paris",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "Paris",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1966.5923998691142,
+        "token_usage": {
+          "input_tokens": 482,
+          "output_tokens": 2,
+          "total_tokens": 484,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 482,
+        "completion_tokens": 2,
+        "total_tokens": 484,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1119,
+        "retrieved_context_tokens": 279,
+        "embedding_tokens": 56,
+        "retrieval_latency_ms": 199.70029988326132,
+        "append_latency_ms": 257.40260002203286,
+        "embedding_latency_ms": 456.36710012331605,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else.\nAssistant: Tokyo",
+            "score": 0.6445291057517678,
+            "rank": 1,
+            "char_count": 124,
+            "estimated_tokens": 31,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else.\nAssistant: Mercury",
+            "score": 0.44195951153461166,
+            "rank": 2,
+            "char_count": 148,
+            "estimated_tokens": 37,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else.\nAssistant: 0",
+            "score": 0.375978772783103,
+            "rank": 3,
+            "char_count": 177,
+            "estimated_tokens": 44,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else.\nAssistant: 6",
+            "score": 0.3322586798856262,
+            "rank": 4,
+            "char_count": 125,
+            "estimated_tokens": 31,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else.\nAssistant: Au",
+            "score": 0.3258194484151487,
+            "rank": 5,
+            "char_count": 152,
+            "estimated_tokens": 38,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t3"
+        ]
+      },
+      {
+        "turn_number": 9,
+        "user_input": "Baseline check nine: how many hours are there in one standard Earth day? Reply with the digits only, nothing else.",
+        "agent_response": "24",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "24",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1716.0448001231998,
+        "token_usage": {
+          "input_tokens": 512,
+          "output_tokens": 2,
+          "total_tokens": 514,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 512,
+        "completion_tokens": 2,
+        "total_tokens": 514,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1119,
+        "retrieved_context_tokens": 279,
+        "embedding_tokens": 61,
+        "retrieval_latency_ms": 206.66570006869733,
+        "append_latency_ms": 257.13549996726215,
+        "embedding_latency_ms": 462.95959991402924,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else.\nAssistant: 6",
+            "score": 0.47184056084310255,
+            "rank": 1,
+            "char_count": 125,
+            "estimated_tokens": 31,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else.\nAssistant: Mercury",
+            "score": 0.4446978742640453,
+            "rank": 2,
+            "char_count": 148,
+            "estimated_tokens": 37,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else.\nAssistant: 0",
+            "score": 0.4206232371306775,
+            "rank": 3,
+            "char_count": 177,
+            "estimated_tokens": 44,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else.\nAssistant: Tokyo",
+            "score": 0.3851823237383535,
+            "rank": 4,
+            "char_count": 124,
+            "estimated_tokens": 31,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else.\nAssistant: Au",
+            "score": 0.3408803469992936,
+            "rank": 5,
+            "char_count": 152,
+            "estimated_tokens": 38,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t4"
+        ]
+      },
+      {
+        "turn_number": 10,
+        "user_input": "Baseline check ten: what is the positive square root of 81? Reply with the digits only, nothing else.",
+        "agent_response": "9",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "9",
+            "passed": true,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 12096.835900098085,
+        "token_usage": {
+          "input_tokens": 541,
+          "output_tokens": 2,
+          "total_tokens": 543,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 541,
+        "completion_tokens": 2,
+        "total_tokens": 543,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1119,
+        "retrieved_context_tokens": 279,
+        "embedding_tokens": 55,
+        "retrieval_latency_ms": 212.31199987232685,
+        "append_latency_ms": 2269.446999998763,
+        "embedding_latency_ms": 2480.93119985424,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else.\nAssistant: Mercury",
+            "score": 0.45986935883600566,
+            "rank": 1,
+            "char_count": 148,
+            "estimated_tokens": 37,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else.\nAssistant: 0",
+            "score": 0.4434499717555996,
+            "rank": 2,
+            "char_count": 177,
+            "estimated_tokens": 44,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else.\nAssistant: Tokyo",
+            "score": 0.4231691188382965,
+            "rank": 3,
+            "char_count": 124,
+            "estimated_tokens": 31,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else.\nAssistant: 6",
+            "score": 0.40873174640256676,
+            "rank": 4,
+            "char_count": 125,
+            "estimated_tokens": 31,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else.\nAssistant: Au",
+            "score": 0.3507346851907931,
+            "rank": 5,
+            "char_count": 152,
+            "estimated_tokens": 38,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t5"
+        ]
+      }
+    ],
+    "timestamp": "2026-10-27T13:20:22.307212+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": "memory/overhead_baseline_01_deepseek-v4-flash_baseline_react_ccc381da",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 21,
+    "cached_prompt_tokens": 0,
+    "retrieved_context_tokens": 1395,
+    "embedding_tokens": 618,
+    "total_retrieval_latency_ms": 1995.6093993969262,
+    "total_append_latency_ms": 9345.390299800783,
+    "total_embedding_latency_ms": 11334.397800499573,
+    "ingestion_latency_ms": 0.0
+  }
+]

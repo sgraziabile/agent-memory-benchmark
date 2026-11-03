@@ -1,0 +1,1031 @@
+[
+  {
+    "run_id": "top_k_saturation_01_deepseek-v4-flash_baseline_react_45c75bae",
+    "scenario_id": "top_k_saturation_01",
+    "model_id": "deepseek-v4-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 12,
+    "total_assertions": 10,
+    "passed_assertions": 10,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 36690.77070034109,
+    "avg_latency_per_turn_ms": 3057.564225028424,
+    "total_tokens": 6283,
+    "prompt_tokens": 6111,
+    "completion_tokens": 172,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Inventory log entry for the March 2026 datacenter audit: Room 1 (primary fiber demarcation cage) has backup power UPS unit serial UPS-7C41, last inspected March 2026. Confirm in under five words.",
+        "agent_response": "UPS-7C41 in Room 1.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 8546.808399958536,
+        "token_usage": {
+          "input_tokens": 124,
+          "output_tokens": 11,
+          "total_tokens": 135,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 124,
+        "completion_tokens": 11,
+        "total_tokens": 135,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 58,
+        "retrieval_latency_ms": 0.01100008375942707,
+        "append_latency_ms": 4185.445400187746,
+        "embedding_latency_ms": 4185.3759998921305,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ]
+      },
+      {
+        "turn_number": 2,
+        "user_input": "Inventory log entry: Room 3 (where we keep the frozen biological tissue samples at minus eighty Celsius) uses UPS unit serial UPS-7C42, last inspected March 2026. Confirm in under five words.",
+        "agent_response": "UPS-7C42 in Room 3.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2526.1655000504106,
+        "token_usage": {
+          "input_tokens": 182,
+          "output_tokens": 11,
+          "total_tokens": 193,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 182,
+        "completion_tokens": 11,
+        "total_tokens": 193,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 104,
+        "retrieval_latency_ms": 355.2155001088977,
+        "append_latency_ms": 455.99980000406504,
+        "embedding_latency_ms": 810.3257000911981,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t2"
+        ]
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Inventory log entry for the March 2026 datacenter audit: Room 4 (core packet-switching hall) has backup power UPS unit serial UPS-7C44, last inspected March 2026. Confirm in under five words.",
+        "agent_response": "UPS-7C44 in Room 4.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3235.1337999571115,
+        "token_usage": {
+          "input_tokens": 245,
+          "output_tokens": 11,
+          "total_tokens": 256,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 245,
+        "completion_tokens": 11,
+        "total_tokens": 256,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 104,
+        "retrieval_latency_ms": 382.4990999419242,
+        "append_latency_ms": 464.6560999099165,
+        "embedding_latency_ms": 846.5195000171661,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t3"
+        ]
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Inventory log entry for the March 2026 datacenter audit: Room 6 (optical cross-connect bay) has backup power UPS unit serial UPS-7C46, last inspected March 2026. Confirm in under five words.",
+        "agent_response": "UPS-7C46 in Room 6.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2321.7658000066876,
+        "token_usage": {
+          "input_tokens": 308,
+          "output_tokens": 11,
+          "total_tokens": 319,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 308,
+        "completion_tokens": 11,
+        "total_tokens": 319,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 256,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 103,
+        "retrieval_latency_ms": 366.1648998968303,
+        "append_latency_ms": 459.09080002456903,
+        "embedding_latency_ms": 824.6661999728531,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t4"
+        ]
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Inventory log entry for the March 2026 datacenter audit: Room 7 (magnetic tape archive vault) has backup power UPS unit serial UPS-7C47, last inspected March 2026. Confirm in under five words.",
+        "agent_response": "UPS-7C47 in Room 7.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2056.535999989137,
+        "token_usage": {
+          "input_tokens": 371,
+          "output_tokens": 11,
+          "total_tokens": 382,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 371,
+        "completion_tokens": 11,
+        "total_tokens": 382,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 256,
+        "retrieved_context_chars": 0,
+        "retrieved_context_tokens": 0,
+        "embedding_tokens": 105,
+        "retrieval_latency_ms": 372.19229992479086,
+        "append_latency_ms": 460.4079001583159,
+        "embedding_latency_ms": 831.9454002194107,
+        "retrieved_memories": [],
+        "appended_chunk_ids": [
+          "ep_s1_t5"
+        ]
+      },
+      {
+        "turn_number": 6,
+        "user_input": "Continuing the inventory log entries for the March 2026 datacenter audit: Room 2 (south diesel generator hall) has backup power UPS unit serial UPS-7C40, last inspected March 2026. Confirm in under five words.",
+        "agent_response": "UPS-7C40 in Room 2.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2560.5289000086486,
+        "token_usage": {
+          "input_tokens": 597,
+          "output_tokens": 11,
+          "total_tokens": 608,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 597,
+        "completion_tokens": 11,
+        "total_tokens": 608,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1537,
+        "retrieved_context_tokens": 384,
+        "embedding_tokens": 113,
+        "retrieval_latency_ms": 390.2149999048561,
+        "append_latency_ms": 474.0747001487762,
+        "embedding_latency_ms": 863.6383998673409,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 4 (core packet-switching hall) has backup power UPS unit serial UPS-7C44, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C44 in Room 4.",
+            "score": 0.9177489319420149,
+            "rank": 1,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 7 (magnetic tape archive vault) has backup power UPS unit serial UPS-7C47, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C47 in Room 7.",
+            "score": 0.9069326768244618,
+            "rank": 2,
+            "char_count": 229,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 6 (optical cross-connect bay) has backup power UPS unit serial UPS-7C46, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C46 in Room 6.",
+            "score": 0.8985855078787015,
+            "rank": 3,
+            "char_count": 227,
+            "estimated_tokens": 56,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 1 (primary fiber demarcation cage) has backup power UPS unit serial UPS-7C41, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C41 in Room 1.",
+            "score": 0.8933451093805879,
+            "rank": 4,
+            "char_count": 232,
+            "estimated_tokens": 58,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Inventory log entry: Room 3 (where we keep the frozen biological tissue samples at minus eighty Celsius) uses UPS unit serial UPS-7C42, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C42 in Room 3.",
+            "score": 0.7850211460102637,
+            "rank": 5,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ]
+      },
+      {
+        "turn_number": 7,
+        "user_input": "Inventory log entry for the March 2026 datacenter audit: Room 5 (main battery containment annex) has backup power UPS unit serial UPS-7C45, last inspected March 2026. Confirm in under five words.",
+        "agent_response": "UPS-7C45 in Room 5.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3115.0575999636203,
+        "token_usage": {
+          "input_tokens": 659,
+          "output_tokens": 11,
+          "total_tokens": 670,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 659,
+        "completion_tokens": 11,
+        "total_tokens": 670,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1537,
+        "retrieved_context_tokens": 384,
+        "embedding_tokens": 106,
+        "retrieval_latency_ms": 390.58250002563,
+        "append_latency_ms": 449.22650000080466,
+        "embedding_latency_ms": 839.0975999645889,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 4 (core packet-switching hall) has backup power UPS unit serial UPS-7C44, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C44 in Room 4.",
+            "score": 0.9355796067211459,
+            "rank": 1,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 7 (magnetic tape archive vault) has backup power UPS unit serial UPS-7C47, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C47 in Room 7.",
+            "score": 0.9325898637869007,
+            "rank": 2,
+            "char_count": 229,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 1 (primary fiber demarcation cage) has backup power UPS unit serial UPS-7C41, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C41 in Room 1.",
+            "score": 0.9265738134092373,
+            "rank": 3,
+            "char_count": 232,
+            "estimated_tokens": 58,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 6 (optical cross-connect bay) has backup power UPS unit serial UPS-7C46, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C46 in Room 6.",
+            "score": 0.9262840360572447,
+            "rank": 4,
+            "char_count": 227,
+            "estimated_tokens": 56,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Inventory log entry: Room 3 (where we keep the frozen biological tissue samples at minus eighty Celsius) uses UPS unit serial UPS-7C42, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C42 in Room 3.",
+            "score": 0.8154662043135729,
+            "rank": 5,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ]
+      },
+      {
+        "turn_number": 8,
+        "user_input": "Inventory log entry for the March 2026 datacenter audit: Room 8 (redundant switchgear gallery) has backup power UPS unit serial UPS-7C48, last inspected March 2026. Confirm in under five words.",
+        "agent_response": "UPS-7C48 in Room 8.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2614.154300186783,
+        "token_usage": {
+          "input_tokens": 724,
+          "output_tokens": 11,
+          "total_tokens": 735,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 724,
+        "completion_tokens": 11,
+        "total_tokens": 735,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1537,
+        "retrieved_context_tokens": 384,
+        "embedding_tokens": 105,
+        "retrieval_latency_ms": 378.45660001039505,
+        "append_latency_ms": 482.7534998767078,
+        "embedding_latency_ms": 859.9109000060707,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 4 (core packet-switching hall) has backup power UPS unit serial UPS-7C44, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C44 in Room 4.",
+            "score": 0.9166293607922545,
+            "rank": 1,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 6 (optical cross-connect bay) has backup power UPS unit serial UPS-7C46, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C46 in Room 6.",
+            "score": 0.9075268692684897,
+            "rank": 2,
+            "char_count": 227,
+            "estimated_tokens": 56,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 7 (magnetic tape archive vault) has backup power UPS unit serial UPS-7C47, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C47 in Room 7.",
+            "score": 0.9027869199614982,
+            "rank": 3,
+            "char_count": 229,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 1 (primary fiber demarcation cage) has backup power UPS unit serial UPS-7C41, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C41 in Room 1.",
+            "score": 0.8975148053592666,
+            "rank": 4,
+            "char_count": 232,
+            "estimated_tokens": 58,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Inventory log entry: Room 3 (where we keep the frozen biological tissue samples at minus eighty Celsius) uses UPS unit serial UPS-7C42, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C42 in Room 3.",
+            "score": 0.7813826852438976,
+            "rank": 5,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t3"
+        ]
+      },
+      {
+        "turn_number": 9,
+        "user_input": "Inventory log entry for the March 2026 datacenter audit: Room 9 (rooftop chiller control plant) has backup power UPS unit serial UPS-7C49, last inspected March 2026. Confirm in under five words.",
+        "agent_response": "UPS-7C49 in Room 9.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1976.4994999859482,
+        "token_usage": {
+          "input_tokens": 789,
+          "output_tokens": 11,
+          "total_tokens": 800,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 789,
+        "completion_tokens": 11,
+        "total_tokens": 800,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1537,
+        "retrieved_context_tokens": 384,
+        "embedding_tokens": 105,
+        "retrieval_latency_ms": 407.58930006995797,
+        "append_latency_ms": 490.1318000629544,
+        "embedding_latency_ms": 896.7692002188414,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 4 (core packet-switching hall) has backup power UPS unit serial UPS-7C44, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C44 in Room 4.",
+            "score": 0.9081374808168311,
+            "rank": 1,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 7 (magnetic tape archive vault) has backup power UPS unit serial UPS-7C47, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C47 in Room 7.",
+            "score": 0.9024388061215538,
+            "rank": 2,
+            "char_count": 229,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 6 (optical cross-connect bay) has backup power UPS unit serial UPS-7C46, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C46 in Room 6.",
+            "score": 0.8991880919068381,
+            "rank": 3,
+            "char_count": 227,
+            "estimated_tokens": 56,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 1 (primary fiber demarcation cage) has backup power UPS unit serial UPS-7C41, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C41 in Room 1.",
+            "score": 0.8887686041147738,
+            "rank": 4,
+            "char_count": 232,
+            "estimated_tokens": 58,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Inventory log entry: Room 3 (where we keep the frozen biological tissue samples at minus eighty Celsius) uses UPS unit serial UPS-7C42, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C42 in Room 3.",
+            "score": 0.7969516367741097,
+            "rank": 5,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t4"
+        ]
+      },
+      {
+        "turn_number": 10,
+        "user_input": "Inventory log entry for the March 2026 datacenter audit: Room 10 (network operations mezzanine) has backup power UPS unit serial UPS-7C50, last inspected March 2026. Confirm in under five words.",
+        "agent_response": "UPS-7C50 in Room 10.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 2430.396900046617,
+        "token_usage": {
+          "input_tokens": 852,
+          "output_tokens": 11,
+          "total_tokens": 863,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 852,
+        "completion_tokens": 11,
+        "total_tokens": 863,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1537,
+        "retrieved_context_tokens": 384,
+        "embedding_tokens": 106,
+        "retrieval_latency_ms": 384.82290017418563,
+        "append_latency_ms": 487.7916001714766,
+        "embedding_latency_ms": 871.6033999808133,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 4 (core packet-switching hall) has backup power UPS unit serial UPS-7C44, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C44 in Room 4.",
+            "score": 0.9233272677828646,
+            "rank": 1,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 7 (magnetic tape archive vault) has backup power UPS unit serial UPS-7C47, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C47 in Room 7.",
+            "score": 0.9199632332171017,
+            "rank": 2,
+            "char_count": 229,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 6 (optical cross-connect bay) has backup power UPS unit serial UPS-7C46, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C46 in Room 6.",
+            "score": 0.9193376604902671,
+            "rank": 3,
+            "char_count": 227,
+            "estimated_tokens": 56,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 1 (primary fiber demarcation cage) has backup power UPS unit serial UPS-7C41, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C41 in Room 1.",
+            "score": 0.9144619136978381,
+            "rank": 4,
+            "char_count": 232,
+            "estimated_tokens": 58,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Inventory log entry: Room 3 (where we keep the frozen biological tissue samples at minus eighty Celsius) uses UPS unit serial UPS-7C42, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C42 in Room 3.",
+            "score": 0.7955861118320721,
+            "rank": 5,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t5"
+        ]
+      },
+      {
+        "turn_number": 11,
+        "user_input": "Hi, new session. For the March 2026 datacenter audit, what is the backup power UPS unit serial for the cold-storage medical biobank chamber?",
+        "agent_response": "I don't have any information about a cold-storage medical biobank chamber from the March 2026 datacenter audit. The rooms I have records for are Room 2, Room 4, Room 5, Room 7, and Room 10.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3174.8831002041698,
+        "token_usage": {
+          "input_tokens": 586,
+          "output_tokens": 56,
+          "total_tokens": 642,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 586,
+        "completion_tokens": 56,
+        "total_tokens": 642,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 56,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1560,
+        "retrieved_context_tokens": 390,
+        "embedding_tokens": 121,
+        "retrieval_latency_ms": 270.2186000533402,
+        "append_latency_ms": 656.8892998620868,
+        "embedding_latency_ms": 926.2450998649001,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 4 (core packet-switching hall) has backup power UPS unit serial UPS-7C44, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C44 in Room 4.",
+            "score": 0.7747302794721412,
+            "rank": 1,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 7 (magnetic tape archive vault) has backup power UPS unit serial UPS-7C47, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C47 in Room 7.",
+            "score": 0.7723062194452365,
+            "rank": 2,
+            "char_count": 229,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 5 (main battery containment annex) has backup power UPS unit serial UPS-7C45, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C45 in Room 5.",
+            "score": 0.7699042854445588,
+            "rank": 3,
+            "char_count": 232,
+            "estimated_tokens": 58,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t1",
+            "session_id": "s2",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Continuing the inventory log entries for the March 2026 datacenter audit: Room 2 (south diesel generator hall) has backup power UPS unit serial UPS-7C40, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C40 in Room 2.",
+            "score": 0.7671140897167681,
+            "rank": 4,
+            "char_count": 246,
+            "estimated_tokens": 61,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t5",
+            "session_id": "s2",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 10 (network operations mezzanine) has backup power UPS unit serial UPS-7C50, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C50 in Room 10.",
+            "score": 0.7667627206631705,
+            "rank": 5,
+            "char_count": 232,
+            "estimated_tokens": 58,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t1"
+        ]
+      },
+      {
+        "turn_number": 12,
+        "user_input": "For the audit form, reply with ONLY the exact UPS unit serial for the cold-storage medical biobank chamber (for example: UPS-1A00), nothing else.",
+        "agent_response": "UPS-7C42",
+        "assertions_passed": 10,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "UPS-7C42",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "UPS-7C41",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "UPS-7C44",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "UPS-7C46",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "UPS-7C47",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "UPS-7C40",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "UPS-7C45",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "UPS-7C48",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "UPS-7C49",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "UPS-7C50",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 2132.840899983421,
+        "token_usage": {
+          "input_tokens": 674,
+          "output_tokens": 6,
+          "total_tokens": 680,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 674,
+        "completion_tokens": 6,
+        "total_tokens": 680,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 6,
+        "cached_prompt_tokens": 0,
+        "retrieved_context_chars": 1542,
+        "retrieved_context_tokens": 385,
+        "embedding_tokens": 78,
+        "retrieval_latency_ms": 330.94339980743825,
+        "append_latency_ms": 359.18990010395646,
+        "embedding_latency_ms": 689.121900126338,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Inventory log entry: Room 3 (where we keep the frozen biological tissue samples at minus eighty Celsius) uses UPS unit serial UPS-7C42, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C42 in Room 3.",
+            "score": 0.7597467006429225,
+            "rank": 1,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 5 (main battery containment annex) has backup power UPS unit serial UPS-7C45, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C45 in Room 5.",
+            "score": 0.6798693894072838,
+            "rank": 2,
+            "char_count": 232,
+            "estimated_tokens": 58,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t5",
+            "session_id": "s1",
+            "turn_number": 5,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 7 (magnetic tape archive vault) has backup power UPS unit serial UPS-7C47, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C47 in Room 7.",
+            "score": 0.678976910921622,
+            "rank": 3,
+            "char_count": 229,
+            "estimated_tokens": 57,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 1 (primary fiber demarcation cage) has backup power UPS unit serial UPS-7C41, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C41 in Room 1.",
+            "score": 0.6690088791056368,
+            "rank": 4,
+            "char_count": 232,
+            "estimated_tokens": 58,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: Inventory log entry for the March 2026 datacenter audit: Room 4 (core packet-switching hall) has backup power UPS unit serial UPS-7C44, last inspected March 2026. Confirm in under five words.\nAssistant: UPS-7C44 in Room 4.",
+            "score": 0.6687351772194194,
+            "rank": 5,
+            "char_count": 228,
+            "estimated_tokens": 57,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t2"
+        ]
+      }
+    ],
+    "timestamp": "2026-10-27T15:47:49.279579+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "memory_snapshot_path": "memory/top_k_saturation_01_deepseek-v4-flash_baseline_react_45c75bae",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 172,
+    "cached_prompt_tokens": 512,
+    "retrieved_context_tokens": 2695,
+    "embedding_tokens": 1208,
+    "total_retrieval_latency_ms": 4028.9111000020057,
+    "total_append_latency_ms": 9425.657300511375,
+    "total_embedding_latency_ms": 13445.219300221652,
+    "ingestion_latency_ms": 0.0
+  }
+]

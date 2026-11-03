@@ -1,0 +1,120 @@
+# ─────────────────────────────────────────────────────────────────
+# test_document_needle_01.yaml — Needle in an Ingested Document
+# ─────────────────────────────────────────────────────────────────
+# Plan WS-D (TODOs/phase-2-l2-completion-plan.md §4), hardened per
+# TODOs/phase-2-l2-document-stress-plan.md §4 (defects X5 + X8, fixed 2026-11-02).
+#
+# The access policy is ingested as a DOCUMENT (source="document", session
+# "corpus") before turn 1, never as a chat turn. Session s2 opens a fresh
+# thread, so a checkpointer (L1) cannot answer; only a cross-thread store with
+# document chunks (L2) can.
+#
+# Fixes applied:
+#   X5  Retrieval is now SELECTIVE by construction. Previously the corpus was a
+#       single document (4 chunks) under top_k=5, so every document chunk was
+#       guaranteed to be in context on every turn and the scenario measured
+#       ingestion plumbing rather than retrieval. A second, topically adjacent
+#       document (ops_handbook.md -> 3 chunks) brings the document corpus to 7
+#       chunks against top_k=5, and both graded turns now pin
+#       `must_retrieve_chunk: doc_policy_v1`.
+#   X8  T5 is a precision probe: memory is injected on 100% of turns (run
+#       20261102_113541 spent 3,817 chars of a 951-token prompt on chit-chat),
+#       so the corpus identifier must not leak into an unrelated answer.
+#
+# Ablation contract:
+#   L0 → fails (no memory at all)
+#   L1 → fails (documents live in the long-term store, not in the thread)
+#   L2 → passes (policy chunks retrieved by similarity, in a new session)
+
+id: document_needle_01
+name: "Needle in an Ingested Document (Document Memory Gate)"
+description: >
+  The Northwind access policy is ingested into long-term memory as a document
+  before the conversation starts, alongside a topically adjacent operations
+  handbook that makes the document corpus larger than the retrieval budget.
+  Session s1 is ordinary chit-chat that never mentions the policy. Session s2 is
+  a new thread whose probes ask for two facts that exist only inside the policy
+  (the break-glass account identifier, and the role/facility that releases it).
+  Passing requires the harness to ingest documents into the memory backend, the
+  retriever to select the policy chunks over the handbook chunks, and the agent
+  to use them cross-thread.
+category: document_needle
+metadata:
+  difficulty: moderate
+  stage: "WS-D"
+  defects_fixed: ["X5", "X8"]
+  documents: ["policy_v1.md", "ops_handbook.md (distractor)"]
+  document_chars: 6460
+  document_chunks_approx: 7
+  default_top_k: 5
+  sessions: ["s1", "s2"]
+  seeded_facts: 2
+  target_research_question: "P1"
+  distractor_rationale: "ops_handbook.md is topically adjacent (same facilities, same on-call vocabulary) so it competes for slots without being able to answer either probe."
+  probe_turns:
+    turn_3: "lexical_anchor (break-glass) inside policy section 5"
+    turn_4: "compositional (section 2 roles table + section 5 custody)"
+    turn_5: "precision control (unrelated question; the identifier must not leak)"
+  expected_level_0_behavior: "Fails (0%). No memory; cannot know the document exists."
+  expected_level_1_behavior: "Fails (0%). Documents live in the cross-thread store, not the checkpointer thread."
+  expected_level_2_behavior: "Passes (100%) only if the retriever ranks policy chunks above handbook chunks and the answer is carried cross-thread."
+
+documents:
+  - doc_id: policy_v1
+    path: policy_v1.md
+    metadata:
+      title: "Northwind Datacenter Access Policy (Revision 1)"
+  - doc_id: ops_handbook
+    path: ops_handbook.md
+    metadata:
+      title: "Northwind Operations Handbook: Service Ports and Endpoints"
+
+turns:
+  # ── Session s1: unrelated chit-chat, no policy mention ──────────
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "Hi! I'm going to use you as my assistant for the platform team this week."
+    assertions: []
+
+  - turn_number: 2
+    session_id: s1
+    role: user
+    content: "In two sentences, what is the difference between a rolling restart and a blue-green deployment?"
+    assertions: []
+
+  # ── Session s2: new thread, document-only facts ────────────────
+  - turn_number: 3
+    session_id: s2
+    role: user
+    content: "I'm back in a new working session. According to our access policy, what is the break-glass emergency account identifier?"
+    assertions:
+      - type: must_contain
+        value: "iris-breakglass-77"
+        case_sensitive: false
+      - type: must_retrieve_chunk
+        value: "doc_policy_v1"
+
+  - turn_number: 4
+    session_id: s2
+    role: user
+    content: "Which role is allowed to release that break-glass credential, and at which facility is it sealed?"
+    assertions:
+      - type: must_contain
+        value: "incident commander"
+        case_sensitive: false
+      - type: must_contain
+        value: "Rosario"
+        case_sensitive: false
+      - type: must_retrieve_chunk
+        value: "doc_policy_v1"
+
+  # ── Precision probe (X8): memory must not leak unprompted ──────
+  - turn_number: 5
+    session_id: s2
+    role: user
+    content: "Unrelated: how do I rotate a TLS certificate without downtime?"
+    assertions:
+      - type: must_not_contain
+        value: "iris-breakglass-77"
+        case_sensitive: false

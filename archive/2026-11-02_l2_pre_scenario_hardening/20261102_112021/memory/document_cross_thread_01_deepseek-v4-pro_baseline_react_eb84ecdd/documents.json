@@ -1,0 +1,62 @@
+[
+  {
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "timestamp": "2026-11-02T14:20:21.584667+00:00",
+    "metadata": {
+      "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+      "doc_id": "ops_handbook",
+      "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+      "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+      "parent_chunk_id": "doc_ops_handbook",
+      "chunk_index": 0,
+      "chunk_count": 3
+    },
+    "chunk_id": "doc_ops_handbook_c0",
+    "content": "# Northwind Operations Handbook: Service Ports and Endpoints\n\nThis handbook lists the listening ports for every internal Northwind service.\nPorts are allocated in blocks: telemetry services use 74xx, control-plane\nservices use 84xx, and storage services use 94xx. Do not reuse a port across\nenvironments; the service registry enforces uniqueness per environment.\n\n## 1. Telemetry pipeline\n\nThe log shipper listens on port 7411. The metrics collector listens on port\n7422. The trace aggregator listens on port 7433. The ingestion gateway for the\ntelemetry pipeline listens on port 7443. The retention compactor listens on\nport 7455.\n\nEach telemetry service exposes a health endpoint on `/healthz`, which returns\n`200 OK` once the service has replayed its local write-ahead log.\n\n## 2. Control plane\n\nThe scheduler listens on port 8411. The admission controller listens on port\n8422. The policy engine listens on port 8433. The audit relay listens on port\n8444. The certificate rotation agent listens on port 8455.\n\nThe control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services",
+    "char_count": 1178,
+    "estimated_tokens": 294,
+    "vector_l2_norm": 0.9999997521322367
+  },
+  {
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "timestamp": "2026-11-02T14:20:21.584667+00:00",
+    "metadata": {
+      "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+      "doc_id": "ops_handbook",
+      "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+      "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+      "parent_chunk_id": "doc_ops_handbook",
+      "chunk_index": 1,
+      "chunk_count": 3
+    },
+    "chunk_id": "doc_ops_handbook_c1",
+    "content": "The control plane tolerates a single broker failure. A second failure in the\nsame availability zone triggers a page to the on-call rotation.\n\n## 3. Storage services\n\nThe block store listens on port 9411. The object store listens on port 9422.\nThe cold archive endpoint listens on port 9433. The replica synchronizer\nlistens on port 9444.\n\nCold archives are written once and read rarely. Retrieval requests are queued\nand may take up to four hours to complete.\n\n## 4. Facility and cooling\n\nThe Rosario facility hosts rows R1 through R8. Row R3 holds the cold-storage\nmedical biobank chamber, which must stay at minus eighty Celsius. Row R6 holds\nthe network core. The Buenos Aires facility holds only disaster-recovery\nreplicas and no primary workloads.\n\nFacility alarms route to the facilities mailbox. Environmental alarms above\n30 degrees Celsius escalate to the on-call rotation automatically.\n\n## 5. Escalation contacts\n\nThe escalation lead for the Rosario facility is Elena Rostova. The escalation\nlead for the Buenos Aires facility is Mateo Ferreira. The failover cluster\nidentifier for the disaster-recovery pair is `dr-atlas-04`.",
+    "char_count": 1137,
+    "estimated_tokens": 284,
+    "vector_l2_norm": 1.000000192923547
+  },
+  {
+    "session_id": "corpus",
+    "turn_number": 0,
+    "source": "document",
+    "timestamp": "2026-11-02T14:20:21.584667+00:00",
+    "metadata": {
+      "title": "Northwind Operations Handbook: Service Ports and Endpoints",
+      "doc_id": "ops_handbook",
+      "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\ops_handbook.md",
+      "sha256": "15b48052162a9b81694ebb01ec3b25271e4e46802baa922c19af64fdcae89881",
+      "parent_chunk_id": "doc_ops_handbook",
+      "chunk_index": 2,
+      "chunk_count": 3
+    },
+    "chunk_id": "doc_ops_handbook_c2",
+    "content": "Escalation contacts rotate every quarter. The on-call schedule is published on\nthe internal status page and is authoritative over this handbook.\n\n## 6. Backup windows\n\nFull backups run on Sunday between 01:00 and 04:00 local time. Incremental\nbackups run daily between 02:00 and 03:00. A restore drill is executed on the\nfirst Monday of every month and its result is recorded in the audit log.\n\nBackup jobs that overrun their window are killed rather than allowed to\nencroach on the morning batch jobs.\n\n## 7. Incident severity\n\nSeverity 1 incidents are customer-visible outages and require a page within\nfive minutes. Severity 2 incidents are degraded service and require a page\nwithin thirty minutes. Severity 3 incidents are handled during business hours.\n\nEvery Severity 1 incident produces a written post-incident review within five\nbusiness days.\n\n## 8. Maintenance slots\n\nStandard maintenance runs Tuesday and Thursday between 03:00 and 05:00 local\ntime. Emergency maintenance may be scheduled at any time with a Level-3\napproval. Rebooting a production-tier service is not a maintenance slot; it is\na change and follows the access policy.",
+    "char_count": 1146,
+    "estimated_tokens": 286,
+    "vector_l2_norm": 0.9999997144957649
+  }
+]

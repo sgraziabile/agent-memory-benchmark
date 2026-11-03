@@ -1,0 +1,84 @@
+# ─────────────────────────────────────────────────────────────────
+# test_3hop_temporal_01.yaml — Deep Temporal Multi-Hop (3 hops)
+# ─────────────────────────────────────────────────────────────────
+# Stage 3.2 (TODOs/test-expansion-plan.md). Extends
+# temporal_multi_hop_01 (2 hops) to a 3-hop chain plus a policy rule,
+# with premises presented OUT of chain order and city decoys planted
+# at each truncated-path depth (1-hop, 2-hop, sibling team).
+# Single session: every premise stays inside L1's context window, so
+# this measures in-window composition, not cross-session memory.
+# ─────────────────────────────────────────────────────────────────
+
+id: 3hop_temporal_01
+name: "Deep Temporal Multi-Hop (3 Hops)"
+description: >
+  A policy rule (people work from their assigned team's office) and three
+  chained facts (Elena reports to Tomás; Tomás's reports are assigned to the
+  Andes team; the Andes team moved into the Montevideo office last week) are
+  spread across turns in scrambled order, separated by distractors. Each
+  premise turn also carries a decoy city on a truncated reasoning path
+  (Salta, Quito, Rosario). The probe asks for Elena's work city and requires
+  all three hops plus the rule.
+category: temporal_multi_hop
+metadata:
+  difficulty: hard
+  hops: 3
+  rules: 1
+  distractor_turns: 4
+  premise_order: "hop3 (T3) → hop1 (T5) → hop2 (T7)"
+  decoys:
+    Salta: "1-hop trap. Elena's study city, not her work city."
+    Quito: "2-hop trap. Tomás's hometown, not his team's office."
+    Rosario: "Sibling trap. Pampas team office."
+  expected_level_0_behavior: "Fails. No memory across turns; safe decline."
+  expected_level_1_behavior: "Should pass. All premises in-window; failure here is a composition failure, not memory."
+  target_research_question: "P1"
+
+turns:
+  - turn_number: 1
+    role: user
+    content: "Some background on how our company organizes people: everyone works from the office of the team they're assigned to. There are no remote exceptions."
+    assertions: []
+
+  - turn_number: 2
+    role: user
+    content: "Unrelated question: what is the time complexity of binary search, in one sentence?"
+    assertions: []
+
+  - turn_number: 3
+    role: user
+    content: "Office news: last week the Andes team moved into our Montevideo office. The Pampas team has been working out of the Rosario office since January."
+    assertions: []
+
+  - turn_number: 4
+    role: user
+    content: "Can you give me two quick tips for running shorter meetings?"
+    assertions: []
+
+  - turn_number: 5
+    role: user
+    content: "About Elena: she reports directly to Tomás. Fun fact, she did her master's degree in Salta."
+    assertions: []
+
+  - turn_number: 6
+    role: user
+    content: "What's the chemical formula of table salt?"
+    assertions: []
+
+  - turn_number: 7
+    role: user
+    content: "And Tomás leads the Andes team. All of his direct reports are assigned to it. He grew up in Quito, so he flies back there a lot."
+    assertions: []
+
+  - turn_number: 8
+    role: user
+    content: "Suggest a short name for a team Slack channel about onboarding."
+    assertions: []
+
+  - turn_number: 9
+    role: user
+    content: "Elena asked me where to ship her new laptop. Based on everything I've told you, which city does she work from these days? Answer with the city name only."
+    assertions:
+      - type: must_contain
+        value: "Montevideo"
+        case_sensitive: false

@@ -1,0 +1,98 @@
+[
+  {
+    "chunk_id": "ep_s1_t1",
+    "session_id": "s1",
+    "turn_number": 1,
+    "source": "chat",
+    "content": "User: Platform configuration note: server srv-alpha runs its admin console on port 7443 and uses maintenance window Tuesday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-alpha admin console 7443.",
+    "char_count": 242,
+    "estimated_tokens": 60,
+    "timestamp": "2026-10-27T15:52:27.757911+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.0000001680927624
+  },
+  {
+    "chunk_id": "ep_s1_t2",
+    "session_id": "s1",
+    "turn_number": 2,
+    "source": "chat",
+    "content": "User: Unrelated networking question: in one sentence, what is the main difference between TCP and UDP?\nAssistant: TCP is connection-oriented and guarantees reliable, ordered delivery of data, while UDP is connectionless and prioritizes speed over reliability.",
+    "char_count": 259,
+    "estimated_tokens": 64,
+    "timestamp": "2026-10-27T15:52:32.132460+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999999488490825
+  },
+  {
+    "chunk_id": "ep_s1_t3",
+    "session_id": "s1",
+    "turn_number": 3,
+    "source": "chat",
+    "content": "User: Platform configuration note: server srv-gamma runs its admin console on port 7999 and uses maintenance window Thursday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-gamma admin console 7999.",
+    "char_count": 243,
+    "estimated_tokens": 60,
+    "timestamp": "2026-10-27T15:52:34.514081+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999998712814943
+  },
+  {
+    "chunk_id": "ep_s2_t1",
+    "session_id": "s2",
+    "turn_number": 1,
+    "source": "chat",
+    "content": "User: Platform configuration note: server srv-beta runs its admin console on port 7080 and uses maintenance window Wednesday 03:00 UTC; the platform team owns it. Confirm in under five words.\nAssistant: Confirmed: srv-beta admin console 7080.",
+    "char_count": 242,
+    "estimated_tokens": 60,
+    "timestamp": "2026-10-27T15:52:36.767839+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999998064118745
+  },
+  {
+    "chunk_id": "ep_s2_t2",
+    "session_id": "s2",
+    "turn_number": 2,
+    "source": "chat",
+    "content": "User: Quick side question: in one sentence, what is the purpose of a TLS handshake?\nAssistant: The purpose of a TLS handshake is to authenticate the server (and optionally the client), negotiate encryption algorithms, and establish a shared session key for secure communication.",
+    "char_count": 278,
+    "estimated_tokens": 69,
+    "timestamp": "2026-10-27T15:52:38.686719+00:00",
+    "metadata": {},
+    "vector_l2_norm": 0.9999997233285742
+  },
+  {
+    "chunk_id": "ep_s3_t1",
+    "session_id": "s3",
+    "turn_number": 1,
+    "source": "chat",
+    "content": "User: Hi, new session. I'm reviewing the platform team's server inventory. What admin console ports are configured for srv-alpha and srv-beta?\nAssistant: Based on the platform configuration notes from earlier sessions:\n\n- **srv-alpha**: admin console on port **7443**\n- **srv-beta**: admin console on port **7080**",
+    "char_count": 314,
+    "estimated_tokens": 78,
+    "timestamp": "2026-10-27T15:52:40.898054+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.000000556890844
+  },
+  {
+    "chunk_id": "ep_s3_t2",
+    "session_id": "s3",
+    "turn_number": 2,
+    "source": "chat",
+    "content": "User: For the firewall rule table, reply with ONLY the 4-digit admin console port number for server srv-alpha (for example: 9000), nothing else.\nAssistant: 7443",
+    "char_count": 160,
+    "estimated_tokens": 40,
+    "timestamp": "2026-10-27T15:52:44.007603+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.0000002647659418
+  },
+  {
+    "chunk_id": "ep_s3_t3",
+    "session_id": "s3",
+    "turn_number": 3,
+    "source": "chat",
+    "content": "User: Next row: reply with ONLY the 4-digit admin console port number for server srv-beta (for example: 9000), nothing else.\nAssistant: 7080",
+    "char_count": 140,
+    "estimated_tokens": 35,
+    "timestamp": "2026-10-27T15:52:45.981234+00:00",
+    "metadata": {},
+    "vector_l2_norm": 1.0000002611763312
+  }
+]

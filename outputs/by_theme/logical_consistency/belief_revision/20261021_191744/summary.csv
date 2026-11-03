@@ -1,0 +1,3 @@
+﻿run_id,scenario_id,model_id,prompt_id,agent_level,total_turns,total_assertions,passed_assertions,failed_assertions,pass_rate,error_turns,error_rate,total_latency_ms,avg_latency_per_turn_ms,total_tokens,prompt_tokens,completion_tokens,timestamp
+belief_revision_01_qwen3.6-27b_baseline_react_eba23114,belief_revision_01,qwen3.6-27b,baseline_react,level_0_reactive,5,7,2,5,0.2857142857142857,0,0.0,39753.619299968705,7950.723859993741,2404,557,1847,2026-10-21T22:15:55.851664+00:00
+belief_revision_01_qwen3.6-27b_baseline_react_db633564,belief_revision_01,qwen3.6-27b,baseline_react,level_1_working_memory,5,7,7,0,1.0,0,0.0,68586.89639973454,13717.379279946908,3128,1319,1809,2026-10-21T22:16:35.662348+00:00

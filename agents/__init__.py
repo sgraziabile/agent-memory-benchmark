@@ -15,12 +15,14 @@ import re
 from agents.base import BaseBenchmarkAgent
 from agents.level_0_reactive.graph import Level0ReactiveAgent
 from agents.level_1_working_memory.graph import Level1WorkingMemoryAgent
+from agents.level_2_episodic_rag.graph import Level2EpisodicRAGAgent
 
 __all__ = [
     "AGENT_REGISTRY",
     "BaseBenchmarkAgent",
     "Level0ReactiveAgent",
     "Level1WorkingMemoryAgent",
+    "Level2EpisodicRAGAgent",
     "resolve_level_ids",
 ]
 
@@ -28,6 +30,7 @@ __all__ = [
 AGENT_REGISTRY: dict[str, type[BaseBenchmarkAgent]] = {
     "level_0_reactive": Level0ReactiveAgent,
     "level_1_working_memory": Level1WorkingMemoryAgent,
+    "level_2_episodic_rag": Level2EpisodicRAGAgent,
 }
 
 
