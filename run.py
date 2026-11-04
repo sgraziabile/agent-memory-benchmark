@@ -84,6 +84,7 @@ def _build_memory_backend(
     *,
     chunk_size: int = 1200,
     chunk_overlap: int = 200,
+    embed_batch_size: int = 8,
 ) -> VectorMemoryBackend:
     """Construct the requested ``EpisodicMemoryBackend`` (L2+ levels only).
 
@@ -95,6 +96,10 @@ def _build_memory_backend(
     ``chunk_size`` / ``chunk_overlap`` are exposed on the CLI (plan WS-D) so
     context-heavy document runs can sweep chunking without code edits; the
     backend validates that ``chunk_overlap < chunk_size``.
+
+    ``embed_batch_size`` sets how many chunks are embedded per provider call
+    (the backend writes them through ``InMemoryStore.batch()``); keep it small
+    enough that a single call fits the embedding client's timeout.
     """
     embeddings = create_embeddings(embedding_model_id)
     dims = get_embedding_dims(embedding_model_id)
@@ -104,6 +109,7 @@ def _build_memory_backend(
         embedding_id=embedding_model_id,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
+        embed_batch_size=embed_batch_size,
     )
 
 
@@ -117,7 +123,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--model",
         "-m",
         type=str,
-        default="qwen3.6-27b",
+        default="glm-5.3-flash",
         help="Model ID from configs/models.yaml or 'provider:model_name'",
     )
     parser.add_argument(
@@ -171,6 +177,16 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=200,
         help="Character overlap between adjacent chunks (must be < --chunk-size)",
+    )
+    parser.add_argument(
+        "--embed-batch-size",
+        type=int,
+        default=8,
+        metavar="N",
+        help=(
+            "Chunks per embedding request. 8 ≈ 17-22 s on CPU Ollama; larger "
+            "windows are faster but need the embedding timeout raised."
+        ),
     )
     parser.add_argument(
         "--no-documents",
@@ -266,6 +282,9 @@ def main() -> int:
     if args.chunk_overlap < 0 or args.chunk_overlap >= args.chunk_size:
         print("Error: --chunk-overlap must be >= 0 and < --chunk-size.")
         return 1
+    if args.embed_batch_size < 1:
+        print("Error: --embed-batch-size must be >= 1.")
+        return 1
 
     # ── Filter setup ─────────────────────────────────────────────────
     scenario_ids = (
@@ -353,6 +372,7 @@ def main() -> int:
                     args.embedding_model,
                     chunk_size=args.chunk_size,
                     chunk_overlap=args.chunk_overlap,
+                    embed_batch_size=args.embed_batch_size,
                 )
             except Exception as exc:
                 print(
@@ -369,11 +389,15 @@ def main() -> int:
                 "top_k": args.top_k,
                 "chunk_size": args.chunk_size,
                 "chunk_overlap": args.chunk_overlap,
+                # Batching identity: how many chunks went into one embedding
+                # request (and therefore how a slow ingestion is explained).
+                "embed_batch_size": args.embed_batch_size,
             }
             print(
                 f"  Memory backend: {backend_name} "
                 f"(embedding: {args.embedding_model}, top_k={args.top_k}, "
-                f"chunk_size={args.chunk_size}, chunk_overlap={args.chunk_overlap})"
+                f"chunk_size={args.chunk_size}, chunk_overlap={args.chunk_overlap}, "
+                f"embed_batch_size={args.embed_batch_size})"
             )
 
         if inline_model:

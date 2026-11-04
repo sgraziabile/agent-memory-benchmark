@@ -170,6 +170,7 @@ def _new_bucket() -> dict[str, Any]:
         "corpus_chunks": None,
         "documents_ingested": None,
         "top_k": None,
+        "runs": 0,
         "ingestion_ms": 0.0,
     }
 
@@ -199,6 +200,7 @@ def collect(
         bucket["corpus_chunks"] = run.get("corpus_chunks")
         bucket["documents_ingested"] = run.get("documents_ingested")
         bucket["top_k"] = run.get("top_k")
+        bucket["runs"] += 1
         bucket["ingestion_ms"] += float(run.get("ingestion_latency_ms") or 0.0)
 
         for turn in run.get("turn_results") or []:
@@ -262,7 +264,12 @@ def summarize(bucket: dict[str, Any]) -> dict[str, Any]:
             else None
         ),
         "coverage": coverage,
-        "ingest_s": bucket["ingestion_ms"] / 1000.0,
+        # Mean per run: D16 legitimately has several runs per cell (cold and
+        # warm cache, different chat models), so summing would be misleading.
+        "ingest_s": (
+            bucket["ingestion_ms"] / 1000.0 / bucket["runs"] if bucket["runs"] else 0.0
+        ),
+        "runs": bucket["runs"],
         "errors": bucket["errors"],
     }
 
@@ -310,6 +317,7 @@ def write_csv(
                 "top_k",
                 "model_id",
                 "probes",
+                "runs",
                 "chunk_recall_at_k",
                 "ci95_low",
                 "ci95_high",
@@ -332,6 +340,7 @@ def write_csv(
                     top_k,
                     model,
                     s["probes"],
+                    s["runs"],
                     f"{s['recall']:.4f}",
                     f"{s['ci_low']:.4f}",
                     f"{s['ci_high']:.4f}",

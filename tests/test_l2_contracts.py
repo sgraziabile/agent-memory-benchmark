@@ -324,10 +324,17 @@ class TestOllamaEmbeddings:
     def test_yaml_timeout_routed_to_client_kwargs(self):
         # OllamaEmbeddings has no 'timeout'/'max_retries' fields; the YAML
         # 'timeout' must reach the underlying ollama.Client via the
-        # sync/async_client_kwargs passthroughs instead.
+        # sync/async_client_kwargs passthroughs instead. Assert routing, not a
+        # literal value, so raising the timeout for batched ingestion does not
+        # invalidate the contract.
+        from core.model_factory import load_embedding_registry
+
+        declared = load_embedding_registry(MODELS_YAML)["qwen3-embedding-0.6b"][
+            "timeout"
+        ]
         emb = create_embeddings("qwen3-embedding-0.6b", MODELS_YAML)
-        assert emb.sync_client_kwargs["timeout"] == 60.0
-        assert emb.async_client_kwargs["timeout"] == 60.0
+        assert emb.sync_client_kwargs["timeout"] == declared
+        assert emb.async_client_kwargs["timeout"] == declared
         assert "max_retries" not in type(emb).model_fields
 
     def test_builds_without_any_api_key(self, monkeypatch):

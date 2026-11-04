@@ -25,6 +25,7 @@ top-k is exact, not approximate.
 from __future__ import annotations
 
 import json
+import logging
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -33,6 +34,12 @@ from typing import Any
 from langchain_core.embeddings import Embeddings
 from langgraph.store.memory import InMemoryStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+try:  # langgraph ships ``PutOp`` today; the import stays optional so an older
+    # release degrades to per-chunk ``put()`` instead of failing at import.
+    from langgraph.store.base import PutOp
+except ImportError:  # pragma: no cover - exercised only on old langgraph
+    PutOp = None  # type: ignore[assignment]
 
 from agents.level_2_episodic_rag.backends.base import (
     AppendTelemetry,
@@ -44,8 +51,48 @@ from agents.level_2_episodic_rag.backends.base import (
     utc_now_iso,
 )
 
+logger = logging.getLogger(__name__)
+
 #: Value-field the vector index embeds (kept explicit, matches IndexConfig).
 _EMBED_FIELD = "content"
+
+
+def _is_timeout_exception(exc: BaseException) -> bool:
+    """True for provider/client timeouts, without importing httpx here.
+
+    ``httpx.ReadTimeout`` → ``"ReadTimeout"``; ``asyncio.TimeoutError`` and
+    builtin ``TimeoutError`` are both ``TimeoutError``; some clients only
+    surface the message (``"... timed out"``).
+    """
+    if isinstance(exc, TimeoutError):
+        return True
+    if "timeout" in type(exc).__name__.casefold():
+        return True
+    return "timed out" in str(exc).casefold()
+
+
+def _split_duplicate_texts(
+    window: list[tuple[str, dict[str, Any]]],
+) -> tuple[list[tuple[str, dict[str, Any]]], list[tuple[str, dict[str, Any]]]]:
+    """Partition a window into first-occurrence chunks and text duplicates.
+
+    ``InMemoryStore`` embeds only the *unique* texts of a batch but then
+    requires one vector per ``PutOp``, so duplicate content inside one batch
+    raises a store-level ``ValueError``. The caller writes the duplicates one
+    at a time instead.
+    """
+    unique: list[tuple[str, dict[str, Any]]] = []
+    duplicates: list[tuple[str, dict[str, Any]]] = []
+    seen_texts: set[str] = set()
+    for chunk_id, value in window:
+        text = value.get(_EMBED_FIELD)
+        if isinstance(text, str) and text in seen_texts:
+            duplicates.append((chunk_id, value))
+            continue
+        if isinstance(text, str):
+            seen_texts.add(text)
+        unique.append((chunk_id, value))
+    return unique, duplicates
 
 
 @dataclass
@@ -138,6 +185,7 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
         chunk_size: int = 1200,
         chunk_overlap: int = 200,
         namespace: tuple[str, ...] = ("episodes",),
+        embed_batch_size: int = 8,
     ) -> None:
         """Construct the backend.
 
@@ -152,12 +200,31 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
             chunk_size: Max characters per chunk before splitting.
             chunk_overlap: Character overlap between adjacent chunks.
             namespace: Store namespace prefix for all episodes.
+            embed_batch_size: How many chunks are handed to one
+                ``InMemoryStore.batch()`` call. ``InMemoryStore`` embeds one
+                provider call per batch, so batching is the difference
+                between one HTTP round-trip per chunk and one per window
+                (measured ~7.5× on local Ollama). ``1`` reproduces the
+                historical per-chunk behaviour exactly.
+
+                Keep the window small enough that one call fits the
+                embedding client's request timeout: on CPU Ollama a 1,200-char
+                chunk costs ~35 ms/token, so **8 chunks ≈ 17–22 s** while 16
+                chunks ≈ 35–44 s (measured) — the latter only fits because
+                ``configs/models.yaml`` raises the local embedder's timeout to
+                240 s. Timed-out windows are halved and retried, so a slow
+                request costs one retry rather than the whole ingestion.
 
         Raises:
-            ValueError: If ``chunk_overlap >= chunk_size`` or ``dims <= 0``.
+            ValueError: If ``chunk_overlap >= chunk_size``, ``dims <= 0`` or
+                ``embed_batch_size < 1``.
         """
         if dims <= 0:
             raise ValueError(f"dims must be a positive int, got {dims}")
+        if embed_batch_size < 1:
+            raise ValueError(
+                f"embed_batch_size must be >= 1, got {embed_batch_size}"
+            )
         if chunk_overlap >= chunk_size:
             raise ValueError(
                 f"chunk_overlap ({chunk_overlap}) must be < chunk_size ({chunk_size})"
@@ -168,6 +235,7 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
         self._chunk_size = chunk_size
         self._chunk_overlap = chunk_overlap
         self._namespace = tuple(namespace)
+        self._embed_batch_size = embed_batch_size
 
         # Timing proxy — the store's only view of the embedding model.
         self._proxy = _TimingEmbeddings(embeddings)
@@ -236,6 +304,117 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
             )
         return chunks
 
+    def _upsert_chunks(self, stored: list[tuple[str, dict[str, Any]]]) -> None:
+        """Persist chunks, embedding one window per ``InMemoryStore`` batch.
+
+        ``InMemoryStore.batch()`` collects the texts of *all* ``PutOp``s and
+        issues a single ``embed_documents`` call, so the window size is the
+        number of chunks per provider round-trip. Before this, ``append``
+        called ``put()`` per chunk, i.e. one HTTP call per chunk — on local
+        Ollama that was ~2.3 s/chunk instead of ~0.3 s.
+
+        The ``_chunks`` mirror is updated only after its window succeeds, so a
+        mid-ingestion provider failure leaves a consistent prefix (ids that
+        the store actually received) rather than phantom entries.
+
+        ``embed_batch_size=1`` reproduces the historical per-chunk behaviour.
+        """
+        if not stored:
+            return
+
+        store_batch = getattr(self._store, "batch", None)
+        if PutOp is None or store_batch is None:
+            for chunk_id, value in stored:
+                self._store.put(self._namespace, chunk_id, value)
+                self._chunks[chunk_id] = value
+            return
+
+        windows = [
+            stored[start : start + self._embed_batch_size]
+            for start in range(0, len(stored), self._embed_batch_size)
+        ]
+        started = time.perf_counter()
+        total = len(windows)
+
+        for index, window in enumerate(windows, start=1):
+            unique, duplicates = _split_duplicate_texts(window)
+            window_started = time.perf_counter()
+
+            if unique:
+                self._store_window(unique)
+            # ``InMemoryStore`` embeds the *unique* texts of a batch but then
+            # requires one vector per PutOp (``_insertinmem_store`` compares
+            # ``len(indices)`` to ``len(embeddings)``), so two chunks with
+            # identical content in one batch would trip a store-level
+            # ValueError. They are written one at a time instead.
+            for chunk_id, value in duplicates:
+                self._store.put(self._namespace, chunk_id, value)
+                self._chunks[chunk_id] = value
+
+            elapsed = time.perf_counter() - started
+            eta = (elapsed / index) * (total - index)
+            logger.info(
+                "embedding window %d/%d: %d chunk(s) embedded, %d written "
+                "individually, %.1fs this window, %.0fs elapsed, ETA %.0fs",
+                index,
+                total,
+                len(unique),
+                len(duplicates),
+                time.perf_counter() - window_started,
+                elapsed,
+                eta,
+            )
+
+    def _store_window(self, window: list[tuple[str, dict[str, Any]]]) -> None:
+        """Embed and store one window, halving it if the request times out.
+
+        A CPU-only embedder takes ~35–45 s per 16-chunk window, so a single
+        slow request can cross the client timeout and otherwise abort an
+        ingestion that is already minutes deep. On a timeout the window is
+        split in half and retried; a single-chunk window re-raises (there is
+        nothing left to shrink).
+
+        ``_chunks`` is mirrored only after the window (or its halves) succeed,
+        so a hard failure still leaves a consistent prefix in the mirror.
+        """
+        try:
+            self._store.batch(
+                [
+                    PutOp(self._namespace, chunk_id, value)
+                    for chunk_id, value in window
+                ]
+            )
+        except (AttributeError, TypeError) as exc:
+            # A store whose batch() contract differs (or a future langgraph
+            # that drops it) must not take ingestion down: degrade to the
+            # documented put() path for this window.
+            logger.warning(
+                "Store batch() unusable (%s) — falling back to put() for "
+                "%d chunk(s)",
+                exc,
+                len(window),
+            )
+            for chunk_id, value in window:
+                self._store.put(self._namespace, chunk_id, value)
+        except Exception as exc:  # noqa: BLE001 — re-raised unless it is a timeout
+            if not _is_timeout_exception(exc) or len(window) == 1:
+                raise
+            middle = len(window) // 2
+            logger.warning(
+                "Embedding request timed out on %d chunk(s) (%s) — retrying "
+                "as %d + %d",
+                len(window),
+                exc,
+                middle,
+                len(window) - middle,
+            )
+            self._store_window(window[:middle])
+            self._store_window(window[middle:])
+            return
+
+        for chunk_id, value in window:
+            self._chunks[chunk_id] = value
+
     # ── EpisodicMemoryBackend: append ────────────────────────────────
 
     def append(self, records: list[EpisodeRecord]) -> AppendTelemetry:
@@ -265,9 +444,7 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
                     )
                 stored.append((chunk_id, value))
 
-        for chunk_id, value in stored:
-            self._store.put(self._namespace, chunk_id, value)
-            self._chunks[chunk_id] = value
+        self._upsert_chunks(stored)
 
         stats = self._proxy.consume_stats()
         return AppendTelemetry(

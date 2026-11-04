@@ -1145,6 +1145,10 @@ class BenchmarkRunner:
                         "model_id": model_id,
                         "prompt_id": prompt_id,
                         "agent_level": agent_level,
+                        # Full backend identity (top_k, chunking, embed cache
+                        # dir + batch size): a warm ingestion and a cold one
+                        # must be distinguishable from the snapshot alone.
+                        "memory_backend_config": dict(backend_cfg),
                         # Plan WS-D provenance: which documents produced the
                         # ``source="document"`` chunks in this snapshot.
                         "documents": document_manifests,

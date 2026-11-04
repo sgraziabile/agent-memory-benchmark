@@ -415,6 +415,15 @@ that still isolates every factor, all on `deepseek-v4-flash` (L-R is model-indep
     chunk-level `Recall@k` + Wilson CI + MRR + Δcos + coverage. Each answer occurs
     **exactly once** in the corpus and never in its probe, so a correct response
     requires the gold chunk (no guess, no inference, no sibling-document shortcut).
+  - **Ingestion cost (2026-11-04):** chunks are written through
+    `InMemoryStore.batch()` windows (`--embed-batch-size`, default 8). Measured on
+    the 8-doc cell: **~154 s → 110–131 s**; the rest is token-bound (~7–10
+    ms/token), so a 200-doc cold run is ≈50 min and the 15-run grid ≈7 h.
+    A 60 s embedding timeout killed a 14-minute 60-doc ingestion on one slow
+    window, so the local embedder's timeout is now 240 s, timed-out windows are
+    halved and retried, and every window logs `window i/N · elapsed · ETA`.
+  - **Deferred:** the ingestion-embedding cache that would make a warm run ~0 s
+    is specified in `TODOs/embedding-cache-todo.md` (not implemented).
 
 #### 5.3.6 Bookkeeping required by the L-R column
 

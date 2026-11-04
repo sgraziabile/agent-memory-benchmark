@@ -590,6 +590,12 @@ class TestVectorBackendDocuments:
         assert manifest["document_chunks"] == len(documents)
         assert manifest["run_metadata"]["documents"][0]["doc_id"] == "handbook"
         assert manifest["run_metadata"]["document_ingestion"]["documents_ingested"] == 1
+        # Backend identity travels with the snapshot so a warm (cached) and a
+        # cold ingestion are distinguishable from the artifact alone.
+        assert manifest["run_metadata"]["memory_backend_config"] == {
+            "backend": "vector",
+            "top_k": 5,
+        }
 
         # Summary mirrors the store: the long document was split into chunks.
         assert summary.ingested_chunks == len(documents) > 1

@@ -109,6 +109,35 @@ It recomputes **chunk-level** Recall@k, MRR, Δcos and coverage from
 `retrieved_memories`, because the scenario assertion only pins the document
 prefix (`must_retrieve_chunk: corpus_0NN` also accepts sibling sub-chunks).
 
+### Ingestion cost: batched embedding requests
+
+Chunks are written through `InMemoryStore.batch()` windows, so one provider call
+embeds up to `--embed-batch-size` chunks instead of one call per chunk.
+
+| switch | effect |
+|---|---|
+| (always on) | one embedding request per window instead of one per chunk |
+| `--embed-batch-size N` | chunks per request. Default **8** (≈7–9 s per window on CPU Ollama); 16 windows take ≈35–44 s at `chunk_size=1200` |
+| `configs/models.yaml` → embedding `timeout: 240` | headroom for the 16-chunk case; 60 s aborted a 14-minute ingestion on a single slow window (2026-11-04) |
+| (automatic) | a **timed-out window is halved and retried**, so a slow request costs one retry instead of the whole ingestion |
+
+Every window logs its progress, so a long ingestion is observable:
+
+```
+embedding window 7/47: 8 chunk(s) embedded, 0 written individually,
+17.4s this window, 122s elapsed, ETA 1219s
+```
+
+Measured on the 8-document D16 cell (115 chunks, 15,975 embedding tokens,
+`qwen3-embedding:0.6b` on CPU): **~154 s → 110–131 s** (~1.2–1.4×; the spread is
+CPU load variance). What remains is token-bound (~7–10 ms/token on this
+machine), so a 200-document cold ingestion is still ≈50 min and the 15-run grid
+≈7 h.
+
+> **Deferred (specified, not implemented):** an on-disk cache of ingestion
+> embeddings would make a warm run ~0 s and is the only thing that makes
+> repeated sweeps cheap. See `TODOs/embedding-cache-todo.md`.
+
 Budget: ingestion is charged per tuple. Measured 2026-11-04 with
 `qwen3-embedding-0.6b` (Ollama, CPU): 8 docs ≈ 12k tokens ≈ **154 s**; at
 ≈12 ms/token the 60-doc cell is ≈20 min and the 200-doc cell ≈65 min per run.

@@ -236,6 +236,11 @@ embeddings:
     provider: ollama
     model_name: qwen3-embedding:0.6b
     dims: 1024
-    timeout: 60.0
+    # Batched ingestion sends up to --embed-batch-size chunks per request; on
+    # this CPU a 16-chunk window takes ~35-44 s, so 60 s left no headroom and
+    # a single slow window aborted a 14-minute ingestion (2026-11-04).
+    # Timed-out windows are halved and retried (vector.py), and 240 s keeps a
+    # full window comfortably inside the ceiling.
+    timeout: 240.0
     max_retries: 2
     description: "Qwen3-Embedding-0.6B — local Ollama embedding model (1024 dims; CPU-viable fallback for when the NanoGPT subscription cannot serve embeddings; pull with `ollama pull qwen3-embedding:0.6b`)"
