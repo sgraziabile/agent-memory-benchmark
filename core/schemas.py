@@ -268,6 +268,12 @@ class TurnResult(BaseModel):
         visible_output_tokens: ``max(0, completion_tokens - reasoning_tokens)``.
         cached_prompt_tokens: Prefix-cache hit tokens
               (``input_token_details.cache_read``).
+        input_cost_usd: USD billed for this turn's prompt tokens, priced from
+              the registry ``pricing.input_per_mtok`` (0.0 when the model
+              declares no pricing — cost is then unreported, never guessed).
+        output_cost_usd: USD billed for this turn's output tokens, priced from
+              ``pricing.output_per_mtok``.
+        total_cost_usd: ``input_cost_usd + output_cost_usd``.
         retrieved_context_chars: Char length of the memory block injected by
               ``retrieve_node`` (0 for L0/L1). Content only since 2026-11-02 —
               no provenance header (see the L2 stress plan §8.1).
@@ -312,6 +318,10 @@ class TurnResult(BaseModel):
     reasoning_tokens: int = 0
     visible_output_tokens: int = 0
     cached_prompt_tokens: int = 0
+    # ── Pricing (USD) — 0.0 when the registry declares no pricing ──────────
+    input_cost_usd: float = 0.0
+    output_cost_usd: float = 0.0
+    total_cost_usd: float = 0.0
     retrieved_context_chars: int = 0
     retrieved_context_tokens: int = 0
     embedding_tokens: int = 0
@@ -365,6 +375,13 @@ class BenchmarkRunSummary(BaseModel):
         reasoning_tokens: Hidden reasoning tokens summed over ok turns.
         visible_output_tokens: Visible output tokens summed over ok turns.
         cached_prompt_tokens: Prefix-cache hit tokens summed over ok turns.
+        input_cost_usd: USD billed for prompt tokens, summed over ok chat
+              turns (registry ``pricing.input_per_mtok`` × tokens / 1M).
+        output_cost_usd: USD billed for output tokens, same policy.
+        total_cost_usd: ``input_cost_usd + output_cost_usd`` for the run.
+        input_cost_per_mtok: Registry prompt price used for this run
+              (USD per 1M tokens; ``None`` = no pricing declared).
+        output_cost_per_mtok: Registry completion price used for this run.
         retrieved_context_tokens: RAG context tokens injected across the run.
         embedding_tokens: Embedding tokens across all turns, including
               ``system_event`` ingestions.
@@ -417,6 +434,15 @@ class BenchmarkRunSummary(BaseModel):
     reasoning_tokens: int = 0
     visible_output_tokens: int = 0
     cached_prompt_tokens: int = 0
+    # ── Plan §4.3 aggregated USD cost (ok chat turns, registry pricing) ────
+    input_cost_usd: float = 0.0
+    output_cost_usd: float = 0.0
+    total_cost_usd: float = 0.0
+    #: Unit prices applied to this run (USD per 1M tokens). ``None`` when the
+    #: model declares no pricing — recorded so a cost figure is reproducible
+    #: even after the live catalog price changes.
+    input_cost_per_mtok: float | None = None
+    output_cost_per_mtok: float | None = None
     retrieved_context_tokens: int = 0
     embedding_tokens: int = 0
     # ── Plan §4.3 aggregated latency metrics ───────────────────────────────

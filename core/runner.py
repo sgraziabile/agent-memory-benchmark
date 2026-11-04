@@ -95,6 +95,7 @@ from core.schemas import (
     DocumentSpec,
     TurnResult,
 )
+from core.model_factory import get_model_pricing
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +130,37 @@ def _slice_token_usage(token_usage: dict[str, Any]) -> dict[str, int]:
         "reasoning_tokens": reasoning_tokens,
         "visible_output_tokens": max(0, completion_tokens - reasoning_tokens),
         "cached_prompt_tokens": int(input_details.get("cache_read") or 0),
+    }
+
+
+def _compute_cost_usd(
+    prompt_tokens: int,
+    completion_tokens: int,
+    input_per_mtok: float | None,
+    output_per_mtok: float | None,
+) -> dict[str, float]:
+    """Price a turn's billed tokens in USD using registry unit prices.
+
+    Unit prices are USD per **million** tokens (the NanoGPT catalog's unit),
+    declared per model under ``pricing:`` in ``configs/models.yaml``.
+
+    When either price is ``None`` (model absent from the registry, inline
+    ``provider:model_name`` ids, or disconnected test doubles) all three
+    buckets are 0.0 — callers must treat 0.0 *and* ``None`` unit prices as
+    "cost unavailable" rather than reading it as a free run.
+
+    Rounding to 10 decimals keeps per-turn figures from accumulating binary
+    float noise into the run total (a turn can cost < $0.00001).
+    """
+    if input_per_mtok is None or output_per_mtok is None:
+        return {"input_cost_usd": 0.0, "output_cost_usd": 0.0, "total_cost_usd": 0.0}
+
+    input_cost = round(prompt_tokens / 1_000_000 * input_per_mtok, 10)
+    output_cost = round(completion_tokens / 1_000_000 * output_per_mtok, 10)
+    return {
+        "input_cost_usd": input_cost,
+        "output_cost_usd": output_cost,
+        "total_cost_usd": round(input_cost + output_cost, 10),
     }
 
 
@@ -633,6 +665,15 @@ class BenchmarkRunner:
         # explicit identity dict (backend, embedding_model_id, top_k, ...).
         backend_cfg = memory_backend_config or {}
 
+        # ── Registry pricing (USD per million tokens) ──────────────────────
+        # Resolved ONCE per run so every turn is priced from the same snapshot:
+        # a live catalog price change mid-sweep cannot silently make turns of
+        # one run inconsistent. ``(None, None)`` = no pricing declared (inline
+        # ``provider:model_name`` ids, test doubles) → cost stays unreported.
+        input_cost_per_mtok, output_cost_per_mtok = get_model_pricing(
+            model_id, self.config_dir / "models.yaml"
+        )
+
         config = {
             "configurable": {
                 "model_id": model_id,
@@ -790,6 +831,9 @@ class BenchmarkRunner:
             # telemetry (the exception path never reaches the assignment).
             l2_tel = _read_l2_telemetry({})
             sliced_usage = _slice_token_usage({})
+            turn_cost = _compute_cost_usd(
+                0, 0, input_cost_per_mtok, output_cost_per_mtok
+            )
             try:
                 result = agent_graph.invoke(
                     {"messages": [user_msg]},
@@ -828,6 +872,14 @@ class BenchmarkRunner:
                 # Plan §4.2 slicing: bucket raw usage into accounting channels
                 # (prompt/completion/total/reasoning/visible/cached).
                 sliced_usage = _slice_token_usage(token_usage)
+
+                # Price the turn from the registry snapshot resolved above.
+                turn_cost = _compute_cost_usd(
+                    sliced_usage["prompt_tokens"],
+                    sliced_usage["completion_tokens"],
+                    input_cost_per_mtok,
+                    output_cost_per_mtok,
+                )
 
             except Exception as exc:
                 t_end = time.perf_counter()
@@ -887,6 +939,7 @@ class BenchmarkRunner:
                         role=turn.role,
                         **sliced_usage,
                         **l2_tel,
+                        **turn_cost,
                     )
                 )
                 continue
@@ -930,6 +983,7 @@ class BenchmarkRunner:
                         role=turn.role,
                         **sliced_usage,
                         **l2_tel,
+                        **turn_cost,
                     )
                 )
                 continue
@@ -960,6 +1014,7 @@ class BenchmarkRunner:
                 role=turn.role,
                 **sliced_usage,
                 **l2_tel,
+                **turn_cost,
             )
             turn_results.append(turn_result)
 
@@ -1019,6 +1074,11 @@ class BenchmarkRunner:
         reasoning_tokens = sum(tr.reasoning_tokens for tr in ok_turns)
         visible_output_tokens = sum(tr.visible_output_tokens for tr in ok_turns)
         cached_prompt_tokens = sum(tr.cached_prompt_tokens for tr in ok_turns)
+        # USD cost uses the SAME ok-chat-turn policy as the token metrics:
+        # an errored turn's partial billing must not contaminate figures.
+        input_cost_usd = sum(tr.input_cost_usd for tr in chat_ok_turns)
+        output_cost_usd = sum(tr.output_cost_usd for tr in chat_ok_turns)
+        total_cost_usd = sum(tr.total_cost_usd for tr in chat_ok_turns)
         retrieved_context_tokens = sum(
             tr.retrieved_context_tokens for tr in turn_results
         )
@@ -1135,6 +1195,12 @@ class BenchmarkRunner:
             reasoning_tokens=reasoning_tokens,
             visible_output_tokens=visible_output_tokens,
             cached_prompt_tokens=cached_prompt_tokens,
+            # ── Plan §4.3 aggregated USD cost (registry pricing) ──────────
+            input_cost_usd=input_cost_usd,
+            output_cost_usd=output_cost_usd,
+            total_cost_usd=total_cost_usd,
+            input_cost_per_mtok=input_cost_per_mtok,
+            output_cost_per_mtok=output_cost_per_mtok,
             retrieved_context_tokens=retrieved_context_tokens,
             embedding_tokens=embedding_tokens_total,
             # ── Plan §4.3 aggregated latency metrics ──────────────────────
@@ -1380,6 +1446,13 @@ class BenchmarkRunner:
             "total_tokens",
             "prompt_tokens",
             "completion_tokens",
+            # USD cost from registry `pricing:` — unit prices are exported next
+            # to the totals so a figure stays reproducible after a price change.
+            "input_cost_usd",
+            "output_cost_usd",
+            "total_cost_usd",
+            "input_cost_per_mtok",
+            "output_cost_per_mtok",
             "timestamp",
         ]
 
@@ -1394,12 +1467,17 @@ class BenchmarkRunner:
 
         # ── Markdown Table (immediate human-friendly preview) ─────────
         md_path = run_dir / "summary.md"
-        headers = ["Scenario", "Model", "Prompt", "Level", "Turns", "Pass Rate", "Avg Latency", "Total Tokens", "Errors"]
+        headers = ["Scenario", "Model", "Prompt", "Level", "Turns", "Pass Rate", "Avg Latency", "Total Tokens", "Cost (USD)", "Errors"]
         table_rows = []
         for summary in results:
             pass_pct = f"{summary.pass_rate * 100:.1f}%"
             latency = f"{summary.avg_latency_per_turn_ms:.0f} ms"
             tokens = f"{summary.total_tokens:,}" if summary.total_tokens > 0 else "N/A"
+            priced = (
+                summary.input_cost_per_mtok is not None
+                or summary.output_cost_per_mtok is not None
+            )
+            cost = f"${summary.total_cost_usd:.6f}" if priced else "N/A"
             table_rows.append([
                 f"`{summary.scenario_id}`",
                 f"`{summary.model_id}`",
@@ -1409,6 +1487,7 @@ class BenchmarkRunner:
                 f"**{pass_pct}**",
                 latency,
                 tokens,
+                cost,
                 str(summary.error_turns),
             ])
 

@@ -5,17 +5,17 @@ from the command line.
 
 Examples:
     # Run a single scenario (NanoGPT subscription model):
-    python run.py --model qwen3.6-27b --scenario belief_revision_01
+    python run.py --model glm-5.3-flash --scenario belief_revision_01
 
     # Run with a custom provider-qualified model string:
     python run.py --model google:gemini-2.0-flash --scenario needle_haystack_01
 
     # Run with strict epistemic prompt:
-    python run.py --model qwen3.6-27b --scenario belief_revision_01 --prompt strict_epistemic
+    python run.py --model glm-5.3-flash --scenario belief_revision_01 --prompt strict_epistemic
 
     # Select agent level(s) by number — full registry names also accepted:
     python run.py --level 1 --model glm-5.3-flash --scenario belief_revision_01
-    python run.py --level 0,1 --model qwen3.6-27b --scenario belief_revision_01
+    python run.py --level 0,1 --model glm-5.3-flash --scenario belief_revision_01
 
     # List available components:
     python run.py --list-models
@@ -459,6 +459,15 @@ def _print_run_report(results: list, run_dir: Path | None = None) -> None:
         print(f"Total Time:   {res.total_latency_ms:.1f} ms")
         if res.total_tokens > 0:
             print(f"Total Tokens: {res.total_tokens:,} (prompt: {res.prompt_tokens:,}, completion: {res.completion_tokens:,})")
+        priced = (
+            res.input_cost_per_mtok is not None
+            or res.output_cost_per_mtok is not None
+        )
+        if priced:
+            print(
+                f"Total Cost:   ${res.total_cost_usd:.6f} "
+                f"(input: ${res.input_cost_usd:.6f}, output: ${res.output_cost_usd:.6f})"
+            )
         print("-" * 60)
         print("Detailed Turn Breakdown:")
         for tr in res.turn_results:
@@ -476,6 +485,8 @@ def _print_run_report(results: list, run_dir: Path | None = None) -> None:
                 )
                 if t_count:
                     tok_info = f" tokens={t_count}"
+                if priced:
+                    tok_info += f" cost=${tr.total_cost_usd:.6f}"
             print(f"  [Turn {tr.turn_number}] ({status}) latency={tr.latency_ms:.1f}ms{tok_info}")
             print(f"    User:     {tr.user_input[:80]}...")
             print(f"    Agent:    {tr.agent_response[:100]}...")

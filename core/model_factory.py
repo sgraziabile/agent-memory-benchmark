@@ -65,6 +65,19 @@ NANOGPT_API_KEY_ENV = "NANOGPT_API_KEY"
 OLLAMA_BASE_URL_ENV = "OLLAMA_BASE_URL"
 OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434"
 
+# ── Registry metadata keys ───────────────────────────────────────────────────
+# Every other YAML key is forwarded to the provider constructor as a kwarg
+# (``timeout``, ``max_retries``, ``max_tokens``, ``reasoning_effort``, ...).
+# These five are harness metadata instead:
+#   provider/model_name — select the client class and upstream model;
+#   tier/description    — human-facing labels;
+#   pricing             — USD unit prices read by ``get_model_pricing``.
+# Forwarding ``pricing`` (a dict) would push it into ``model_kwargs`` and
+# then into the request body, where providers reject unknown parameters.
+_REGISTRY_METADATA_KEYS = frozenset(
+    {"provider", "model_name", "tier", "description", "pricing"}
+)
+
 
 # ── YAML registry loader ────────────────────────────────────────────────────
 
@@ -99,6 +112,71 @@ def load_model_registry(
         )
 
     return raw["models"]
+
+
+def get_model_pricing(
+    model_id: str,
+    config_path: Path | str = _DEFAULT_MODELS_CONFIG,
+) -> tuple[float | None, float | None]:
+    """Resolve a registry model's USD unit prices.
+
+    Prices live under the entry's ``pricing:`` block and are expressed in
+    USD per **million** tokens — the unit the NanoGPT catalog publishes:
+
+    .. code-block:: yaml
+
+        pricing:
+          input_per_mtok: 0.10
+          output_per_mtok: 0.60
+
+    Args:
+        model_id: Registry key (e.g. ``"glm-5.3-flash"``). Inline
+            ``provider:model_name`` strings are not in the registry and
+            therefore carry no pricing.
+        config_path: Path to ``models.yaml``.
+
+    Returns:
+        ``(input_per_mtok, output_per_mtok)``. Both are ``None`` when the
+        model is not in the registry or declares no valid pricing block, so
+        callers can report "cost unavailable" instead of a wrong number.
+    """
+    entry = load_model_registry(config_path).get(model_id)
+    if entry is None:
+        return (None, None)
+
+    pricing = entry.get("pricing")
+    if not isinstance(pricing, dict):
+        return (None, None)
+
+    def _as_price(key: str) -> float | None:
+        value = pricing.get(key)
+        # ``bool`` is an ``int`` subclass — reject it explicitly so a YAML
+        # typo (``true``) cannot masquerade as a price.
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            logger.warning(
+                "Model %s: pricing.%s=%r is not a number — cost reporting "
+                "disabled for this entry",
+                model_id,
+                key,
+                value,
+            )
+            return None
+        if value < 0:
+            logger.warning(
+                "Model %s: pricing.%s=%r is negative — cost reporting "
+                "disabled for this entry",
+                model_id,
+                key,
+                value,
+            )
+            return None
+        return float(value)
+
+    input_price = _as_price("input_per_mtok")
+    output_price = _as_price("output_per_mtok")
+    if input_price is None or output_price is None:
+        return (None, None)
+    return (input_price, output_price)
 
 
 # ── Provider class resolver ──────────────────────────────────────────────────
@@ -195,7 +273,7 @@ def _build_model(
 
         # Extract optional configuration parameters from YAML (e.g. timeout, max_retries)
         for k, v in entry.items():
-            if k not in ("provider", "model_name", "tier", "description"):
+            if k not in _REGISTRY_METADATA_KEYS:
                 model_kwargs[k] = v
 
     # Explicit kwargs override YAML settings

@@ -25,91 +25,160 @@
 #
 # ── Subscription policy ─────────────────────────────────────────
 # ALL registered models are NanoGPT subscription models, verified
-# `subscription.included: true` against the live catalog (2026-10-09):
+# `subscription.included: true` against the live catalog (2026-11-04):
 #   GET https://api.nano-gpt.com/api/v1/models?detailed=true
-#   → 632 models in catalog, 299 subscription-included.
+#   → 640 models in catalog, 309 subscription-included.
 # "1x/2x" in descriptions = inputTokenMultiplier (2x burns input-token
-# quota twice as fast). NO anthropic/* and NO google/* models are
-# subscription-included — do not register them. Re-verify before every
-# big sweep: availability changes frequently.
+# quota twice as fast). Every entry below is 1x. NO anthropic/*, NO
+# google/* and NO openai/gpt-* models are subscription-included — do not
+# register them. Re-verify before every big sweep: availability changes
+# frequently.
+#
+# ── Pricing (USD) ───────────────────────────────────────────────
+# Each entry declares its live NanoGPT list price under `pricing:`:
+#   input_per_mtok  — USD per 1,000,000 prompt tokens
+#   output_per_mtok — USD per 1,000,000 completion tokens
+# The runner multiplies these by the per-turn billed tokens to report
+# input/output/total cost in USD (console report, summary.csv, summary.md).
+# `pricing` is HARNESS METADATA — core.model_factory never forwards it to
+# the provider client (see _REGISTRY_METADATA_KEYS); adding it as a bare
+# key would leak into the request body and cause provider 400s.
+# Re-verify prices with the same catalog call before every sweep.
+#
+# ── Intelligence ladder ─────────────────────────────────────────
+# Five levels, best → worst, two models each. Ranking backbone is the
+# Artificial Analysis Intelligence Index (2026-11-04 snapshot) restricted
+# to subscription-included routes; each level is a ±1-point band:
+#   L5 apex       33 / 32      L2 efficient  20 / 19
+#   L4 frontier   30 / 30      L1 floor       6 / 4
+#   L3 strong     28 / 27
 # ─────────────────────────────────────────────────────────────────
 
 models:
-  # ── Frontier tier (maximum capability, 1x quota) ──────────────
-  qwen3-235b:
+  # ── L5 · apex — AA Intelligence 32–33 (highest capability) ────
+  deepseek-v4.1-flash-thinking:
     provider: nanogpt
-    model_name: qwen/qwen3-235b-a22b
+    model_name: deepseek/deepseek-v4.1-flash-1017:thinking
+    tier: apex
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 2048
+    pricing:
+      input_per_mtok: 0.10
+      output_per_mtok: 0.60
+    description: "DeepSeek V4.1 Flash 1017 Thinking — AA 33, #1 open weights, 1M ctx (1x; rate-limited beta, expect occasional 429s)"
+
+  glm-5.3-thinking:
+    provider: nanogpt
+    model_name: z-ai/glm-5.3:thinking
+    tier: apex
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 2048
+    pricing:
+      input_per_mtok: 0.60
+      output_per_mtok: 1.10
+    description: "GLM-5.3 Thinking — AA 32, #2 open weights, 1M ctx (1x; reasoning_effort high|max — reasoning cannot be disabled)"
+
+  # ── L4 · frontier — AA Intelligence 30 ────────────────────────
+  mimo-v2.6-pro:
+    provider: nanogpt
+    model_name: xiaomi/mimo-v2.6-pro
     tier: frontier
     timeout: 60.0
     max_retries: 2
     max_tokens: 2048
-    description: "Qwen3 235B-A22B — largest subscription-included model (1x input tokens)"
+    pricing:
+      input_per_mtok: 0.435
+      output_per_mtok: 0.87
+    description: "MiMo V2.6 Pro — AA 30, 1.02T/42B omnimodal flagship, 1M ctx (1x; reasoning_effort none|high)"
 
-  kimi-k2.6:
+  ling-3.1-flash:
     provider: nanogpt
-    model_name: moonshotai/kimi-k2.6
+    model_name: inclusionai/ling-3.1-flash
     tier: frontier
     timeout: 60.0
     max_retries: 2
     max_tokens: 2048
-    description: "Moonshot Kimi K2.6 — frontier open MoE (1x input tokens)"
+    pricing:
+      input_per_mtok: 0.075
+      output_per_mtok: 0.22
+    description: "Ling 3.1 Flash — AA 30, 560B/25B, 262k ctx, thinking on by default (1x; reasoning_effort none|low|medium|high)"
 
-  # ── Efficient tier (fast workhorses, 1x quota) ────────────────
+  # ── L3 · strong — AA Intelligence 27–28 ───────────────────────
   glm-5.3-flash:
     provider: nanogpt
     model_name: z-ai/glm-5.3-flash
+    tier: strong
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 2048
+    pricing:
+      input_per_mtok: 0.10
+      output_per_mtok: 0.30
+    description: "GLM-5.3 Flash — AA 28, 320B/18B multimodal, 1M ctx (1x; always reasons — reasoning cannot be disabled; watch finish_reason=length)"
+
+  mimo-v2.6-flash:
+    provider: nanogpt
+    model_name: xiaomi/mimo-v2.6-flash
+    tier: strong
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 2048
+    pricing:
+      input_per_mtok: 0.14
+      output_per_mtok: 0.28
+    description: "MiMo V2.6 Flash — AA 27, 309B/15B omnimodal, 1M ctx (1x; reasoning_effort none|high)"
+
+  # ── L2 · efficient — AA Intelligence 19–20 ────────────────────
+  qwen3.8-27b-thinking:
+    provider: nanogpt
+    model_name: qwen/qwen3.8-27b:thinking
     tier: efficient
     timeout: 60.0
     max_retries: 2
     max_tokens: 2048
-    description: "Z.AI GLM 5.3 Flash — efficient tier (1x input tokens)"
+    pricing:
+      input_per_mtok: 0.15
+      output_per_mtok: 0.70
+    description: "Qwen3.8 27B Thinking — AA 20 at xhigh, latest-gen dense 27B, 1M ctx (1x)"
 
-  deepseek-v4-flash:
+  minimax-m3:
     provider: nanogpt
-    model_name: deepseek/deepseek-v4-flash
+    model_name: minimax/minimax-m3
     tier: efficient
     timeout: 60.0
     max_retries: 2
     max_tokens: 2048
-    description: "DeepSeek V4 Flash — efficient tier (1x input tokens)"
+    pricing:
+      input_per_mtok: 0.23
+      output_per_mtok: 0.96
+    description: "MiniMax M3 — AA 19, non-thinking route (no hidden CoT), 512k ctx (1x)"
 
-  # ── Open-large tier (big open models) ─────────────────────────
-  gpt-oss-120b:
+  # ── L1 · floor — AA Intelligence 4–6 (weakest) ────────────────
+  nemotron-3.5-lightning:
     provider: nanogpt
-    model_name: openai/gpt-oss-120b
-    tier: open-large
+    model_name: nvidia/nemotron-3.5-lightning
+    tier: floor
     timeout: 60.0
     max_retries: 2
     max_tokens: 2048
-    description: "OpenAI gpt-oss-120b — open 120B MoE (1x input tokens)"
+    pricing:
+      input_per_mtok: 0.05
+      output_per_mtok: 0.20
+    description: "Nemotron 3.5 Lightning — AA 6, 30B-A3B hybrid Mamba MoE, 1M ctx (1x; thinking disabled on this route)"
 
-  deepseek-v4-pro:
+  mistral-small-4:
     provider: nanogpt
-    model_name: deepseek/deepseek-v4-pro
-    tier: open-large
+    model_name: mistralai/mistral-small-4-119b-2603
+    tier: floor
     timeout: 60.0
     max_retries: 2
     max_tokens: 2048
-    description: "DeepSeek V4 Pro — strongest included DeepSeek (2x input tokens — use sparingly)"
-
-  # ── Open-mid / open-small tiers ───────────────────────────────
-  qwen3.6-27b:
-    provider: nanogpt
-    model_name: qwen/qwen3.6-27b
-    tier: open-mid
-    timeout: 60.0
-    max_retries: 2
-    max_tokens: 2048
-    description: "Qwen 3.6 27B — mid-size open model (1x input tokens)"
-
-  gpt-oss-20b:
-    provider: nanogpt
-    model_name: openai/gpt-oss-20b
-    tier: open-small
-    timeout: 60.0
-    max_retries: 2
-    max_tokens: 2048
-    description: "OpenAI gpt-oss-20b — small open model (1x input tokens)"
+    pricing:
+      input_per_mtok: 0.40
+      output_per_mtok: 1.40
+    description: "Mistral Small 4 — AA 4, weakest measured subscription model, 262k ctx (1x)"
 
 # ─────────────────────────────────────────────────────────────────
 # LLM-as-a-Judge — for Level 3 (planned; not yet consumed by the

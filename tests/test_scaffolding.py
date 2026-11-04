@@ -121,9 +121,9 @@ class TestModelFactory:
 
     def test_load_registry(self):
         registry = load_model_registry()
-        assert len(registry) >= 8
-        assert "qwen3.6-27b" in registry
-        assert "gpt-oss-20b" in registry
+        assert len(registry) >= 10
+        assert "deepseek-v4.1-flash-thinking" in registry
+        assert "mistral-small-4" in registry
 
     def test_registry_entries_have_required_keys(self):
         registry = load_model_registry()
@@ -754,8 +754,8 @@ class TestScenarioLoading:
     def test_load_model_ids(self):
         runner = BenchmarkRunner()
         model_ids = runner.load_model_ids()
-        assert len(model_ids) >= 8
-        assert "qwen3.6-27b" in model_ids
+        assert len(model_ids) >= 10
+        assert "deepseek-v4.1-flash-thinking" in model_ids
 
 
 # ── Stage 3 Scenario Invariants (cross-session & deep reasoning) ──────────────
