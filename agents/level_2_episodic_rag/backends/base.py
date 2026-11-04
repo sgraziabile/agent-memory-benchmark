@@ -189,12 +189,23 @@ class RetrievedEpisode(BaseModel):
 
 
 class AppendTelemetry(BaseModel):
-    """Per-append timing and embedding cost (plan §3.1)."""
+    """Per-append timing and embedding cost (plan §3.1).
+
+    ``embedding_tokens`` means tokens **actually sent to the provider**: with an
+    ingestion cache attached, a warm append reports ~0 (only the texts that
+    missed the cache are billed) instead of the full re-processed volume, so a
+    warm run can never be reported as a faster embedder. ``embedding_cache_hits``
+    / ``embedding_cache_misses`` label *why* it is cheap; both stay 0 for the
+    uncached path.
+    """
 
     chunk_ids: list[str] = Field(default_factory=list)
     append_latency_ms: float = 0.0
     embedding_latency_ms: float = 0.0
     embedding_tokens: int = 0
+    embedding_cache_hits: int = 0
+    embedding_cache_misses: int = 0
+
 
 
 class RetrievalTelemetry(BaseModel):

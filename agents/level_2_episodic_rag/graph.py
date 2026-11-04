@@ -135,7 +135,13 @@ def _zeroed_retrieval() -> dict[str, Any]:
         "retrieval_latency_ms": 0.0,
         "embedding_latency_ms": 0.0,
         "embedding_tokens": 0,
+        # Ingestion-cache counters (TODOs/embedding-cache-todo.md §3). Retrieval
+        # never hits the cache (queries are always embedded live), so both reset
+        # to 0 here and are accumulated by ``append_node`` below.
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 0,
     }
+
 
 
 # ── Graph Nodes ───────────────────────────────────────────────────────────────
@@ -198,7 +204,15 @@ def retrieve_node(state: L2AgentState, config: RunnableConfig) -> dict[str, Any]
         "retrieval_latency_ms": telemetry.retrieval_latency_ms,
         "embedding_latency_ms": telemetry.embedding_latency_ms,
         "embedding_tokens": telemetry.embedding_tokens,
+        # Ingestion-cache counters are per-turn overwrite channels, exactly like
+        # ``embedding_tokens``: retrieval never touches them (queries are never
+        # cached), so they are reset here and then accumulated by append_node.
+        # Without this reset the checkpointed state would carry the previous
+        # turn's hits into the next one (double counting the run total).
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 0,
     }
+
 
 
 def model_node(state: L2AgentState, config: RunnableConfig) -> dict[str, Any]:
@@ -321,7 +335,15 @@ def append_node(state: L2AgentState, config: RunnableConfig) -> dict[str, Any]:
         + telemetry.embedding_latency_ms,
         "embedding_tokens": (state.get("embedding_tokens") or 0)
         + telemetry.embedding_tokens,
+        # Cache hit/miss counters are accumulated exactly like the token
+        # channel, so a warm append is labelled warm in the run summary
+        # (TODOs/embedding-cache-todo.md §3). Both stay 0 without a cache.
+        "embedding_cache_hits": (state.get("embedding_cache_hits") or 0)
+        + telemetry.embedding_cache_hits,
+        "embedding_cache_misses": (state.get("embedding_cache_misses") or 0)
+        + telemetry.embedding_cache_misses,
     }
+
 
 
 # ── Agent Class ───────────────────────────────────────────────────────────────

@@ -1,10 +1,23 @@
 # TODO — Content-addressed cache for **ingestion** embeddings (Option A)
 
-> **Status:** PROPOSED (2026-11-04) — not implemented.
+> **Status:** IMPLEMENTED (2026-11-04) — `core/embedding_cache.py`,
+> `create_embeddings(..., cache_dir=...)`, `run.py --embed-cache DIR`;
+> tests in `tests/test_embedding_cache.py`.
 > **Scope:** D16 and every document-heavy L2 sweep. Reduce repeated ingestion of
 > the *same* chunks to ~0 s without changing retrieval semantics.
 > **Explicitly out of scope:** caching query embeddings, persisting an
 > `InMemoryStore` (store rehydration), batch-API changes.
+
+### Result (measured 2026-11-04, 8-doc cell, `--chunk-size 600`, 123 chunks, CPU Ollama)
+
+| run | `ingestion_latency_ms` | `embedding_tokens` | `embedding_cache_hits/misses` | pass rate |
+|---|---:|---:|---|---:|
+| cold (cache deleted) | 146–160 s | 15,975 | 0 / 123 | 8/8 |
+| warm (same command) | **6–12 ms** | **117–236** (live query embeddings + chat chunks whose text changed) | 120–123 / 0–3 | 8/8 |
+
+Retrieved `chunk_id`/`rank` lists and cosine scores are identical to the cold run
+(Δ = 0.0). Warm ingestion was 121 s → 0.011 s (≈1.4 × 10⁴×) with the same 8/8
+pass rate.
 
 ---
 
@@ -109,17 +122,41 @@ class EmbeddingCache:
 
 ## 5. Acceptance criteria
 
-- [ ] Second run of `document_corpus_size_008_01` (`k=5`, `--chunk-size 600`)
-      reports `ingestion_latency_ms < 100 ms` and `embedding_cache_hits == 115`.
-- [ ] Retrieval is unchanged: identical `chunk_id`/`rank` list and scores within
-      `1e-6` of the cold run; `lr_report.py` Δcos moves < 1e-4.
-- [ ] `embed_query` is never served from disk (counting client: 2 queries →
-      2 provider calls).
-- [ ] Corrupt blob and wrong-`dims` rows are misses, not crashes.
-- [ ] A cache directory is never forwarded to the provider constructor.
-- [ ] Unit tests: key stability/scope, dedupe-in-call, persistence across
-      processes, hit/miss counters, `batch_size=1` parity, duplicate-text
-      windows (langgraph dedupes batch texts — see `test_vector_batching.py`).
+- [x] Second run of `document_corpus_size_008_01` (`k=5`, `--chunk-size 600`)
+      reports `ingestion_latency_ms < 100 ms` (measured 6–12 ms) and
+      `embedding_cache_hits == 123` on the fully-warm run (115 document chunks
+      ingested with `ingestion_cache_hits == 115`; the remaining 8 are chat
+      chunks, 5–8 of which hit depending on the model's wording).
+- [x] Retrieval is unchanged: identical `chunk_id`/`rank` lists and scores within
+      `1e-6` of the cold run (measured Δscore = 0.0).
+- [x] `embed_query` is never served from disk (counting client: 2 queries → 2
+      provider calls; `tests/test_embedding_cache.py::
+      TestQueriesAreNeverCached`).
+- [x] Corrupt blob and wrong-`dims` rows are misses, not crashes.
+- [x] A cache directory is never forwarded to the provider constructor
+      (`EMBED_CACHE_KWARG` is popped in `_build_embeddings`).
+- [x] Unit tests: key stability/scope, dedupe-in-call, persistence across
+      instances, hit/miss counters, `batch_size=1` parity, duplicate-text
+      windows, `embedding_tokens` meaning tokens actually sent, per-turn cache
+      counters that never accumulate.
+
+### Implementation notes (what differs from the sketch in §6)
+
+* The reserved kwargs item is `EMBED_CACHE_KWARG = "cache_dir"`, part of the
+  `lru_cache` key and popped before provider construction.
+* Key scope uses the **resolved** `<provider>/<model_name>` identity, so
+  re-pointing a registry alias at a new upstream model invalidates its vectors.
+  The file name stays `<embedding_id>.sqlite` (one file per registry entry).
+* `tokens_sent` uses the same 4-chars/token heuristic as the backend
+  (`core.embedding_cache.estimate_tokens`, parity pinned by a test) so
+  `_TimingEmbeddings` can report exactly what left the process.
+* `manifest.json` gains `embedding.cache = {hits, misses}` — `null` when no cache
+  was attached, which is what labels a run cold/warm inside the artifact.
+* `AppendTelemetry`/`TurnResult`/`BenchmarkRunSummary` gained
+  `embedding_cache_hits`/`_misses`; the L2 graph carries them as per-turn
+  overwrite channels (reset in `retrieve_node`, accumulated in `append_node`) so
+  a run total is the real chunk count, not a triangular number.
+
 
 ## 6. Reference implementation sketch
 

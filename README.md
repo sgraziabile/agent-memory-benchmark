@@ -340,6 +340,24 @@ Ingestion volume/cost is reported separately from chat metrics:
 `ingestion_latency_ms` (see `results.json` / `summary.csv`), and snapshot
 provenance lands in `outputs/runs/<ts>/memory/<run_id>/manifest.json`.
 
+Repeat a corpus for free with the opt-in ingestion-embedding cache:
+
+```bash
+# Cold pass: ~110-160 s ingestion, 15,975 embedding tokens (8-doc D16 cell).
+# Second identical run: same command, same 8/8, ingestion in ~10 ms, ~120 tokens
+# (query embeddings only — queries are never cached).
+python run.py --level 2 --model qwen3-8b --scenario document_corpus_size_008_01 \
+    --chunk-size 600 --top-k 5 --embed-cache outputs/embed_cache
+```
+
+The cache stores chunk vectors keyed by `sha256(model, dims, text)` in
+`outputs/embed_cache/<embedding-id>.sqlite` (git-ignored). `embedding_tokens`
+then means tokens **actually sent**, and `embedding_cache_hits`/`_misses` travel
+with the run (`results.json`, `summary.csv`,
+`manifest.json` → `embedding.cache`) so a warm run is never mistaken for a faster
+embedder. See `datasets/documents/README.md` § *Ingestion cost*.
+
+
 ### Available options
 
 ```
@@ -354,6 +372,8 @@ python run.py --help
   --top-k           Retrieval cut-off for L2+        (default: 5; 0 disables retrieval)
   --chunk-size      Max chars per chunk              (default: 1200)
   --chunk-overlap   Chars shared between chunks      (default: 200; must be < --chunk-size)
+  --embed-batch-size Chunks per embedding request    (default: 8)
+  --embed-cache DIR On-disk ingestion-embedding cache (default: off; ~0 s warm ingestion)
   --no-documents    Ignore documents/attachments (control runs)
   --verbose, -v     Enable debug logging
   --list-models     List registered models and exit

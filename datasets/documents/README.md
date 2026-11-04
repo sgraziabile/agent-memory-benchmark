@@ -134,13 +134,58 @@ CPU load variance). What remains is token-bound (~7–10 ms/token on this
 machine), so a 200-document cold ingestion is still ≈50 min and the 15-run grid
 ≈7 h.
 
-> **Deferred (specified, not implemented):** an on-disk cache of ingestion
-> embeddings would make a warm run ~0 s and is the only thing that makes
-> repeated sweeps cheap. See `TODOs/embedding-cache-todo.md`.
+### Ingestion cost: on-disk embedding cache (`--embed-cache`)
+
+Batching removed the per-call overhead; the cache removes the *tokens*. Pass
+`--embed-cache DIR` and every chunk vector is stored in a content-addressed
+SQLite file (`DIR/<embedding-id>.sqlite`, ~4 KB per 1024-dim vector), so a
+second run of the same corpus re-embeds nothing.
+
+```bash
+# cold: ~160 s ingestion, 15,975 embedding tokens, 0 cache hits
+python run.py --level 2 --model minimax-m3 --scenario document_corpus_size_008_01 \
+    --backend vector --embedding-model qwen3-embedding-0.6b \
+    --chunk-size 600 --top-k 5 --embed-cache outputs/embed_cache
+
+# warm: SAME command → ~10 ms ingestion, ~120 query tokens, 123/123 hits
+```
+
+| switch | effect |
+|---|---|
+| `--embed-cache DIR` | opt-in (default **off**); one SQLite file per embedding model, recorded in `memory_backend_config` and in the run summary |
+| (automatic) | **ingestion** vectors only — `embed_query` always calls the provider, because the query embedding sits inside the measured `retrieval_latency_ms` window (a cached query would make P3 a measurement of the cache) |
+| (automatic) | vectors are keyed by `sha256(model \x00 dims \x00 text)`; a wrong-`dims` row or a corrupt blob is a **miss**, never a crash |
+| (automatic) | `embedding_tokens` means tokens **actually sent**: a warm run reports ~0 instead of the cold 15,975 |
+
+Warm-run honesty: `embedding_cache_hits` / `embedding_cache_misses` are reported
+in `results.json` / `summary.csv` (`AppendTelemetry` → `TurnResult` →
+`BenchmarkRunSummary`) and in `manifest.json`:
+
+```json
+"embedding": {"id": "qwen3-embedding-0.6b", "dims": 1024,
+              "cache": {"hits": 120, "misses": 3}}
+```
+
+Measured 2026-11-04 (CPU Ollama, 8-doc cell, `--chunk-size 600`, 123 chunks):
+
+| run | ingestion | tokens billed | cache hits/misses | pass rate |
+|---|---:|---:|---|---:|
+| cold (`rm -rf outputs/embed_cache`) | 146–160 s | 15,975 | 0 / 123 | 8/8 |
+| warm (identical command) | **6–12 ms** | **117–236** (8 live query embeddings + any chat chunk whose text changed) | 120–123 / 0–3 | 8/8 |
+
+Retrieved `chunk_id`/`rank` lists and scores are identical to the cold run
+(Δscore = 0.0: the corpus chunks round-trip through float32). Only the *chat*
+chunk text varies between runs (the model's wording), which is why a warm run can
+show a handful of misses and a few hundred tokens rather than exactly 0.
+
+`outputs/embed_cache/` is git-ignored — delete it to force a cold measurement.
 
 Budget: ingestion is charged per tuple. Measured 2026-11-04 with
 `qwen3-embedding-0.6b` (Ollama, CPU): 8 docs ≈ 12k tokens ≈ **154 s**; at
-≈12 ms/token the 60-doc cell is ≈20 min and the 200-doc cell ≈65 min per run.
+≈12 ms/token the 60-doc cell is ≈20 min and the 200-doc cell ≈65 min per run —
+each of which collapses to a few milliseconds on the second run with
+`--embed-cache`.
+
 
 
 

@@ -101,6 +101,8 @@ class _EmbeddingStats:
 
     documents_latency_ms: float = 0.0
     documents_tokens: int = 0
+    documents_cache_hits: int = 0
+    documents_cache_misses: int = 0
     query_latency_ms: float = 0.0
     query_calls: int = 0
 
@@ -113,16 +115,35 @@ class _TimingEmbeddings(Embeddings):
     report real embedding latency/tokens without issuing duplicate API
     calls (a second "telemetry" call per turn would double embedding cost
     and distort P3 latency metrics).
+
+    Metric honesty with an ingestion cache (TODOs/embedding-cache-todo.md §3):
+    when ``inner`` is a
+    :class:`~core.embedding_cache.CachedEmbeddings`, ``documents_tokens``
+    counts the tokens the wrapper actually **sent** (``last_call_stats``), not
+    the tokens it processed — a warm run must report ~0, never the first cold
+    run's 15,975. The cache's hit/miss counters are folded into the same stats
+    so ``AppendTelemetry`` can label the run as warm.
     """
 
     def __init__(self, inner: Embeddings) -> None:
         self.inner = inner
         self.stats = _EmbeddingStats()
+        #: Cache counters for this backend's whole lifetime (i.e. one benchmark
+        #: tuple): they survive ``reset_stats()`` — which fires per op — and are
+        #: only zeroed by ``reset()`` between tuples, so a backend reusing a
+        #: process-cached embedding client never inherits a previous run's hits.
+        self.cache_hits = 0
+        self.cache_misses = 0
 
     # ── Stats management ────────────────────────────────────────────
     def reset_stats(self) -> None:
         """Zero the counters before a backend ``append``/``retrieve``."""
         self.stats = _EmbeddingStats()
+
+    def reset_cache_totals(self) -> None:
+        """Zero the run-level cache counters (strict tuple isolation)."""
+        self.cache_hits = 0
+        self.cache_misses = 0
 
     def consume_stats(self) -> _EmbeddingStats:
         """Return the current counters and zero them for the next op."""
@@ -130,12 +151,30 @@ class _TimingEmbeddings(Embeddings):
         self.stats = _EmbeddingStats()
         return stats
 
+    # ── Cache accounting (documents only) ───────────────────────────
+    def _record_documents(self, texts: list[str], elapsed_ms: float) -> None:
+        """Accumulate documents latency/tokens/cache counters for one call."""
+        self.stats.documents_latency_ms += elapsed_ms
+        call_stats = getattr(self.inner, "last_call_stats", None)
+        if isinstance(call_stats, dict) and "tokens_sent" in call_stats:
+            # Cached client: bill what left the process, and label the hits.
+            hits = int(call_stats.get("hits") or 0)
+            misses = int(call_stats.get("misses") or 0)
+            self.stats.documents_tokens += int(call_stats.get("tokens_sent") or 0)
+            self.stats.documents_cache_hits += hits
+            self.stats.documents_cache_misses += misses
+            self.cache_hits += hits
+            self.cache_misses += misses
+        else:
+
+            # Uncached client: unchanged pre-cache accounting (tokens processed).
+            self.stats.documents_tokens += sum(estimate_tokens(t) for t in texts)
+
     # ── Sync API (used by InMemoryStore's sync put/search path) ─────
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         t0 = time.perf_counter()
         vectors = self.inner.embed_documents(texts)
-        self.stats.documents_latency_ms += (time.perf_counter() - t0) * 1000
-        self.stats.documents_tokens += sum(estimate_tokens(t) for t in texts)
+        self._record_documents(texts, (time.perf_counter() - t0) * 1000)
         return vectors
 
     def embed_query(self, text: str) -> list[float]:
@@ -149,8 +188,7 @@ class _TimingEmbeddings(Embeddings):
     async def aembed_documents(self, texts: list[str]) -> list[list[float]]:
         t0 = time.perf_counter()
         vectors = await self.inner.aembed_documents(texts)
-        self.stats.documents_latency_ms += (time.perf_counter() - t0) * 1000
-        self.stats.documents_tokens += sum(estimate_tokens(t) for t in texts)
+        self._record_documents(texts, (time.perf_counter() - t0) * 1000)
         return vectors
 
     async def aembed_query(self, text: str) -> list[float]:
@@ -159,6 +197,7 @@ class _TimingEmbeddings(Embeddings):
         self.stats.query_latency_ms += (time.perf_counter() - t0) * 1000
         self.stats.query_calls += 1
         return vector
+
 
 
 class VectorMemoryBackend(EpisodicMemoryBackend):
@@ -239,6 +278,15 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
 
         # Timing proxy — the store's only view of the embedding model.
         self._proxy = _TimingEmbeddings(embeddings)
+        # Raw client, kept for provenance: a cache-wrapped client
+        # (``--embed-cache``) exposes ``lifetime_stats()`` / ``cache_path``.
+        self._embeddings = embeddings
+        #: True when the client caches ingestion vectors on disk, which makes
+        #: ``embedding_tokens`` a *sent* count and adds ``embedding.cache`` to
+        #: the snapshot manifest.
+        self._cache_attached = callable(getattr(embeddings, "lifetime_stats", None))
+
+
         self._splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
@@ -452,7 +500,10 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
             append_latency_ms=(time.perf_counter() - t0) * 1000,
             embedding_latency_ms=stats.documents_latency_ms,
             embedding_tokens=stats.documents_tokens,
+            embedding_cache_hits=stats.documents_cache_hits,
+            embedding_cache_misses=stats.documents_cache_misses,
         )
+
 
     # ── EpisodicMemoryBackend: retrieve ──────────────────────────────
 
@@ -515,7 +566,23 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
 
     # ── Introspection (plan WS-D) ────────────────────────────────────
 
+    def embedding_cache_stats(self) -> dict[str, int] | None:
+        """Hit/miss counters of the ingestion cache for this run.
+
+        Returns ``None`` when the embeddings client is not cache-wrapped (the
+        default, uncached path), so a manifest states plainly whether the run was
+        warm. The counters live on the timing proxy, cover every append of the
+        run (documents and chat turns alike) and are zeroed by :meth:`reset`, so
+        a process-cached embedding client reused by the next tuple cannot leak
+        hits into this one.
+        """
+        if not self._cache_attached:
+            return None
+        return {"hits": self._proxy.cache_hits, "misses": self._proxy.cache_misses}
+
+
     def corpus_stats(self) -> dict[str, Any]:
+
         """Store-size snapshot used for per-run dilution reporting.
 
         Context-heavy document tests are only interpretable alongside the
@@ -551,6 +618,10 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
         self._store = self._build_store()
         self._chunks.clear()
         self._proxy.reset_stats()
+        # Per-tuple cache counters: the embedding cache file itself survives
+        # (that is the point), but its hit/miss accounting starts fresh.
+        self._proxy.reset_cache_totals()
+
 
     # ── EpisodicMemoryBackend: snapshot export ───────────────────────
 
@@ -602,7 +673,12 @@ class VectorMemoryBackend(EpisodicMemoryBackend):
             "embedding": {
                 "id": self._embedding_id,
                 "dims": self._dims,
+                # TODOs/embedding-cache-todo.md §3: a warm ingestion must be
+                # labelled warm IN THE ARTIFACT — `None` means no cache was
+                # attached, so the ingestion cost is a live embedder cost.
+                "cache": self.embedding_cache_stats(),
             },
+
             "chunk_settings": {
                 "chunk_size": self._chunk_size,
                 "chunk_overlap": self._chunk_overlap,

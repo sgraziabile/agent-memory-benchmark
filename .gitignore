@@ -26,6 +26,10 @@ env/
 outputs/runs/*
 !outputs/runs/.gitkeep
 
+# Ingestion-embedding cache (content-addressed, rebuildable: --embed-cache)
+outputs/embed_cache/
+
+
 # Generated document corpora (reproducible from scripts/generate_corpus.py --seed)
 datasets/documents/generated/
 datasets/documents/d16_corpus_*/

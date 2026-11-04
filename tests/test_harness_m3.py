@@ -170,9 +170,14 @@ class TestReadL2Telemetry:
             "append_latency_ms": 0.0,
             "embedding_latency_ms": 0.0,
             "embedding_tokens": 0,
+            # Ingestion-cache counters also default to 0 (TODOs/
+            # embedding-cache-todo.md §3) — absent channels mean "no cache".
+            "embedding_cache_hits": 0,
+            "embedding_cache_misses": 0,
             "retrieved_memories": [],
             "appended_chunk_ids": [],
         }
+
 
     def test_non_dict_result_zeroed(self):
         tel = _read_l2_telemetry(None)

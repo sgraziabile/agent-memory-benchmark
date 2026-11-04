@@ -422,8 +422,26 @@ that still isolates every factor, all on `deepseek-v4-flash` (L-R is model-indep
     A 60 s embedding timeout killed a 14-minute 60-doc ingestion on one slow
     window, so the local embedder's timeout is now 240 s, timed-out windows are
     halved and retried, and every window logs `window i/N · elapsed · ETA`.
-  - **Deferred:** the ingestion-embedding cache that would make a warm run ~0 s
-    is specified in `TODOs/embedding-cache-todo.md` (not implemented).
+  - **Ingestion-embedding cache — IMPLEMENTED (2026-11-04), `--embed-cache DIR`.**
+    Content-addressed SQLite store of **ingestion** vectors only
+    (`core/embedding_cache.py`; key = `sha256(model \x00 dims \x00 text)`), so
+    repeated `top_k` × chat-model tuples over the same corpus re-embed nothing.
+    `embed_query` is never cached — it sits inside the measured
+    `retrieval_latency_ms` window. Measured on the 8-doc cell (`--chunk-size 600`,
+    123 chunks, CPU Ollama), cold cache deleted:
+
+    | run | `ingestion_latency_ms` | `embedding_tokens` | cache hits/misses | pass rate |
+    |---|---:|---:|---|---:|
+    | cold | 146–160 s | 15,975 | 0 / 123 | 8/8 |
+    | warm | **6–12 ms** | **117–236** (live query embeddings + chat chunks whose text changed) | 120–123 / 0–3 | 8/8 |
+
+    Retrieved `chunk_id`/`rank` lists and scores are identical (Δscore = 0.0).
+    Because `embedding_tokens` now means *tokens actually sent*,
+    `embedding_cache_hits`/`_misses` travel with every run (`results.json`,
+    `summary.csv`, and `manifest.json` → `embedding.cache`) and a warm run is
+    labelled warm instead of looking like a faster embedder. `outputs/embed_cache/`
+    is git-ignored; the design/decisions live in `TODOs/embedding-cache-todo.md`.
+
 
 #### 5.3.6 Bookkeeping required by the L-R column
 

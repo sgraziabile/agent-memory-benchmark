@@ -97,6 +97,11 @@ class IngestionOutcome:
     append_latency_ms: float = 0.0
     embedding_latency_ms: float = 0.0
     embedding_tokens: int = 0
+    #: Ingestion-cache outcome (0/0 when no ``--embed-cache`` is attached):
+    #: chunks served from disk vs. chunks re-embedded by the provider.
+    embedding_cache_hits: int = 0
+    embedding_cache_misses: int = 0
+
 
     def __bool__(self) -> bool:  # pragma: no cover - trivial
         return bool(self.document_ids)

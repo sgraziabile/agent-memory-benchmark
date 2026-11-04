@@ -366,9 +366,11 @@ class TestBuildMemoryBackend:
         fake_embeddings = FakeEmbeddings()
         seen: dict = {}
 
-        def fake_create_embeddings(embedding_id):
+        def fake_create_embeddings(embedding_id, *, cache_dir=None):
             seen["create"] = embedding_id
+            seen["cache_dir"] = cache_dir
             return fake_embeddings
+
 
         def fake_get_dims(embedding_id):
             seen["dims"] = embedding_id
@@ -380,7 +382,13 @@ class TestBuildMemoryBackend:
         backend = run_cli._build_memory_backend("vector", "qwen3-embedding-8b")
 
         assert isinstance(backend, VectorMemoryBackend)
-        assert seen == {"create": "qwen3-embedding-8b", "dims": "qwen3-embedding-8b"}
+        # The cache directory is forwarded (``None`` = no cache, the default).
+        assert seen == {
+            "create": "qwen3-embedding-8b",
+            "dims": "qwen3-embedding-8b",
+            "cache_dir": None,
+        }
+
         # Provenance identity recorded for snapshot manifests.
         assert backend._embedding_id == "qwen3-embedding-8b"
         assert backend._dims == 8

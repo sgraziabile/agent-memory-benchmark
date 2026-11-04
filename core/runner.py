@@ -181,6 +181,12 @@ def _read_l2_telemetry(result: Any) -> dict[str, Any]:
         "append_latency_ms": float(result.get("append_latency_ms") or 0.0),
         "embedding_latency_ms": float(result.get("embedding_latency_ms") or 0.0),
         "embedding_tokens": int(result.get("embedding_tokens") or 0),
+        # Ingestion-cache counters (TODOs/embedding-cache-todo.md §3): 0 for
+        # every run without ``--embed-cache``, and for L0/L1 graphs that never
+        # write these channels at all.
+        "embedding_cache_hits": int(result.get("embedding_cache_hits") or 0),
+        "embedding_cache_misses": int(result.get("embedding_cache_misses") or 0),
+
         "retrieved_memories": list(result.get("retrieved_memories") or []),
         "appended_chunk_ids": list(result.get("appended_chunk_ids") or []),
     }
@@ -573,7 +579,10 @@ class BenchmarkRunner:
             append_latency_ms=telemetry.append_latency_ms,
             embedding_latency_ms=telemetry.embedding_latency_ms,
             embedding_tokens=telemetry.embedding_tokens,
+            embedding_cache_hits=telemetry.embedding_cache_hits,
+            embedding_cache_misses=telemetry.embedding_cache_misses,
         )
+
 
     # ── Single Run Execution ─────────────────────────────────────────────
 
@@ -708,6 +717,9 @@ class BenchmarkRunner:
         preloaded_append_latency_ms = 0.0
         preloaded_embedding_latency_ms = 0.0
         preloaded_embedding_tokens = 0
+        preloaded_cache_hits = 0
+        preloaded_cache_misses = 0
+
         document_manifests: list[dict[str, Any]] = []
 
         if scenario.documents and not documents_enabled:
@@ -746,7 +758,10 @@ class BenchmarkRunner:
                 preloaded_append_latency_ms = outcome.append_latency_ms
                 preloaded_embedding_latency_ms = outcome.embedding_latency_ms
                 preloaded_embedding_tokens = outcome.embedding_tokens
+                preloaded_cache_hits = outcome.embedding_cache_hits
+                preloaded_cache_misses = outcome.embedding_cache_misses
                 document_manifests.extend(outcome.manifests)
+
 
         for turn in scenario.turns:
             if turn.role == "system_event":
@@ -789,6 +804,9 @@ class BenchmarkRunner:
                         append_latency_ms=outcome.append_latency_ms,
                         embedding_latency_ms=outcome.embedding_latency_ms,
                         embedding_tokens=outcome.embedding_tokens,
+                        embedding_cache_hits=outcome.embedding_cache_hits,
+                        embedding_cache_misses=outcome.embedding_cache_misses,
+
                         ingested_documents=outcome.document_ids,
                         ingested_chars=outcome.char_count,
                         ingested_chunk_ids=outcome.chunk_ids,
@@ -1085,6 +1103,17 @@ class BenchmarkRunner:
         embedding_tokens_total = (
             sum(tr.embedding_tokens for tr in turn_results) + preloaded_embedding_tokens
         )
+        # Ingestion-cache outcome, aggregated exactly like ``embedding_tokens``
+        # (all turns + the scenario preload) so a warm run can never be read as
+        # a faster embedder: the tokens and the hit counts travel together.
+        embedding_cache_hits_total = (
+            sum(tr.embedding_cache_hits for tr in turn_results) + preloaded_cache_hits
+        )
+        embedding_cache_misses_total = (
+            sum(tr.embedding_cache_misses for tr in turn_results)
+            + preloaded_cache_misses
+        )
+
         total_retrieval_latency = sum(tr.retrieval_latency_ms for tr in turn_results)
         total_append_latency = sum(tr.append_latency_ms for tr in turn_results)
         total_embedding_latency = (
@@ -1159,7 +1188,14 @@ class BenchmarkRunner:
                             "ingestion_latency_ms": ingestion_latency,
                             "ingestion_embedding_tokens": preloaded_embedding_tokens
                             + sum(tr.embedding_tokens for tr in ingestion_turns),
+                            # Warm vs. cold label for the ingestion above
+                            # (TODOs/embedding-cache-todo.md §3).
+                            "ingestion_cache_hits": preloaded_cache_hits
+                            + sum(tr.embedding_cache_hits for tr in ingestion_turns),
+                            "ingestion_cache_misses": preloaded_cache_misses
+                            + sum(tr.embedding_cache_misses for tr in ingestion_turns),
                         },
+
                     },
                 )
                 memory_snapshot_path = f"{snapshot_dir.name}/{run_id}"
@@ -1207,6 +1243,10 @@ class BenchmarkRunner:
             output_cost_per_mtok=output_cost_per_mtok,
             retrieved_context_tokens=retrieved_context_tokens,
             embedding_tokens=embedding_tokens_total,
+            # Warm-run labelling (TODOs/embedding-cache-todo.md §3).
+            embedding_cache_hits=embedding_cache_hits_total,
+            embedding_cache_misses=embedding_cache_misses_total,
+
             # ── Plan §4.3 aggregated latency metrics ──────────────────────
             total_retrieval_latency_ms=total_retrieval_latency,
             total_append_latency_ms=total_append_latency,
@@ -1438,7 +1478,12 @@ class BenchmarkRunner:
             "ingested_chunks",
             "corpus_chunks",
             "ingestion_latency_ms",
+            # Warm vs. cold ingestion: hits/misses must travel with the numbers
+            # they explain (TODOs/embedding-cache-todo.md §3).
+            "embedding_cache_hits",
+            "embedding_cache_misses",
             "total_turns",
+
             "total_assertions",
             "passed_assertions",
             "failed_assertions",

@@ -48,6 +48,9 @@ class L2AgentState(TypedDict):
         append_latency_ms: Time spent in ``append_node`` (chat episodes).
         embedding_latency_ms: Embedding-API wait inside retrieve+append.
         embedding_tokens: Tokens sent to the embedding API this turn.
+        embedding_cache_hits: Ingestion chunks served from the on-disk
+            embedding cache this turn (0 without ``--embed-cache``).
+        embedding_cache_misses: Ingestion chunks re-embedded this turn.
         retrieved_memories: Top-k ``RetrievedEpisode`` dicts (provenance).
         appended_chunk_ids: Chunk IDs written to the backend this turn.
     """
@@ -59,8 +62,11 @@ class L2AgentState(TypedDict):
     append_latency_ms: float
     embedding_latency_ms: float
     embedding_tokens: int
+    embedding_cache_hits: int
+    embedding_cache_misses: int
     retrieved_memories: list[dict[str, Any]]
     appended_chunk_ids: list[str]
+
 
 
 # ── Test Scenario Schemas ────────────────────────────────────────────────────
@@ -280,6 +286,9 @@ class TurnResult(BaseModel):
         retrieved_context_tokens: Token estimate of that block.
         embedding_tokens: Tokens sent to the embedding API this turn
               (retrieve + append; 0 for L0/L1 and the markdown backend).
+        embedding_cache_hits: Ingestion chunks served from the on-disk
+              embedding cache this turn (0 without ``--embed-cache``).
+        embedding_cache_misses: Ingestion chunks that had to be embedded.
         retrieval_latency_ms: Time spent in ``retrieve_node``.
         append_latency_ms: Time spent in ``append_node`` (chat episodes) or
               ``system_event`` ingestion.
@@ -325,6 +334,8 @@ class TurnResult(BaseModel):
     retrieved_context_chars: int = 0
     retrieved_context_tokens: int = 0
     embedding_tokens: int = 0
+    embedding_cache_hits: int = 0
+    embedding_cache_misses: int = 0
     retrieval_latency_ms: float = 0.0
     append_latency_ms: float = 0.0
     embedding_latency_ms: float = 0.0
@@ -385,6 +396,9 @@ class BenchmarkRunSummary(BaseModel):
         retrieved_context_tokens: RAG context tokens injected across the run.
         embedding_tokens: Embedding tokens across all turns, including
               ``system_event`` ingestions.
+        embedding_cache_hits: Ingestion chunks served from the on-disk
+              embedding cache for this tuple (0 when no cache is attached).
+        embedding_cache_misses: Ingestion chunks embedded from the provider.
         total_retrieval_latency_ms: Cumulative ``retrieve_node`` time.
         total_append_latency_ms: Cumulative ``append_node`` time.
         total_embedding_latency_ms: Cumulative embedding-API wait.
@@ -445,6 +459,8 @@ class BenchmarkRunSummary(BaseModel):
     output_cost_per_mtok: float | None = None
     retrieved_context_tokens: int = 0
     embedding_tokens: int = 0
+    embedding_cache_hits: int = 0
+    embedding_cache_misses: int = 0
     # ── Plan §4.3 aggregated latency metrics ───────────────────────────────
     total_retrieval_latency_ms: float = 0.0
     total_append_latency_ms: float = 0.0

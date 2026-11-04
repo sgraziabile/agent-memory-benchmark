@@ -293,7 +293,15 @@ class TestExportSnapshot:
 
         manifest = json.loads((dest / "manifest.json").read_text(encoding="utf-8"))
         assert manifest["backend"] == "vector"
-        assert manifest["embedding"] == {"id": "fake-test", "dims": DIMS}
+        # ``cache: None`` states explicitly that this run ingested with a live
+        # embedder (no --embed-cache), so its ingestion cost is real
+        # (TODOs/embedding-cache-todo.md §3).
+        assert manifest["embedding"] == {
+            "id": "fake-test",
+            "dims": DIMS,
+            "cache": None,
+        }
+
         assert manifest["total_chunks"] == 2
         assert manifest["run_metadata"]["run_id"] == "run_01"
         assert manifest["total_chars"] == (

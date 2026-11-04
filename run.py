@@ -85,6 +85,7 @@ def _build_memory_backend(
     chunk_size: int = 1200,
     chunk_overlap: int = 200,
     embed_batch_size: int = 8,
+    embed_cache_dir: Path | str | None = None,
 ) -> VectorMemoryBackend:
     """Construct the requested ``EpisodicMemoryBackend`` (L2+ levels only).
 
@@ -100,8 +101,13 @@ def _build_memory_backend(
     ``embed_batch_size`` sets how many chunks are embedded per provider call
     (the backend writes them through ``InMemoryStore.batch()``); keep it small
     enough that a single call fits the embedding client's timeout.
+
+    ``embed_cache_dir`` opts into the on-disk ingestion-embedding cache
+    (``--embed-cache``): the client is wrapped so chunk vectors are reused
+    across runs, while query embeddings stay live (they sit inside the
+    measured retrieval window).
     """
-    embeddings = create_embeddings(embedding_model_id)
+    embeddings = create_embeddings(embedding_model_id, cache_dir=embed_cache_dir)
     dims = get_embedding_dims(embedding_model_id)
     return VectorMemoryBackend(
         embeddings,
@@ -111,6 +117,7 @@ def _build_memory_backend(
         chunk_overlap=chunk_overlap,
         embed_batch_size=embed_batch_size,
     )
+
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -189,7 +196,19 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--embed-cache",
+        type=str,
+        default=None,
+        metavar="DIR",
+        help=(
+            "Directory for the on-disk ingestion-embedding cache (opt-in; "
+            "one SQLite file per embedding model). Query embeddings are never "
+            "cached. Off by default."
+        ),
+    )
+    parser.add_argument(
         "--no-documents",
+
         action="store_true",
         help="Ignore scenario-declared documents and system_event attachments (control runs)",
     )
@@ -285,6 +304,13 @@ def main() -> int:
     if args.embed_batch_size < 1:
         print("Error: --embed-batch-size must be >= 1.")
         return 1
+    # An empty --embed-cache string would silently create the cache file in the
+    # working directory; make "off" (omit the flag) the only way to disable it.
+    embed_cache_dir = (args.embed_cache or "").strip() or None
+    if args.embed_cache is not None and embed_cache_dir is None:
+        print("Error: --embed-cache needs a directory (omit the flag for no cache).")
+        return 1
+
 
     # ── Filter setup ─────────────────────────────────────────────────
     scenario_ids = (
@@ -340,8 +366,10 @@ def main() -> int:
         print(
             f"  Memory:   top_k={args.top_k}, chunk_size={args.chunk_size}, "
             f"chunk_overlap={args.chunk_overlap}, "
-            f"documents={'off' if args.no_documents else 'on'}"
+            f"documents={'off' if args.no_documents else 'on'}, "
+            f"embed_cache={embed_cache_dir or 'off'}"
         )
+
     print("=" * 60 + "\n")
 
     # ── Execute one pass per level ────────────────────────────────────
@@ -373,7 +401,9 @@ def main() -> int:
                     chunk_size=args.chunk_size,
                     chunk_overlap=args.chunk_overlap,
                     embed_batch_size=args.embed_batch_size,
+                    embed_cache_dir=embed_cache_dir,
                 )
+
             except Exception as exc:
                 print(
                     f"Error: Could not construct {backend_name!r} memory "
@@ -392,13 +422,18 @@ def main() -> int:
                 # Batching identity: how many chunks went into one embedding
                 # request (and therefore how a slow ingestion is explained).
                 "embed_batch_size": args.embed_batch_size,
+                # Ingestion-cache identity: a warm run must be distinguishable
+                # from a cold one *in the artifact*, never from speed alone.
+                "embed_cache": embed_cache_dir,
             }
             print(
                 f"  Memory backend: {backend_name} "
                 f"(embedding: {args.embedding_model}, top_k={args.top_k}, "
                 f"chunk_size={args.chunk_size}, chunk_overlap={args.chunk_overlap}, "
-                f"embed_batch_size={args.embed_batch_size})"
+                f"embed_batch_size={args.embed_batch_size}, "
+                f"embed_cache={embed_cache_dir or 'off'})"
             )
+
 
         if inline_model:
             # Inline path mirrors run_matrix: snapshots land under the
