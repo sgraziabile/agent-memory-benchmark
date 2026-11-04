@@ -28,6 +28,7 @@ outputs/runs/*
 
 # Generated document corpora (reproducible from scripts/generate_corpus.py --seed)
 datasets/documents/generated/
+datasets/documents/d16_corpus_*/
 
 # OS
 .DS_Store

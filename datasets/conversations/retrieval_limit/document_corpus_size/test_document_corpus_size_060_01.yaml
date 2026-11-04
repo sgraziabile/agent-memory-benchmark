@@ -1,0 +1,393 @@
+# ─────────────────────────────────────────────────────────────────
+# D16 — L-R corpus-size curve (AUTO-GENERATED, do not hand-edit).
+#
+# Regenerate with:
+#   python scripts/generate_corpus.py --docs 60 --chars-per-doc 6000 --seed 7 --needles 8 --out datasets/documents/d16_corpus_060
+#   python scripts/build_d16_scenarios.py
+#
+# Non-inferability: each probe asks for a random answer token that
+# occurs exactly once in the corpus (generator-validated) and never in
+# the probe itself, so the gold chunk is necessary to answer.
+# ─────────────────────────────────────────────────────────────────
+id: document_corpus_size_060_01
+name: 'L-R Corpus-Size Curve: 60 Documents (8 Probes)'
+description: 'L-R corpus-size curve point: 60 generated documents (~360 KB) with 8 opaque needles. Every probe names an entity that occurs once in the corpus and requests an answer token that occurs once in that entity''s document — a correct answer is impossible to infer and therefore proves the gold chunk reached the prompt. All probes share one session, so current-session chat is excluded from retrieval and the candidate pool is documents only.'
+category: document_corpus_size
+metadata:
+  difficulty: hard
+  stage: L-R
+  target_research_question: P1
+  expected_level_0_behavior: Fails (0%). No memory at all.
+  expected_level_1_behavior: Fails (0%). Documents are never ingested and nothing survives the session thread.
+  expected_level_2_behavior: 'Recall@k is the measured quantity: correct answers track chunk retrieval, and misses are R-A (gold ranks after top_k).'
+  corpus_docs: 60
+  chars_per_doc: 6000
+  corpus_seed: 7
+  corpus_dir: d16_corpus_060
+  default_top_k: 5
+  chunk_size: 600
+  probe_count: 8
+  needle_values:
+  - YKX-HMD0-7872
+  - UVA-046I-7504
+  - LFN-YEPJ-7259
+  - LDT-EHMO-2855
+  - PSM-MSNZ-2433
+  - UQX-03XH-9093
+  - BQR-485R-6500
+  - SXN-XUQQ-8677
+  probes:
+  - turn: 1
+    doc_id: corpus_000
+    entity: LOOP-420
+    answer: YKX-HMD0-7872
+    section: 2
+  - turn: 2
+    doc_id: corpus_007
+    entity: RACK-923
+    answer: UVA-046I-7504
+    section: 2
+  - turn: 3
+    doc_id: corpus_015
+    entity: BSTORE-440
+    answer: LFN-YEPJ-7259
+    section: 2
+  - turn: 4
+    doc_id: corpus_022
+    entity: POOL-291
+    answer: LDT-EHMO-2855
+    section: 2
+  - turn: 5
+    doc_id: corpus_030
+    entity: RING-498
+    answer: PSM-MSNZ-2433
+    section: 2
+  - turn: 6
+    doc_id: corpus_037
+    entity: VAULT-415
+    answer: UQX-03XH-9093
+    section: 2
+  - turn: 7
+    doc_id: corpus_045
+    entity: LOOP-969
+    answer: BQR-485R-6500
+    section: 2
+  - turn: 8
+    doc_id: corpus_052
+    entity: RACK-628
+    answer: SXN-XUQQ-8677
+    section: 2
+documents:
+- doc_id: corpus_000
+  path: d16_corpus_060/corpus_000.md
+  metadata:
+    title: Synthetic operations note corpus_000
+- doc_id: corpus_001
+  path: d16_corpus_060/corpus_001.md
+  metadata:
+    title: Synthetic operations note corpus_001
+- doc_id: corpus_002
+  path: d16_corpus_060/corpus_002.md
+  metadata:
+    title: Synthetic operations note corpus_002
+- doc_id: corpus_003
+  path: d16_corpus_060/corpus_003.md
+  metadata:
+    title: Synthetic operations note corpus_003
+- doc_id: corpus_004
+  path: d16_corpus_060/corpus_004.md
+  metadata:
+    title: Synthetic operations note corpus_004
+- doc_id: corpus_005
+  path: d16_corpus_060/corpus_005.md
+  metadata:
+    title: Synthetic operations note corpus_005
+- doc_id: corpus_006
+  path: d16_corpus_060/corpus_006.md
+  metadata:
+    title: Synthetic operations note corpus_006
+- doc_id: corpus_007
+  path: d16_corpus_060/corpus_007.md
+  metadata:
+    title: Synthetic operations note corpus_007
+- doc_id: corpus_008
+  path: d16_corpus_060/corpus_008.md
+  metadata:
+    title: Synthetic operations note corpus_008
+- doc_id: corpus_009
+  path: d16_corpus_060/corpus_009.md
+  metadata:
+    title: Synthetic operations note corpus_009
+- doc_id: corpus_010
+  path: d16_corpus_060/corpus_010.md
+  metadata:
+    title: Synthetic operations note corpus_010
+- doc_id: corpus_011
+  path: d16_corpus_060/corpus_011.md
+  metadata:
+    title: Synthetic operations note corpus_011
+- doc_id: corpus_012
+  path: d16_corpus_060/corpus_012.md
+  metadata:
+    title: Synthetic operations note corpus_012
+- doc_id: corpus_013
+  path: d16_corpus_060/corpus_013.md
+  metadata:
+    title: Synthetic operations note corpus_013
+- doc_id: corpus_014
+  path: d16_corpus_060/corpus_014.md
+  metadata:
+    title: Synthetic operations note corpus_014
+- doc_id: corpus_015
+  path: d16_corpus_060/corpus_015.md
+  metadata:
+    title: Synthetic operations note corpus_015
+- doc_id: corpus_016
+  path: d16_corpus_060/corpus_016.md
+  metadata:
+    title: Synthetic operations note corpus_016
+- doc_id: corpus_017
+  path: d16_corpus_060/corpus_017.md
+  metadata:
+    title: Synthetic operations note corpus_017
+- doc_id: corpus_018
+  path: d16_corpus_060/corpus_018.md
+  metadata:
+    title: Synthetic operations note corpus_018
+- doc_id: corpus_019
+  path: d16_corpus_060/corpus_019.md
+  metadata:
+    title: Synthetic operations note corpus_019
+- doc_id: corpus_020
+  path: d16_corpus_060/corpus_020.md
+  metadata:
+    title: Synthetic operations note corpus_020
+- doc_id: corpus_021
+  path: d16_corpus_060/corpus_021.md
+  metadata:
+    title: Synthetic operations note corpus_021
+- doc_id: corpus_022
+  path: d16_corpus_060/corpus_022.md
+  metadata:
+    title: Synthetic operations note corpus_022
+- doc_id: corpus_023
+  path: d16_corpus_060/corpus_023.md
+  metadata:
+    title: Synthetic operations note corpus_023
+- doc_id: corpus_024
+  path: d16_corpus_060/corpus_024.md
+  metadata:
+    title: Synthetic operations note corpus_024
+- doc_id: corpus_025
+  path: d16_corpus_060/corpus_025.md
+  metadata:
+    title: Synthetic operations note corpus_025
+- doc_id: corpus_026
+  path: d16_corpus_060/corpus_026.md
+  metadata:
+    title: Synthetic operations note corpus_026
+- doc_id: corpus_027
+  path: d16_corpus_060/corpus_027.md
+  metadata:
+    title: Synthetic operations note corpus_027
+- doc_id: corpus_028
+  path: d16_corpus_060/corpus_028.md
+  metadata:
+    title: Synthetic operations note corpus_028
+- doc_id: corpus_029
+  path: d16_corpus_060/corpus_029.md
+  metadata:
+    title: Synthetic operations note corpus_029
+- doc_id: corpus_030
+  path: d16_corpus_060/corpus_030.md
+  metadata:
+    title: Synthetic operations note corpus_030
+- doc_id: corpus_031
+  path: d16_corpus_060/corpus_031.md
+  metadata:
+    title: Synthetic operations note corpus_031
+- doc_id: corpus_032
+  path: d16_corpus_060/corpus_032.md
+  metadata:
+    title: Synthetic operations note corpus_032
+- doc_id: corpus_033
+  path: d16_corpus_060/corpus_033.md
+  metadata:
+    title: Synthetic operations note corpus_033
+- doc_id: corpus_034
+  path: d16_corpus_060/corpus_034.md
+  metadata:
+    title: Synthetic operations note corpus_034
+- doc_id: corpus_035
+  path: d16_corpus_060/corpus_035.md
+  metadata:
+    title: Synthetic operations note corpus_035
+- doc_id: corpus_036
+  path: d16_corpus_060/corpus_036.md
+  metadata:
+    title: Synthetic operations note corpus_036
+- doc_id: corpus_037
+  path: d16_corpus_060/corpus_037.md
+  metadata:
+    title: Synthetic operations note corpus_037
+- doc_id: corpus_038
+  path: d16_corpus_060/corpus_038.md
+  metadata:
+    title: Synthetic operations note corpus_038
+- doc_id: corpus_039
+  path: d16_corpus_060/corpus_039.md
+  metadata:
+    title: Synthetic operations note corpus_039
+- doc_id: corpus_040
+  path: d16_corpus_060/corpus_040.md
+  metadata:
+    title: Synthetic operations note corpus_040
+- doc_id: corpus_041
+  path: d16_corpus_060/corpus_041.md
+  metadata:
+    title: Synthetic operations note corpus_041
+- doc_id: corpus_042
+  path: d16_corpus_060/corpus_042.md
+  metadata:
+    title: Synthetic operations note corpus_042
+- doc_id: corpus_043
+  path: d16_corpus_060/corpus_043.md
+  metadata:
+    title: Synthetic operations note corpus_043
+- doc_id: corpus_044
+  path: d16_corpus_060/corpus_044.md
+  metadata:
+    title: Synthetic operations note corpus_044
+- doc_id: corpus_045
+  path: d16_corpus_060/corpus_045.md
+  metadata:
+    title: Synthetic operations note corpus_045
+- doc_id: corpus_046
+  path: d16_corpus_060/corpus_046.md
+  metadata:
+    title: Synthetic operations note corpus_046
+- doc_id: corpus_047
+  path: d16_corpus_060/corpus_047.md
+  metadata:
+    title: Synthetic operations note corpus_047
+- doc_id: corpus_048
+  path: d16_corpus_060/corpus_048.md
+  metadata:
+    title: Synthetic operations note corpus_048
+- doc_id: corpus_049
+  path: d16_corpus_060/corpus_049.md
+  metadata:
+    title: Synthetic operations note corpus_049
+- doc_id: corpus_050
+  path: d16_corpus_060/corpus_050.md
+  metadata:
+    title: Synthetic operations note corpus_050
+- doc_id: corpus_051
+  path: d16_corpus_060/corpus_051.md
+  metadata:
+    title: Synthetic operations note corpus_051
+- doc_id: corpus_052
+  path: d16_corpus_060/corpus_052.md
+  metadata:
+    title: Synthetic operations note corpus_052
+- doc_id: corpus_053
+  path: d16_corpus_060/corpus_053.md
+  metadata:
+    title: Synthetic operations note corpus_053
+- doc_id: corpus_054
+  path: d16_corpus_060/corpus_054.md
+  metadata:
+    title: Synthetic operations note corpus_054
+- doc_id: corpus_055
+  path: d16_corpus_060/corpus_055.md
+  metadata:
+    title: Synthetic operations note corpus_055
+- doc_id: corpus_056
+  path: d16_corpus_060/corpus_056.md
+  metadata:
+    title: Synthetic operations note corpus_056
+- doc_id: corpus_057
+  path: d16_corpus_060/corpus_057.md
+  metadata:
+    title: Synthetic operations note corpus_057
+- doc_id: corpus_058
+  path: d16_corpus_060/corpus_058.md
+  metadata:
+    title: Synthetic operations note corpus_058
+- doc_id: corpus_059
+  path: d16_corpus_060/corpus_059.md
+  metadata:
+    title: Synthetic operations note corpus_059
+turns:
+- turn_number: 1
+  session_id: s1
+  role: user
+  content: What is the calibration code for the cooling loop LOOP-420?
+  assertions:
+  - type: must_contain
+    value: YKX-HMD0-7872
+  - type: must_retrieve_chunk
+    value: corpus_000
+- turn_number: 2
+  session_id: s1
+  role: user
+  content: What is the provisioning code for the rack row RACK-923?
+  assertions:
+  - type: must_contain
+    value: UVA-046I-7504
+  - type: must_retrieve_chunk
+    value: corpus_007
+- turn_number: 3
+  session_id: s1
+  role: user
+  content: What is the decommissioning code for the object store bucket BSTORE-440?
+  assertions:
+  - type: must_contain
+    value: LFN-YEPJ-7259
+  - type: must_retrieve_chunk
+    value: corpus_015
+- turn_number: 4
+  session_id: s1
+  role: user
+  content: What is the failover code for the scheduler pool POOL-291?
+  assertions:
+  - type: must_contain
+    value: LDT-EHMO-2855
+  - type: must_retrieve_chunk
+    value: corpus_022
+- turn_number: 5
+  session_id: s1
+  role: user
+  content: What is the escrow code for the certificate ring RING-498?
+  assertions:
+  - type: must_contain
+    value: PSM-MSNZ-2433
+  - type: must_retrieve_chunk
+    value: corpus_030
+- turn_number: 6
+  session_id: s1
+  role: user
+  content: What is the attestation code for the backup vault VAULT-415?
+  assertions:
+  - type: must_contain
+    value: UQX-03XH-9093
+  - type: must_retrieve_chunk
+    value: corpus_037
+- turn_number: 7
+  session_id: s1
+  role: user
+  content: What is the calibration code for the cooling loop LOOP-969?
+  assertions:
+  - type: must_contain
+    value: BQR-485R-6500
+  - type: must_retrieve_chunk
+    value: corpus_045
+- turn_number: 8
+  session_id: s1
+  role: user
+  content: What is the provisioning code for the rack row RACK-628?
+  assertions:
+  - type: must_contain
+    value: SXN-XUQQ-8677
+  - type: must_retrieve_chunk
+    value: corpus_052

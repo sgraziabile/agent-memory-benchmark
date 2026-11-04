@@ -1,0 +1,953 @@
+# ─────────────────────────────────────────────────────────────────
+# D16 — L-R corpus-size curve (AUTO-GENERATED, do not hand-edit).
+#
+# Regenerate with:
+#   python scripts/generate_corpus.py --docs 200 --chars-per-doc 6000 --seed 7 --needles 8 --out datasets/documents/d16_corpus_200
+#   python scripts/build_d16_scenarios.py
+#
+# Non-inferability: each probe asks for a random answer token that
+# occurs exactly once in the corpus (generator-validated) and never in
+# the probe itself, so the gold chunk is necessary to answer.
+# ─────────────────────────────────────────────────────────────────
+id: document_corpus_size_200_01
+name: 'L-R Corpus-Size Curve: 200 Documents (8 Probes)'
+description: 'L-R corpus-size curve point: 200 generated documents (~1200 KB) with 8 opaque needles. Every probe names an entity that occurs once in the corpus and requests an answer token that occurs once in that entity''s document — a correct answer is impossible to infer and therefore proves the gold chunk reached the prompt. All probes share one session, so current-session chat is excluded from retrieval and the candidate pool is documents only.'
+category: document_corpus_size
+metadata:
+  difficulty: hard
+  stage: L-R
+  target_research_question: P1
+  expected_level_0_behavior: Fails (0%). No memory at all.
+  expected_level_1_behavior: Fails (0%). Documents are never ingested and nothing survives the session thread.
+  expected_level_2_behavior: 'Recall@k is the measured quantity: correct answers track chunk retrieval, and misses are R-A (gold ranks after top_k).'
+  corpus_docs: 200
+  chars_per_doc: 6000
+  corpus_seed: 7
+  corpus_dir: d16_corpus_200
+  default_top_k: 5
+  chunk_size: 600
+  probe_count: 8
+  needle_values:
+  - FGU-U0FB-8525
+  - HHD-1E2T-6801
+  - XWC-CBE5-7668
+  - PUL-5BGN-9685
+  - EIC-WNYK-3335
+  - WNW-JFVM-1248
+  - NOF-BSRP-9575
+  - IBJ-N9U8-6012
+  probes:
+  - turn: 1
+    doc_id: corpus_000
+    entity: LOOP-505
+    answer: FGU-U0FB-8525
+    section: 2
+  - turn: 2
+    doc_id: corpus_025
+    entity: RACK-679
+    answer: HHD-1E2T-6801
+    section: 2
+  - turn: 3
+    doc_id: corpus_050
+    entity: BSTORE-320
+    answer: XWC-CBE5-7668
+    section: 2
+  - turn: 4
+    doc_id: corpus_075
+    entity: POOL-187
+    answer: PUL-5BGN-9685
+    section: 2
+  - turn: 5
+    doc_id: corpus_100
+    entity: RING-240
+    answer: EIC-WNYK-3335
+    section: 2
+  - turn: 6
+    doc_id: corpus_125
+    entity: VAULT-891
+    answer: WNW-JFVM-1248
+    section: 2
+  - turn: 7
+    doc_id: corpus_150
+    entity: LOOP-610
+    answer: NOF-BSRP-9575
+    section: 2
+  - turn: 8
+    doc_id: corpus_175
+    entity: RACK-805
+    answer: IBJ-N9U8-6012
+    section: 2
+documents:
+- doc_id: corpus_000
+  path: d16_corpus_200/corpus_000.md
+  metadata:
+    title: Synthetic operations note corpus_000
+- doc_id: corpus_001
+  path: d16_corpus_200/corpus_001.md
+  metadata:
+    title: Synthetic operations note corpus_001
+- doc_id: corpus_002
+  path: d16_corpus_200/corpus_002.md
+  metadata:
+    title: Synthetic operations note corpus_002
+- doc_id: corpus_003
+  path: d16_corpus_200/corpus_003.md
+  metadata:
+    title: Synthetic operations note corpus_003
+- doc_id: corpus_004
+  path: d16_corpus_200/corpus_004.md
+  metadata:
+    title: Synthetic operations note corpus_004
+- doc_id: corpus_005
+  path: d16_corpus_200/corpus_005.md
+  metadata:
+    title: Synthetic operations note corpus_005
+- doc_id: corpus_006
+  path: d16_corpus_200/corpus_006.md
+  metadata:
+    title: Synthetic operations note corpus_006
+- doc_id: corpus_007
+  path: d16_corpus_200/corpus_007.md
+  metadata:
+    title: Synthetic operations note corpus_007
+- doc_id: corpus_008
+  path: d16_corpus_200/corpus_008.md
+  metadata:
+    title: Synthetic operations note corpus_008
+- doc_id: corpus_009
+  path: d16_corpus_200/corpus_009.md
+  metadata:
+    title: Synthetic operations note corpus_009
+- doc_id: corpus_010
+  path: d16_corpus_200/corpus_010.md
+  metadata:
+    title: Synthetic operations note corpus_010
+- doc_id: corpus_011
+  path: d16_corpus_200/corpus_011.md
+  metadata:
+    title: Synthetic operations note corpus_011
+- doc_id: corpus_012
+  path: d16_corpus_200/corpus_012.md
+  metadata:
+    title: Synthetic operations note corpus_012
+- doc_id: corpus_013
+  path: d16_corpus_200/corpus_013.md
+  metadata:
+    title: Synthetic operations note corpus_013
+- doc_id: corpus_014
+  path: d16_corpus_200/corpus_014.md
+  metadata:
+    title: Synthetic operations note corpus_014
+- doc_id: corpus_015
+  path: d16_corpus_200/corpus_015.md
+  metadata:
+    title: Synthetic operations note corpus_015
+- doc_id: corpus_016
+  path: d16_corpus_200/corpus_016.md
+  metadata:
+    title: Synthetic operations note corpus_016
+- doc_id: corpus_017
+  path: d16_corpus_200/corpus_017.md
+  metadata:
+    title: Synthetic operations note corpus_017
+- doc_id: corpus_018
+  path: d16_corpus_200/corpus_018.md
+  metadata:
+    title: Synthetic operations note corpus_018
+- doc_id: corpus_019
+  path: d16_corpus_200/corpus_019.md
+  metadata:
+    title: Synthetic operations note corpus_019
+- doc_id: corpus_020
+  path: d16_corpus_200/corpus_020.md
+  metadata:
+    title: Synthetic operations note corpus_020
+- doc_id: corpus_021
+  path: d16_corpus_200/corpus_021.md
+  metadata:
+    title: Synthetic operations note corpus_021
+- doc_id: corpus_022
+  path: d16_corpus_200/corpus_022.md
+  metadata:
+    title: Synthetic operations note corpus_022
+- doc_id: corpus_023
+  path: d16_corpus_200/corpus_023.md
+  metadata:
+    title: Synthetic operations note corpus_023
+- doc_id: corpus_024
+  path: d16_corpus_200/corpus_024.md
+  metadata:
+    title: Synthetic operations note corpus_024
+- doc_id: corpus_025
+  path: d16_corpus_200/corpus_025.md
+  metadata:
+    title: Synthetic operations note corpus_025
+- doc_id: corpus_026
+  path: d16_corpus_200/corpus_026.md
+  metadata:
+    title: Synthetic operations note corpus_026
+- doc_id: corpus_027
+  path: d16_corpus_200/corpus_027.md
+  metadata:
+    title: Synthetic operations note corpus_027
+- doc_id: corpus_028
+  path: d16_corpus_200/corpus_028.md
+  metadata:
+    title: Synthetic operations note corpus_028
+- doc_id: corpus_029
+  path: d16_corpus_200/corpus_029.md
+  metadata:
+    title: Synthetic operations note corpus_029
+- doc_id: corpus_030
+  path: d16_corpus_200/corpus_030.md
+  metadata:
+    title: Synthetic operations note corpus_030
+- doc_id: corpus_031
+  path: d16_corpus_200/corpus_031.md
+  metadata:
+    title: Synthetic operations note corpus_031
+- doc_id: corpus_032
+  path: d16_corpus_200/corpus_032.md
+  metadata:
+    title: Synthetic operations note corpus_032
+- doc_id: corpus_033
+  path: d16_corpus_200/corpus_033.md
+  metadata:
+    title: Synthetic operations note corpus_033
+- doc_id: corpus_034
+  path: d16_corpus_200/corpus_034.md
+  metadata:
+    title: Synthetic operations note corpus_034
+- doc_id: corpus_035
+  path: d16_corpus_200/corpus_035.md
+  metadata:
+    title: Synthetic operations note corpus_035
+- doc_id: corpus_036
+  path: d16_corpus_200/corpus_036.md
+  metadata:
+    title: Synthetic operations note corpus_036
+- doc_id: corpus_037
+  path: d16_corpus_200/corpus_037.md
+  metadata:
+    title: Synthetic operations note corpus_037
+- doc_id: corpus_038
+  path: d16_corpus_200/corpus_038.md
+  metadata:
+    title: Synthetic operations note corpus_038
+- doc_id: corpus_039
+  path: d16_corpus_200/corpus_039.md
+  metadata:
+    title: Synthetic operations note corpus_039
+- doc_id: corpus_040
+  path: d16_corpus_200/corpus_040.md
+  metadata:
+    title: Synthetic operations note corpus_040
+- doc_id: corpus_041
+  path: d16_corpus_200/corpus_041.md
+  metadata:
+    title: Synthetic operations note corpus_041
+- doc_id: corpus_042
+  path: d16_corpus_200/corpus_042.md
+  metadata:
+    title: Synthetic operations note corpus_042
+- doc_id: corpus_043
+  path: d16_corpus_200/corpus_043.md
+  metadata:
+    title: Synthetic operations note corpus_043
+- doc_id: corpus_044
+  path: d16_corpus_200/corpus_044.md
+  metadata:
+    title: Synthetic operations note corpus_044
+- doc_id: corpus_045
+  path: d16_corpus_200/corpus_045.md
+  metadata:
+    title: Synthetic operations note corpus_045
+- doc_id: corpus_046
+  path: d16_corpus_200/corpus_046.md
+  metadata:
+    title: Synthetic operations note corpus_046
+- doc_id: corpus_047
+  path: d16_corpus_200/corpus_047.md
+  metadata:
+    title: Synthetic operations note corpus_047
+- doc_id: corpus_048
+  path: d16_corpus_200/corpus_048.md
+  metadata:
+    title: Synthetic operations note corpus_048
+- doc_id: corpus_049
+  path: d16_corpus_200/corpus_049.md
+  metadata:
+    title: Synthetic operations note corpus_049
+- doc_id: corpus_050
+  path: d16_corpus_200/corpus_050.md
+  metadata:
+    title: Synthetic operations note corpus_050
+- doc_id: corpus_051
+  path: d16_corpus_200/corpus_051.md
+  metadata:
+    title: Synthetic operations note corpus_051
+- doc_id: corpus_052
+  path: d16_corpus_200/corpus_052.md
+  metadata:
+    title: Synthetic operations note corpus_052
+- doc_id: corpus_053
+  path: d16_corpus_200/corpus_053.md
+  metadata:
+    title: Synthetic operations note corpus_053
+- doc_id: corpus_054
+  path: d16_corpus_200/corpus_054.md
+  metadata:
+    title: Synthetic operations note corpus_054
+- doc_id: corpus_055
+  path: d16_corpus_200/corpus_055.md
+  metadata:
+    title: Synthetic operations note corpus_055
+- doc_id: corpus_056
+  path: d16_corpus_200/corpus_056.md
+  metadata:
+    title: Synthetic operations note corpus_056
+- doc_id: corpus_057
+  path: d16_corpus_200/corpus_057.md
+  metadata:
+    title: Synthetic operations note corpus_057
+- doc_id: corpus_058
+  path: d16_corpus_200/corpus_058.md
+  metadata:
+    title: Synthetic operations note corpus_058
+- doc_id: corpus_059
+  path: d16_corpus_200/corpus_059.md
+  metadata:
+    title: Synthetic operations note corpus_059
+- doc_id: corpus_060
+  path: d16_corpus_200/corpus_060.md
+  metadata:
+    title: Synthetic operations note corpus_060
+- doc_id: corpus_061
+  path: d16_corpus_200/corpus_061.md
+  metadata:
+    title: Synthetic operations note corpus_061
+- doc_id: corpus_062
+  path: d16_corpus_200/corpus_062.md
+  metadata:
+    title: Synthetic operations note corpus_062
+- doc_id: corpus_063
+  path: d16_corpus_200/corpus_063.md
+  metadata:
+    title: Synthetic operations note corpus_063
+- doc_id: corpus_064
+  path: d16_corpus_200/corpus_064.md
+  metadata:
+    title: Synthetic operations note corpus_064
+- doc_id: corpus_065
+  path: d16_corpus_200/corpus_065.md
+  metadata:
+    title: Synthetic operations note corpus_065
+- doc_id: corpus_066
+  path: d16_corpus_200/corpus_066.md
+  metadata:
+    title: Synthetic operations note corpus_066
+- doc_id: corpus_067
+  path: d16_corpus_200/corpus_067.md
+  metadata:
+    title: Synthetic operations note corpus_067
+- doc_id: corpus_068
+  path: d16_corpus_200/corpus_068.md
+  metadata:
+    title: Synthetic operations note corpus_068
+- doc_id: corpus_069
+  path: d16_corpus_200/corpus_069.md
+  metadata:
+    title: Synthetic operations note corpus_069
+- doc_id: corpus_070
+  path: d16_corpus_200/corpus_070.md
+  metadata:
+    title: Synthetic operations note corpus_070
+- doc_id: corpus_071
+  path: d16_corpus_200/corpus_071.md
+  metadata:
+    title: Synthetic operations note corpus_071
+- doc_id: corpus_072
+  path: d16_corpus_200/corpus_072.md
+  metadata:
+    title: Synthetic operations note corpus_072
+- doc_id: corpus_073
+  path: d16_corpus_200/corpus_073.md
+  metadata:
+    title: Synthetic operations note corpus_073
+- doc_id: corpus_074
+  path: d16_corpus_200/corpus_074.md
+  metadata:
+    title: Synthetic operations note corpus_074
+- doc_id: corpus_075
+  path: d16_corpus_200/corpus_075.md
+  metadata:
+    title: Synthetic operations note corpus_075
+- doc_id: corpus_076
+  path: d16_corpus_200/corpus_076.md
+  metadata:
+    title: Synthetic operations note corpus_076
+- doc_id: corpus_077
+  path: d16_corpus_200/corpus_077.md
+  metadata:
+    title: Synthetic operations note corpus_077
+- doc_id: corpus_078
+  path: d16_corpus_200/corpus_078.md
+  metadata:
+    title: Synthetic operations note corpus_078
+- doc_id: corpus_079
+  path: d16_corpus_200/corpus_079.md
+  metadata:
+    title: Synthetic operations note corpus_079
+- doc_id: corpus_080
+  path: d16_corpus_200/corpus_080.md
+  metadata:
+    title: Synthetic operations note corpus_080
+- doc_id: corpus_081
+  path: d16_corpus_200/corpus_081.md
+  metadata:
+    title: Synthetic operations note corpus_081
+- doc_id: corpus_082
+  path: d16_corpus_200/corpus_082.md
+  metadata:
+    title: Synthetic operations note corpus_082
+- doc_id: corpus_083
+  path: d16_corpus_200/corpus_083.md
+  metadata:
+    title: Synthetic operations note corpus_083
+- doc_id: corpus_084
+  path: d16_corpus_200/corpus_084.md
+  metadata:
+    title: Synthetic operations note corpus_084
+- doc_id: corpus_085
+  path: d16_corpus_200/corpus_085.md
+  metadata:
+    title: Synthetic operations note corpus_085
+- doc_id: corpus_086
+  path: d16_corpus_200/corpus_086.md
+  metadata:
+    title: Synthetic operations note corpus_086
+- doc_id: corpus_087
+  path: d16_corpus_200/corpus_087.md
+  metadata:
+    title: Synthetic operations note corpus_087
+- doc_id: corpus_088
+  path: d16_corpus_200/corpus_088.md
+  metadata:
+    title: Synthetic operations note corpus_088
+- doc_id: corpus_089
+  path: d16_corpus_200/corpus_089.md
+  metadata:
+    title: Synthetic operations note corpus_089
+- doc_id: corpus_090
+  path: d16_corpus_200/corpus_090.md
+  metadata:
+    title: Synthetic operations note corpus_090
+- doc_id: corpus_091
+  path: d16_corpus_200/corpus_091.md
+  metadata:
+    title: Synthetic operations note corpus_091
+- doc_id: corpus_092
+  path: d16_corpus_200/corpus_092.md
+  metadata:
+    title: Synthetic operations note corpus_092
+- doc_id: corpus_093
+  path: d16_corpus_200/corpus_093.md
+  metadata:
+    title: Synthetic operations note corpus_093
+- doc_id: corpus_094
+  path: d16_corpus_200/corpus_094.md
+  metadata:
+    title: Synthetic operations note corpus_094
+- doc_id: corpus_095
+  path: d16_corpus_200/corpus_095.md
+  metadata:
+    title: Synthetic operations note corpus_095
+- doc_id: corpus_096
+  path: d16_corpus_200/corpus_096.md
+  metadata:
+    title: Synthetic operations note corpus_096
+- doc_id: corpus_097
+  path: d16_corpus_200/corpus_097.md
+  metadata:
+    title: Synthetic operations note corpus_097
+- doc_id: corpus_098
+  path: d16_corpus_200/corpus_098.md
+  metadata:
+    title: Synthetic operations note corpus_098
+- doc_id: corpus_099
+  path: d16_corpus_200/corpus_099.md
+  metadata:
+    title: Synthetic operations note corpus_099
+- doc_id: corpus_100
+  path: d16_corpus_200/corpus_100.md
+  metadata:
+    title: Synthetic operations note corpus_100
+- doc_id: corpus_101
+  path: d16_corpus_200/corpus_101.md
+  metadata:
+    title: Synthetic operations note corpus_101
+- doc_id: corpus_102
+  path: d16_corpus_200/corpus_102.md
+  metadata:
+    title: Synthetic operations note corpus_102
+- doc_id: corpus_103
+  path: d16_corpus_200/corpus_103.md
+  metadata:
+    title: Synthetic operations note corpus_103
+- doc_id: corpus_104
+  path: d16_corpus_200/corpus_104.md
+  metadata:
+    title: Synthetic operations note corpus_104
+- doc_id: corpus_105
+  path: d16_corpus_200/corpus_105.md
+  metadata:
+    title: Synthetic operations note corpus_105
+- doc_id: corpus_106
+  path: d16_corpus_200/corpus_106.md
+  metadata:
+    title: Synthetic operations note corpus_106
+- doc_id: corpus_107
+  path: d16_corpus_200/corpus_107.md
+  metadata:
+    title: Synthetic operations note corpus_107
+- doc_id: corpus_108
+  path: d16_corpus_200/corpus_108.md
+  metadata:
+    title: Synthetic operations note corpus_108
+- doc_id: corpus_109
+  path: d16_corpus_200/corpus_109.md
+  metadata:
+    title: Synthetic operations note corpus_109
+- doc_id: corpus_110
+  path: d16_corpus_200/corpus_110.md
+  metadata:
+    title: Synthetic operations note corpus_110
+- doc_id: corpus_111
+  path: d16_corpus_200/corpus_111.md
+  metadata:
+    title: Synthetic operations note corpus_111
+- doc_id: corpus_112
+  path: d16_corpus_200/corpus_112.md
+  metadata:
+    title: Synthetic operations note corpus_112
+- doc_id: corpus_113
+  path: d16_corpus_200/corpus_113.md
+  metadata:
+    title: Synthetic operations note corpus_113
+- doc_id: corpus_114
+  path: d16_corpus_200/corpus_114.md
+  metadata:
+    title: Synthetic operations note corpus_114
+- doc_id: corpus_115
+  path: d16_corpus_200/corpus_115.md
+  metadata:
+    title: Synthetic operations note corpus_115
+- doc_id: corpus_116
+  path: d16_corpus_200/corpus_116.md
+  metadata:
+    title: Synthetic operations note corpus_116
+- doc_id: corpus_117
+  path: d16_corpus_200/corpus_117.md
+  metadata:
+    title: Synthetic operations note corpus_117
+- doc_id: corpus_118
+  path: d16_corpus_200/corpus_118.md
+  metadata:
+    title: Synthetic operations note corpus_118
+- doc_id: corpus_119
+  path: d16_corpus_200/corpus_119.md
+  metadata:
+    title: Synthetic operations note corpus_119
+- doc_id: corpus_120
+  path: d16_corpus_200/corpus_120.md
+  metadata:
+    title: Synthetic operations note corpus_120
+- doc_id: corpus_121
+  path: d16_corpus_200/corpus_121.md
+  metadata:
+    title: Synthetic operations note corpus_121
+- doc_id: corpus_122
+  path: d16_corpus_200/corpus_122.md
+  metadata:
+    title: Synthetic operations note corpus_122
+- doc_id: corpus_123
+  path: d16_corpus_200/corpus_123.md
+  metadata:
+    title: Synthetic operations note corpus_123
+- doc_id: corpus_124
+  path: d16_corpus_200/corpus_124.md
+  metadata:
+    title: Synthetic operations note corpus_124
+- doc_id: corpus_125
+  path: d16_corpus_200/corpus_125.md
+  metadata:
+    title: Synthetic operations note corpus_125
+- doc_id: corpus_126
+  path: d16_corpus_200/corpus_126.md
+  metadata:
+    title: Synthetic operations note corpus_126
+- doc_id: corpus_127
+  path: d16_corpus_200/corpus_127.md
+  metadata:
+    title: Synthetic operations note corpus_127
+- doc_id: corpus_128
+  path: d16_corpus_200/corpus_128.md
+  metadata:
+    title: Synthetic operations note corpus_128
+- doc_id: corpus_129
+  path: d16_corpus_200/corpus_129.md
+  metadata:
+    title: Synthetic operations note corpus_129
+- doc_id: corpus_130
+  path: d16_corpus_200/corpus_130.md
+  metadata:
+    title: Synthetic operations note corpus_130
+- doc_id: corpus_131
+  path: d16_corpus_200/corpus_131.md
+  metadata:
+    title: Synthetic operations note corpus_131
+- doc_id: corpus_132
+  path: d16_corpus_200/corpus_132.md
+  metadata:
+    title: Synthetic operations note corpus_132
+- doc_id: corpus_133
+  path: d16_corpus_200/corpus_133.md
+  metadata:
+    title: Synthetic operations note corpus_133
+- doc_id: corpus_134
+  path: d16_corpus_200/corpus_134.md
+  metadata:
+    title: Synthetic operations note corpus_134
+- doc_id: corpus_135
+  path: d16_corpus_200/corpus_135.md
+  metadata:
+    title: Synthetic operations note corpus_135
+- doc_id: corpus_136
+  path: d16_corpus_200/corpus_136.md
+  metadata:
+    title: Synthetic operations note corpus_136
+- doc_id: corpus_137
+  path: d16_corpus_200/corpus_137.md
+  metadata:
+    title: Synthetic operations note corpus_137
+- doc_id: corpus_138
+  path: d16_corpus_200/corpus_138.md
+  metadata:
+    title: Synthetic operations note corpus_138
+- doc_id: corpus_139
+  path: d16_corpus_200/corpus_139.md
+  metadata:
+    title: Synthetic operations note corpus_139
+- doc_id: corpus_140
+  path: d16_corpus_200/corpus_140.md
+  metadata:
+    title: Synthetic operations note corpus_140
+- doc_id: corpus_141
+  path: d16_corpus_200/corpus_141.md
+  metadata:
+    title: Synthetic operations note corpus_141
+- doc_id: corpus_142
+  path: d16_corpus_200/corpus_142.md
+  metadata:
+    title: Synthetic operations note corpus_142
+- doc_id: corpus_143
+  path: d16_corpus_200/corpus_143.md
+  metadata:
+    title: Synthetic operations note corpus_143
+- doc_id: corpus_144
+  path: d16_corpus_200/corpus_144.md
+  metadata:
+    title: Synthetic operations note corpus_144
+- doc_id: corpus_145
+  path: d16_corpus_200/corpus_145.md
+  metadata:
+    title: Synthetic operations note corpus_145
+- doc_id: corpus_146
+  path: d16_corpus_200/corpus_146.md
+  metadata:
+    title: Synthetic operations note corpus_146
+- doc_id: corpus_147
+  path: d16_corpus_200/corpus_147.md
+  metadata:
+    title: Synthetic operations note corpus_147
+- doc_id: corpus_148
+  path: d16_corpus_200/corpus_148.md
+  metadata:
+    title: Synthetic operations note corpus_148
+- doc_id: corpus_149
+  path: d16_corpus_200/corpus_149.md
+  metadata:
+    title: Synthetic operations note corpus_149
+- doc_id: corpus_150
+  path: d16_corpus_200/corpus_150.md
+  metadata:
+    title: Synthetic operations note corpus_150
+- doc_id: corpus_151
+  path: d16_corpus_200/corpus_151.md
+  metadata:
+    title: Synthetic operations note corpus_151
+- doc_id: corpus_152
+  path: d16_corpus_200/corpus_152.md
+  metadata:
+    title: Synthetic operations note corpus_152
+- doc_id: corpus_153
+  path: d16_corpus_200/corpus_153.md
+  metadata:
+    title: Synthetic operations note corpus_153
+- doc_id: corpus_154
+  path: d16_corpus_200/corpus_154.md
+  metadata:
+    title: Synthetic operations note corpus_154
+- doc_id: corpus_155
+  path: d16_corpus_200/corpus_155.md
+  metadata:
+    title: Synthetic operations note corpus_155
+- doc_id: corpus_156
+  path: d16_corpus_200/corpus_156.md
+  metadata:
+    title: Synthetic operations note corpus_156
+- doc_id: corpus_157
+  path: d16_corpus_200/corpus_157.md
+  metadata:
+    title: Synthetic operations note corpus_157
+- doc_id: corpus_158
+  path: d16_corpus_200/corpus_158.md
+  metadata:
+    title: Synthetic operations note corpus_158
+- doc_id: corpus_159
+  path: d16_corpus_200/corpus_159.md
+  metadata:
+    title: Synthetic operations note corpus_159
+- doc_id: corpus_160
+  path: d16_corpus_200/corpus_160.md
+  metadata:
+    title: Synthetic operations note corpus_160
+- doc_id: corpus_161
+  path: d16_corpus_200/corpus_161.md
+  metadata:
+    title: Synthetic operations note corpus_161
+- doc_id: corpus_162
+  path: d16_corpus_200/corpus_162.md
+  metadata:
+    title: Synthetic operations note corpus_162
+- doc_id: corpus_163
+  path: d16_corpus_200/corpus_163.md
+  metadata:
+    title: Synthetic operations note corpus_163
+- doc_id: corpus_164
+  path: d16_corpus_200/corpus_164.md
+  metadata:
+    title: Synthetic operations note corpus_164
+- doc_id: corpus_165
+  path: d16_corpus_200/corpus_165.md
+  metadata:
+    title: Synthetic operations note corpus_165
+- doc_id: corpus_166
+  path: d16_corpus_200/corpus_166.md
+  metadata:
+    title: Synthetic operations note corpus_166
+- doc_id: corpus_167
+  path: d16_corpus_200/corpus_167.md
+  metadata:
+    title: Synthetic operations note corpus_167
+- doc_id: corpus_168
+  path: d16_corpus_200/corpus_168.md
+  metadata:
+    title: Synthetic operations note corpus_168
+- doc_id: corpus_169
+  path: d16_corpus_200/corpus_169.md
+  metadata:
+    title: Synthetic operations note corpus_169
+- doc_id: corpus_170
+  path: d16_corpus_200/corpus_170.md
+  metadata:
+    title: Synthetic operations note corpus_170
+- doc_id: corpus_171
+  path: d16_corpus_200/corpus_171.md
+  metadata:
+    title: Synthetic operations note corpus_171
+- doc_id: corpus_172
+  path: d16_corpus_200/corpus_172.md
+  metadata:
+    title: Synthetic operations note corpus_172
+- doc_id: corpus_173
+  path: d16_corpus_200/corpus_173.md
+  metadata:
+    title: Synthetic operations note corpus_173
+- doc_id: corpus_174
+  path: d16_corpus_200/corpus_174.md
+  metadata:
+    title: Synthetic operations note corpus_174
+- doc_id: corpus_175
+  path: d16_corpus_200/corpus_175.md
+  metadata:
+    title: Synthetic operations note corpus_175
+- doc_id: corpus_176
+  path: d16_corpus_200/corpus_176.md
+  metadata:
+    title: Synthetic operations note corpus_176
+- doc_id: corpus_177
+  path: d16_corpus_200/corpus_177.md
+  metadata:
+    title: Synthetic operations note corpus_177
+- doc_id: corpus_178
+  path: d16_corpus_200/corpus_178.md
+  metadata:
+    title: Synthetic operations note corpus_178
+- doc_id: corpus_179
+  path: d16_corpus_200/corpus_179.md
+  metadata:
+    title: Synthetic operations note corpus_179
+- doc_id: corpus_180
+  path: d16_corpus_200/corpus_180.md
+  metadata:
+    title: Synthetic operations note corpus_180
+- doc_id: corpus_181
+  path: d16_corpus_200/corpus_181.md
+  metadata:
+    title: Synthetic operations note corpus_181
+- doc_id: corpus_182
+  path: d16_corpus_200/corpus_182.md
+  metadata:
+    title: Synthetic operations note corpus_182
+- doc_id: corpus_183
+  path: d16_corpus_200/corpus_183.md
+  metadata:
+    title: Synthetic operations note corpus_183
+- doc_id: corpus_184
+  path: d16_corpus_200/corpus_184.md
+  metadata:
+    title: Synthetic operations note corpus_184
+- doc_id: corpus_185
+  path: d16_corpus_200/corpus_185.md
+  metadata:
+    title: Synthetic operations note corpus_185
+- doc_id: corpus_186
+  path: d16_corpus_200/corpus_186.md
+  metadata:
+    title: Synthetic operations note corpus_186
+- doc_id: corpus_187
+  path: d16_corpus_200/corpus_187.md
+  metadata:
+    title: Synthetic operations note corpus_187
+- doc_id: corpus_188
+  path: d16_corpus_200/corpus_188.md
+  metadata:
+    title: Synthetic operations note corpus_188
+- doc_id: corpus_189
+  path: d16_corpus_200/corpus_189.md
+  metadata:
+    title: Synthetic operations note corpus_189
+- doc_id: corpus_190
+  path: d16_corpus_200/corpus_190.md
+  metadata:
+    title: Synthetic operations note corpus_190
+- doc_id: corpus_191
+  path: d16_corpus_200/corpus_191.md
+  metadata:
+    title: Synthetic operations note corpus_191
+- doc_id: corpus_192
+  path: d16_corpus_200/corpus_192.md
+  metadata:
+    title: Synthetic operations note corpus_192
+- doc_id: corpus_193
+  path: d16_corpus_200/corpus_193.md
+  metadata:
+    title: Synthetic operations note corpus_193
+- doc_id: corpus_194
+  path: d16_corpus_200/corpus_194.md
+  metadata:
+    title: Synthetic operations note corpus_194
+- doc_id: corpus_195
+  path: d16_corpus_200/corpus_195.md
+  metadata:
+    title: Synthetic operations note corpus_195
+- doc_id: corpus_196
+  path: d16_corpus_200/corpus_196.md
+  metadata:
+    title: Synthetic operations note corpus_196
+- doc_id: corpus_197
+  path: d16_corpus_200/corpus_197.md
+  metadata:
+    title: Synthetic operations note corpus_197
+- doc_id: corpus_198
+  path: d16_corpus_200/corpus_198.md
+  metadata:
+    title: Synthetic operations note corpus_198
+- doc_id: corpus_199
+  path: d16_corpus_200/corpus_199.md
+  metadata:
+    title: Synthetic operations note corpus_199
+turns:
+- turn_number: 1
+  session_id: s1
+  role: user
+  content: What is the calibration code for the cooling loop LOOP-505?
+  assertions:
+  - type: must_contain
+    value: FGU-U0FB-8525
+  - type: must_retrieve_chunk
+    value: corpus_000
+- turn_number: 2
+  session_id: s1
+  role: user
+  content: What is the provisioning code for the rack row RACK-679?
+  assertions:
+  - type: must_contain
+    value: HHD-1E2T-6801
+  - type: must_retrieve_chunk
+    value: corpus_025
+- turn_number: 3
+  session_id: s1
+  role: user
+  content: What is the decommissioning code for the object store bucket BSTORE-320?
+  assertions:
+  - type: must_contain
+    value: XWC-CBE5-7668
+  - type: must_retrieve_chunk
+    value: corpus_050
+- turn_number: 4
+  session_id: s1
+  role: user
+  content: What is the failover code for the scheduler pool POOL-187?
+  assertions:
+  - type: must_contain
+    value: PUL-5BGN-9685
+  - type: must_retrieve_chunk
+    value: corpus_075
+- turn_number: 5
+  session_id: s1
+  role: user
+  content: What is the escrow code for the certificate ring RING-240?
+  assertions:
+  - type: must_contain
+    value: EIC-WNYK-3335
+  - type: must_retrieve_chunk
+    value: corpus_100
+- turn_number: 6
+  session_id: s1
+  role: user
+  content: What is the attestation code for the backup vault VAULT-891?
+  assertions:
+  - type: must_contain
+    value: WNW-JFVM-1248
+  - type: must_retrieve_chunk
+    value: corpus_125
+- turn_number: 7
+  session_id: s1
+  role: user
+  content: What is the calibration code for the cooling loop LOOP-610?
+  assertions:
+  - type: must_contain
+    value: NOF-BSRP-9575
+  - type: must_retrieve_chunk
+    value: corpus_150
+- turn_number: 8
+  session_id: s1
+  role: user
+  content: What is the provisioning code for the rack row RACK-805?
+  assertions:
+  - type: must_contain
+    value: IBJ-N9U8-6012
+  - type: must_retrieve_chunk
+    value: corpus_175

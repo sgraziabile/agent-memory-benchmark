@@ -1,0 +1,185 @@
+# ─────────────────────────────────────────────────────────────────
+# D16 — L-R corpus-size curve (AUTO-GENERATED, do not hand-edit).
+#
+# Regenerate with:
+#   python scripts/generate_corpus.py --docs 8 --chars-per-doc 6000 --seed 7 --needles 8 --out datasets/documents/d16_corpus_008
+#   python scripts/build_d16_scenarios.py
+#
+# Non-inferability: each probe asks for a random answer token that
+# occurs exactly once in the corpus (generator-validated) and never in
+# the probe itself, so the gold chunk is necessary to answer.
+# ─────────────────────────────────────────────────────────────────
+id: document_corpus_size_008_01
+name: 'L-R Corpus-Size Curve: 8 Documents (8 Probes)'
+description: 'L-R corpus-size curve point: 8 generated documents (~48 KB) with 8 opaque needles. Every probe names an entity that occurs once in the corpus and requests an answer token that occurs once in that entity''s document — a correct answer is impossible to infer and therefore proves the gold chunk reached the prompt. All probes share one session, so current-session chat is excluded from retrieval and the candidate pool is documents only.'
+category: document_corpus_size
+metadata:
+  difficulty: moderate
+  stage: L-R
+  target_research_question: P1
+  expected_level_0_behavior: Fails (0%). No memory at all.
+  expected_level_1_behavior: Fails (0%). Documents are never ingested and nothing survives the session thread.
+  expected_level_2_behavior: 'Recall@k is the measured quantity: correct answers track chunk retrieval, and misses are R-A (gold ranks after top_k).'
+  corpus_docs: 8
+  chars_per_doc: 6000
+  corpus_seed: 7
+  corpus_dir: d16_corpus_008
+  default_top_k: 5
+  chunk_size: 600
+  probe_count: 8
+  needle_values:
+  - EOW-WTEL-5216
+  - RDF-S7T7-1366
+  - DBL-AGIH-3623
+  - EQL-2EZX-6222
+  - AUC-8JRH-4969
+  - RMA-XRTR-1657
+  - NET-I1PO-8412
+  - CXC-DW7D-3327
+  probes:
+  - turn: 1
+    doc_id: corpus_000
+    entity: LOOP-530
+    answer: EOW-WTEL-5216
+    section: 2
+  - turn: 2
+    doc_id: corpus_001
+    entity: RACK-390
+    answer: RDF-S7T7-1366
+    section: 2
+  - turn: 3
+    doc_id: corpus_002
+    entity: BSTORE-690
+    answer: DBL-AGIH-3623
+    section: 2
+  - turn: 4
+    doc_id: corpus_003
+    entity: POOL-482
+    answer: EQL-2EZX-6222
+    section: 2
+  - turn: 5
+    doc_id: corpus_004
+    entity: RING-481
+    answer: AUC-8JRH-4969
+    section: 2
+  - turn: 6
+    doc_id: corpus_005
+    entity: VAULT-642
+    answer: RMA-XRTR-1657
+    section: 2
+  - turn: 7
+    doc_id: corpus_006
+    entity: LOOP-389
+    answer: NET-I1PO-8412
+    section: 2
+  - turn: 8
+    doc_id: corpus_007
+    entity: RACK-857
+    answer: CXC-DW7D-3327
+    section: 2
+documents:
+- doc_id: corpus_000
+  path: d16_corpus_008/corpus_000.md
+  metadata:
+    title: Synthetic operations note corpus_000
+- doc_id: corpus_001
+  path: d16_corpus_008/corpus_001.md
+  metadata:
+    title: Synthetic operations note corpus_001
+- doc_id: corpus_002
+  path: d16_corpus_008/corpus_002.md
+  metadata:
+    title: Synthetic operations note corpus_002
+- doc_id: corpus_003
+  path: d16_corpus_008/corpus_003.md
+  metadata:
+    title: Synthetic operations note corpus_003
+- doc_id: corpus_004
+  path: d16_corpus_008/corpus_004.md
+  metadata:
+    title: Synthetic operations note corpus_004
+- doc_id: corpus_005
+  path: d16_corpus_008/corpus_005.md
+  metadata:
+    title: Synthetic operations note corpus_005
+- doc_id: corpus_006
+  path: d16_corpus_008/corpus_006.md
+  metadata:
+    title: Synthetic operations note corpus_006
+- doc_id: corpus_007
+  path: d16_corpus_008/corpus_007.md
+  metadata:
+    title: Synthetic operations note corpus_007
+turns:
+- turn_number: 1
+  session_id: s1
+  role: user
+  content: What is the calibration code for the cooling loop LOOP-530?
+  assertions:
+  - type: must_contain
+    value: EOW-WTEL-5216
+  - type: must_retrieve_chunk
+    value: corpus_000
+- turn_number: 2
+  session_id: s1
+  role: user
+  content: What is the provisioning code for the rack row RACK-390?
+  assertions:
+  - type: must_contain
+    value: RDF-S7T7-1366
+  - type: must_retrieve_chunk
+    value: corpus_001
+- turn_number: 3
+  session_id: s1
+  role: user
+  content: What is the decommissioning code for the object store bucket BSTORE-690?
+  assertions:
+  - type: must_contain
+    value: DBL-AGIH-3623
+  - type: must_retrieve_chunk
+    value: corpus_002
+- turn_number: 4
+  session_id: s1
+  role: user
+  content: What is the failover code for the scheduler pool POOL-482?
+  assertions:
+  - type: must_contain
+    value: EQL-2EZX-6222
+  - type: must_retrieve_chunk
+    value: corpus_003
+- turn_number: 5
+  session_id: s1
+  role: user
+  content: What is the escrow code for the certificate ring RING-481?
+  assertions:
+  - type: must_contain
+    value: AUC-8JRH-4969
+  - type: must_retrieve_chunk
+    value: corpus_004
+- turn_number: 6
+  session_id: s1
+  role: user
+  content: What is the attestation code for the backup vault VAULT-642?
+  assertions:
+  - type: must_contain
+    value: RMA-XRTR-1657
+  - type: must_retrieve_chunk
+    value: corpus_005
+- turn_number: 7
+  session_id: s1
+  role: user
+  content: What is the calibration code for the cooling loop LOOP-389?
+  assertions:
+  - type: must_contain
+    value: NET-I1PO-8412
+  - type: must_retrieve_chunk
+    value: corpus_006
+- turn_number: 8
+  session_id: s1
+  role: user
+  content: What is the provisioning code for the rack row RACK-857?
+  assertions:
+  - type: must_contain
+    value: CXC-DW7D-3327
+  - type: must_retrieve_chunk
+    value: corpus_007

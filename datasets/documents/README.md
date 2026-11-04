@@ -62,7 +62,58 @@ It writes `generated/corpus_000.md … corpus_00N.md` plus
 holds the needle). Reference them from a scenario as
 `path: generated/corpus_003.md`.
 
-## Level semantics
+## D16 — corpus-size curve (`--needles`)
+
+D16 (stress plan §5.3.5) measures `Recall@5` against corpus size. Instead of a
+single hand-written needle it plants **N opaque (entity, answer) pairs**:
+
+```bash
+python scripts/generate_corpus.py --docs 8   --chars-per-doc 6000 --seed 7 \
+    --needles 8 --out datasets/documents/d16_corpus_008
+python scripts/generate_corpus.py --docs 60  --chars-per-doc 6000 --seed 7 \
+    --needles 8 --out datasets/documents/d16_corpus_060
+python scripts/generate_corpus.py --docs 200 --chars-per-doc 6000 --seed 7 \
+    --needles 8 --out datasets/documents/d16_corpus_200
+python scripts/build_d16_scenarios.py        # emits the three scenario YAMLs
+```
+
+Each needle renders as one sentence
+
+> `The calibration code for the cooling loop LOOP-412 is ARC-9F3K-2214.`
+
+and the generated probe asks only for the entity:
+
+> `What is the calibration code for the cooling loop LOOP-412?`
+
+**Non-inferability contract** (enforced by the generator, which exits non-zero
+otherwise): the answer token occurs **exactly once** in the whole corpus, never
+in its own probe, and its entity also occurs exactly once — so a correct
+response cannot be guessed, inferred from the prompt, or reconstructed from a
+sibling document. The gold chunk is necessary. Every corpus owns its own
+(answer, entity) set (`seed + corpus size`), so probes are meaningful only
+inside their corpus.
+
+`corpus_manifest.json` gains a `needles` list (`doc_id`, `entity`, `answer`,
+`probe`, `sentence`, `section`); the legacy `needle` key and single-needle
+behaviour are unchanged (the no-needle corpus is byte-identical to the
+pre-`--needles` output for the same seed).
+
+Report the resulting curve with:
+
+```bash
+python scripts/lr_report.py --scenario-prefix document_corpus_size \
+    --csv outputs/lr_recall.csv
+```
+
+It recomputes **chunk-level** Recall@k, MRR, Δcos and coverage from
+`retrieved_memories`, because the scenario assertion only pins the document
+prefix (`must_retrieve_chunk: corpus_0NN` also accepts sibling sub-chunks).
+
+Budget: ingestion is charged per tuple. Measured 2026-11-04 with
+`qwen3-embedding-0.6b` (Ollama, CPU): 8 docs ≈ 12k tokens ≈ **154 s**; at
+≈12 ms/token the 60-doc cell is ≈20 min and the 200-doc cell ≈65 min per run.
+
+
 
 | Level | Preload | `system_event` | Result |
 |-------|---------|----------------|--------|

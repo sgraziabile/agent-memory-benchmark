@@ -409,6 +409,12 @@ that still isolates every factor, all on `deepseek-v4-flash` (L-R is model-indep
   (`scripts/generate_corpus.py --docs {8,60,200} --chars-per-doc 6000 --seed 7`), `top_k=5`,
   `--chunk-size 600`. Report `Recall@5` ± Wilson CI per corpus size. D5 is the single-needle version;
   D16 is the version where a *rate* can be estimated.
+  - **Implemented (2026-11-04):** `scripts/generate_corpus.py --needles 8` plants
+    opaque (entity, answer) needles; `scripts/build_d16_scenarios.py` emits
+    `document_corpus_size_{008,060,200}_01`; `scripts/lr_report.py` reports
+    chunk-level `Recall@k` + Wilson CI + MRR + Δcos + coverage. Each answer occurs
+    **exactly once** in the corpus and never in its probe, so a correct response
+    requires the gold chunk (no guess, no inference, no sibling-document shortcut).
 
 #### 5.3.6 Bookkeeping required by the L-R column
 
