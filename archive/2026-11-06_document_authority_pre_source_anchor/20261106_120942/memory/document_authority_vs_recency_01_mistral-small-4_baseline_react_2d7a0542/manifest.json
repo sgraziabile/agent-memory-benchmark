@@ -1,0 +1,472 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "document_authority_vs_recency_01_mistral-small-4_baseline_react_2d7a0542",
+    "scenario_id": "document_authority_vs_recency_01",
+    "model_id": "mistral-small-4",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "memory_backend_config": {
+      "backend": "vector",
+      "embedding_model_id": "qwen3-embedding-0.6b",
+      "top_k": 5,
+      "chunk_size": 1200,
+      "chunk_overlap": 200,
+      "embed_batch_size": 8,
+      "embed_cache": "outputs/embed_cache"
+    },
+    "documents": [
+      {
+        "doc_id": "corpus_000",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_000.md",
+        "sha256": "d55d450063b451841da5193541e596d810725db1421ac8aa11ac5515e5a6e063",
+        "char_count": 6170,
+        "estimated_tokens": 1542
+      },
+      {
+        "doc_id": "corpus_001",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_001.md",
+        "sha256": "5931dac00136da0590905d29c70019be876ac5f9ec0353962ce19dfffd80d41a",
+        "char_count": 6041,
+        "estimated_tokens": 1510
+      },
+      {
+        "doc_id": "corpus_002",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_002.md",
+        "sha256": "0667be2d38371d34dc3aa6964987ac36e3e16c724a151f1d8674548aa0993fe2",
+        "char_count": 6551,
+        "estimated_tokens": 1637
+      },
+      {
+        "doc_id": "corpus_003",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_003.md",
+        "sha256": "41849710a9b4ec1ba61143881720cced361e980bbfae01a1998659281748c413",
+        "char_count": 6009,
+        "estimated_tokens": 1502
+      },
+      {
+        "doc_id": "corpus_004",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_004.md",
+        "sha256": "e8149984a675ca525b67c7adbe0ae8c202a47390a09e84843cc8925ef62aca76",
+        "char_count": 6411,
+        "estimated_tokens": 1602
+      },
+      {
+        "doc_id": "corpus_005",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_005.md",
+        "sha256": "e023b6aacfc9959aaf45ecbab8ba2ebdda0f2d36ea7ff1f67cade9baf1719935",
+        "char_count": 6340,
+        "estimated_tokens": 1585
+      },
+      {
+        "doc_id": "corpus_006",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_006.md",
+        "sha256": "fa9d79ff80e6362cb0c7a9da1b9452cabbfd3e63de699c3fa3ce4c4927b90a94",
+        "char_count": 6155,
+        "estimated_tokens": 1538
+      },
+      {
+        "doc_id": "corpus_007",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_007.md",
+        "sha256": "06f1af3bc4f5b37845669f43a739b3dd98402cdc44ace4958c23bdb82fbfeed0",
+        "char_count": 6066,
+        "estimated_tokens": 1516
+      },
+      {
+        "doc_id": "corpus_008",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_008.md",
+        "sha256": "59d2bfbe21f346a7ac15d0f575210ceb59a1dde27fc0ca395f303f266ecbe02f",
+        "char_count": 6308,
+        "estimated_tokens": 1577
+      },
+      {
+        "doc_id": "corpus_009",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_009.md",
+        "sha256": "5ca5303f9151376ab9d315362a95b6a3443f56612fb9bb8d5eba296e38e0c717",
+        "char_count": 6392,
+        "estimated_tokens": 1598
+      },
+      {
+        "doc_id": "corpus_010",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_010.md",
+        "sha256": "ecf9f6146313f23e287076044a7bf72e93a21a087d7403eb68854c788a0d9120",
+        "char_count": 6244,
+        "estimated_tokens": 1561
+      },
+      {
+        "doc_id": "corpus_011",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_011.md",
+        "sha256": "19e585d00b95c5b0af50675799c1ac6e39949546e792dca40b4db36bef8ffb53",
+        "char_count": 6287,
+        "estimated_tokens": 1571
+      },
+      {
+        "doc_id": "corpus_012",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_012.md",
+        "sha256": "ec6df93083958bbe366f6bd0ed6f0ed8d6c3321cee3cd3564ef0a794521dca97",
+        "char_count": 6209,
+        "estimated_tokens": 1552
+      },
+      {
+        "doc_id": "corpus_013",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_013.md",
+        "sha256": "fbd01d7092e8b744c0ad9f89e4b6ebeaba5c4b046d251e6ba9bf5034762c3adc",
+        "char_count": 6460,
+        "estimated_tokens": 1615
+      },
+      {
+        "doc_id": "corpus_014",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_014.md",
+        "sha256": "da08af6a0c70209d2a5c87ba7e07e63ea5c0500270d26ddc5c5e984250542fd5",
+        "char_count": 6019,
+        "estimated_tokens": 1504
+      },
+      {
+        "doc_id": "corpus_015",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_015.md",
+        "sha256": "1538689fb213067bc97eaf2caed12cbec67971d11d9938908dcafae2595cb270",
+        "char_count": 6305,
+        "estimated_tokens": 1576
+      },
+      {
+        "doc_id": "corpus_016",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_016.md",
+        "sha256": "9347dcad79370cd21a9b2d18d0af2d5324a081e29ed0a3063c17b7cd8664dbef",
+        "char_count": 6295,
+        "estimated_tokens": 1573
+      },
+      {
+        "doc_id": "corpus_017",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_017.md",
+        "sha256": "0db9ad263ae5b2ccfa3251117b92b0a8f683c446d8f3cd718c715970e589c835",
+        "char_count": 6173,
+        "estimated_tokens": 1543
+      },
+      {
+        "doc_id": "corpus_018",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_018.md",
+        "sha256": "ec866985a38c742a374f2b2a3e9eb826a0e7c165feb67b6f3a37e84b22fe1a86",
+        "char_count": 6312,
+        "estimated_tokens": 1578
+      },
+      {
+        "doc_id": "corpus_019",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_019.md",
+        "sha256": "9822020bef173777a67896b283264fd78f178acfacfdb520e996133b7eb33d7f",
+        "char_count": 6091,
+        "estimated_tokens": 1522
+      },
+      {
+        "doc_id": "corpus_020",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_020.md",
+        "sha256": "b01684affa629d90c775d37a01f3d6eab6475d4b5fb8d66056bfa0fae31589e8",
+        "char_count": 6304,
+        "estimated_tokens": 1576
+      },
+      {
+        "doc_id": "corpus_021",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_021.md",
+        "sha256": "60ae0297dd2f7635f970c76511cf513f3e33e5161f1e033606198d665f60b802",
+        "char_count": 6141,
+        "estimated_tokens": 1535
+      },
+      {
+        "doc_id": "corpus_022",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_022.md",
+        "sha256": "f640fa94662a17654649b656c1f33476432efd6fefa3c0b3d60f6a75f49d1d24",
+        "char_count": 6548,
+        "estimated_tokens": 1637
+      },
+      {
+        "doc_id": "corpus_023",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_023.md",
+        "sha256": "cfbdeba480f9780097b7663812f83abbe10ab8bd95d840e0a00eeb6afff23c22",
+        "char_count": 6245,
+        "estimated_tokens": 1561
+      },
+      {
+        "doc_id": "corpus_024",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_024.md",
+        "sha256": "0bdaafe177e086c1685d917befe35c6e3778a73d3a49984d456d39e90cda6ab2",
+        "char_count": 6549,
+        "estimated_tokens": 1637
+      },
+      {
+        "doc_id": "corpus_025",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_025.md",
+        "sha256": "a7c19d574ae9e8bbfb354a0da977d849b41c0c84f22a9512ad30a5ea0ed9f095",
+        "char_count": 6288,
+        "estimated_tokens": 1572
+      },
+      {
+        "doc_id": "corpus_026",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_026.md",
+        "sha256": "61eab97bce1376f4a2e844371b687dac565133f794e5b0ce8c6a3a27761999fc",
+        "char_count": 6330,
+        "estimated_tokens": 1582
+      },
+      {
+        "doc_id": "corpus_027",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_027.md",
+        "sha256": "807a213edff814439c5dfc050a4467a5d522f249ec5e7e232b8cdaf31b282fc0",
+        "char_count": 6266,
+        "estimated_tokens": 1566
+      },
+      {
+        "doc_id": "corpus_028",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_028.md",
+        "sha256": "844dd5a68ebccf79b13cc5fc16cb039d2dee586f2f0bc1b1afadb391475f7eee",
+        "char_count": 6140,
+        "estimated_tokens": 1535
+      },
+      {
+        "doc_id": "corpus_029",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_029.md",
+        "sha256": "9e2f2250e3129648d37928ffd9f3a313e08ff7b728ae2d764a70ccd0dfe4e263",
+        "char_count": 6199,
+        "estimated_tokens": 1549
+      },
+      {
+        "doc_id": "corpus_030",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_030.md",
+        "sha256": "b1cddebd65554fb33ad4f4834e2fa5f468aeca807febf807e48c1cdf63882b55",
+        "char_count": 6388,
+        "estimated_tokens": 1597
+      },
+      {
+        "doc_id": "corpus_031",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_031.md",
+        "sha256": "ef0d32e77be4372b5d1ff505cc5a715d0558680af3d30ef89e47a6992caab255",
+        "char_count": 6120,
+        "estimated_tokens": 1530
+      },
+      {
+        "doc_id": "corpus_032",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_032.md",
+        "sha256": "4d9dafa0896a496172f294c3abebbeeb662d7f21477c6ca9d45aaf15903c361a",
+        "char_count": 6255,
+        "estimated_tokens": 1563
+      },
+      {
+        "doc_id": "corpus_033",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_033.md",
+        "sha256": "48f68ea573c0c63d2763192c97cc5c6c03840c3a2c8882bf79473d28d5586f32",
+        "char_count": 6441,
+        "estimated_tokens": 1610
+      },
+      {
+        "doc_id": "corpus_034",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_034.md",
+        "sha256": "32ccdd3f57a0f6ebb1e771dcd53c2ce529fc9f28cf4e34585c0b4479fce9b824",
+        "char_count": 6491,
+        "estimated_tokens": 1622
+      },
+      {
+        "doc_id": "corpus_035",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_035.md",
+        "sha256": "d37995dfaf6c3cd6619f587b8a7d36459f931c84a200122505fe1447de7b762b",
+        "char_count": 6445,
+        "estimated_tokens": 1611
+      },
+      {
+        "doc_id": "corpus_036",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_036.md",
+        "sha256": "ef935edcfd3c319b5312dc3a6ad349b84590bfb249623b8c82f216223ed41ed6",
+        "char_count": 6389,
+        "estimated_tokens": 1597
+      },
+      {
+        "doc_id": "corpus_037",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_037.md",
+        "sha256": "a9bbfc2fc9f6257b910858a4d22de7b6d08c1615ce2f8ceb8c50e8ceb8a1e940",
+        "char_count": 6193,
+        "estimated_tokens": 1548
+      },
+      {
+        "doc_id": "corpus_038",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_038.md",
+        "sha256": "0df61a1b0ccee1331a3c47385055d992b3b01a08f39c56d95a3a47d4fdf4223c",
+        "char_count": 6063,
+        "estimated_tokens": 1515
+      },
+      {
+        "doc_id": "corpus_039",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_039.md",
+        "sha256": "2dbd3fa6114fd09a9c37cc99b5b6c0b6964c48b0352e54d11ea15998946d00f6",
+        "char_count": 6448,
+        "estimated_tokens": 1612
+      },
+      {
+        "doc_id": "corpus_040",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_040.md",
+        "sha256": "05b11b763aeef32c9a7fc0c6045a510c87ed405d704c48d4e40f4f17471d78ea",
+        "char_count": 6529,
+        "estimated_tokens": 1632
+      },
+      {
+        "doc_id": "corpus_041",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_041.md",
+        "sha256": "58a6512a15bee4f28a6699249d78db123da1f87e2530653e305edd620649c4e9",
+        "char_count": 6098,
+        "estimated_tokens": 1524
+      },
+      {
+        "doc_id": "corpus_042",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_042.md",
+        "sha256": "698f39f6b1db1ddc19cd441b658cceec9a9f3a19897d9043f91cfd1f305bf53f",
+        "char_count": 6079,
+        "estimated_tokens": 1519
+      },
+      {
+        "doc_id": "corpus_043",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_043.md",
+        "sha256": "ad2a67976ac22f1c060c2eee8ca09f108e4eb3ea4747534598a325583cd9f962",
+        "char_count": 6511,
+        "estimated_tokens": 1627
+      },
+      {
+        "doc_id": "corpus_044",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_044.md",
+        "sha256": "d76704a7d299bf82386774bf3a5a9119ad62639fc89851e3a84ec4e2828b59f4",
+        "char_count": 6380,
+        "estimated_tokens": 1595
+      },
+      {
+        "doc_id": "corpus_045",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_045.md",
+        "sha256": "3c3891a34ec3374395d8d82827d457fa9e1ea2d3d86dd925d455aeea32b1f3e1",
+        "char_count": 6086,
+        "estimated_tokens": 1521
+      },
+      {
+        "doc_id": "corpus_046",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_046.md",
+        "sha256": "9ff728ccf4033621ba211bbcc2055bf00b547b91f252ee204c7b00e5d0b0db82",
+        "char_count": 6090,
+        "estimated_tokens": 1522
+      },
+      {
+        "doc_id": "corpus_047",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_047.md",
+        "sha256": "52da1a0d4255484e769e56e46a136d45a4a9bab679fd66c11b5fdaf7bf678455",
+        "char_count": 6016,
+        "estimated_tokens": 1504
+      },
+      {
+        "doc_id": "corpus_048",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_048.md",
+        "sha256": "718f87cc13fb427e4d46819cb39bd2e6f669235b530f91f520bae60c0d56c654",
+        "char_count": 6069,
+        "estimated_tokens": 1517
+      },
+      {
+        "doc_id": "corpus_049",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_049.md",
+        "sha256": "9534ef812154b4bfe4fc7645cf0eb57e5c30bd92f3b009ab07f0f6465c240c2f",
+        "char_count": 6086,
+        "estimated_tokens": 1521
+      },
+      {
+        "doc_id": "corpus_050",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_050.md",
+        "sha256": "5bd22cdae8333797bac75f205e4a1e9d30114061a67383ad8fc2612371060f51",
+        "char_count": 6419,
+        "estimated_tokens": 1604
+      },
+      {
+        "doc_id": "corpus_051",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_051.md",
+        "sha256": "a8f9ee4261742f7db57d3799099a76663fd9000b636555c11ab78227c7818e08",
+        "char_count": 6036,
+        "estimated_tokens": 1509
+      },
+      {
+        "doc_id": "corpus_052",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_052.md",
+        "sha256": "25e7236006b0392baed7b5d62052e5e2fed3ce3854265ecc6e792b0349827e66",
+        "char_count": 6163,
+        "estimated_tokens": 1540
+      },
+      {
+        "doc_id": "corpus_053",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_053.md",
+        "sha256": "3d6c0f1c109f55c7ab3d89bbcaae53f42deb813c541d5766c041133e7b4ed27b",
+        "char_count": 6554,
+        "estimated_tokens": 1638
+      },
+      {
+        "doc_id": "corpus_054",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_054.md",
+        "sha256": "99fa9c416e85ec049e78389a6420ba78d634646c8a2626fdb8d5e56f4637bb89",
+        "char_count": 6238,
+        "estimated_tokens": 1559
+      },
+      {
+        "doc_id": "corpus_055",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_055.md",
+        "sha256": "739ddaa0c5ee2bb51b0b99acd944edfbb7ef58727df3b790c374bc8075305984",
+        "char_count": 6105,
+        "estimated_tokens": 1526
+      },
+      {
+        "doc_id": "corpus_056",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_056.md",
+        "sha256": "e38f76a864a808e6a8998a5d1c1bf6cdf80695df5f9089c682c6f6841d77db03",
+        "char_count": 6268,
+        "estimated_tokens": 1567
+      },
+      {
+        "doc_id": "corpus_057",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_057.md",
+        "sha256": "f7e9cbb41fad1e7d05035fdc00990fd9a86b31c6170750bab582c4afac833778",
+        "char_count": 6278,
+        "estimated_tokens": 1569
+      },
+      {
+        "doc_id": "corpus_058",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_058.md",
+        "sha256": "e6ce076a930acd7aefdea889b8c6b7cf926ce1e8800b14586948c64aebfd1ee8",
+        "char_count": 6299,
+        "estimated_tokens": 1574
+      },
+      {
+        "doc_id": "corpus_059",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_059.md",
+        "sha256": "9e1c522689ffb2f591685f53148dbc26f1b6f27b0021dbd46dbdaecdf2da90bd",
+        "char_count": 6072,
+        "estimated_tokens": 1518
+      }
+    ],
+    "document_ingestion": {
+      "documents_ingested": 60,
+      "ingested_chars": 375457,
+      "ingested_chunks": 376,
+      "ingestion_latency_ms": 25.751000037416816,
+      "ingestion_embedding_tokens": 0,
+      "ingestion_cache_hits": 376,
+      "ingestion_cache_misses": 0
+    }
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024,
+    "cache": {
+      "hits": 379,
+      "misses": 5
+    }
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "by_source": {
+    "chat": 8,
+    "document": 376
+  },
+  "document_chunks": 376,
+  "document_chars": 413244,
+  "total_chunks": 384,
+  "total_chars": 415463,
+  "total_estimated_tokens": 103730,
+  "snapshot_timestamp": "2026-11-06T15:10:06.621348+00:00"
+}

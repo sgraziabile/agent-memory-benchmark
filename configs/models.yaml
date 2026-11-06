@@ -68,6 +68,23 @@ models:
       output_per_mtok: 0.60
     description: "DeepSeek V4.1 Flash 1017 Thinking — AA 33, #1 open weights, 1M ctx (1x; rate-limited beta, expect occasional 429s)"
 
+  # Route ablation of the entry above: same checkpoint, NON-thinking mode.
+  # Used to isolate the 2048 token-budget confound (thinking routes spend the
+  # completion budget on hidden CoT before visible content -> TruncatedResponse/
+  # EmptyResponse on reconciliation turns). `tier` is metadata only; promote it
+  # to its own AA band once the non-thinking score is verified.
+  deepseek-v4.1-flash:
+    provider: nanogpt
+    model_name: deepseek/deepseek-v4.1-flash-1017
+    tier: apex
+    timeout: 60.0
+    max_retries: 2
+    max_tokens: 2048
+    pricing:
+      input_per_mtok: 0.10
+      output_per_mtok: 0.60
+    description: "DeepSeek V4.1 Flash 1017 — same checkpoint as :thinking, NON-thinking mode (no hidden CoT; reasoning_tokens≈0). Route ablation for the 2048 token-budget confound; verify AA before promoting to a ladder rung."
+
   glm-5.3-thinking:
     provider: nanogpt
     model_name: z-ai/glm-5.3:thinking

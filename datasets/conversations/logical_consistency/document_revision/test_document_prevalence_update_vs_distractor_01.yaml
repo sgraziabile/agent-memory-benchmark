@@ -1,0 +1,440 @@
+# ─────────────────────────────────────────────────────────────────
+# test_document_prevalence_update_vs_distractor_01.yaml
+# Prevalence: a conversation update supersedes a document fact, while
+# near-miss distractors must NOT invalidate other document facts.
+#
+# Corpus: d16_corpus_060 reused VERBATIM (committed D16 corpus):
+#   LOOP-420 -> corpus_000 -> YKX-HMD0-7872  (fact to be superseded)
+#   LOOP-969 -> corpus_045 -> BQR-485R-6500  (near-miss: same shape, other entity)
+#   RACK-923 -> corpus_007 -> UVA-046I-7504  (untouched control)
+#
+# Design (2x2: {superseded by chat vs not-superseded} x {same vs fresh session}):
+#   T1  baseline: the document value is the pre-update truth + pin corpus_000.
+#   T2  supersession IN THE CONVERSATION (role=user, source=chat), not a
+#       document attachment: QZX-7P4K-1180 exists in NO document, so it can
+#       reach s2/s3 only through the cross-thread episodic store.
+#   T3  distractor A: unconfirmed rumor that sibling loop LOOP-969 changed
+#       (it did not) -> its document value must survive.
+#   T4  distractor B: same entity, adjacent attribute (LOOP-420 maintenance
+#       window) -> must not re-open/invalidate the calibration code.
+#   T5  superseded, same session: lenient must_contain NEW (in-context update;
+#       even L1 passes, isolating the cross-thread capability below).
+#   T6  not-superseded, same session: document value + no contamination.
+#   T7  superseded, FRESH session: LENIENT by design (rule R1). A correct answer
+#       may say "the documentation said X, but it was updated to Y", so there is
+#       deliberately NO must_not_contain on the stale value here. It pins the
+#       chat update chunk ep_s1_t2 (graph turn numbering counts human turns; s1
+#       has no system_event, so T2 -> ep_s1_t2 exactly).
+#   T8  not-superseded, fresh session: the document fact prevails cross-thread.
+#   T9  untouched control (RACK-923): global integrity.
+#   T10 ISOLATED s3 strict probe: the prompt explicitly forbids historical
+#       values, so must_not_contain on the stale code is FAIR here — this is the
+#       "does not present the old code as current" check the lenient T7 cannot
+#       make without penalising a legitimate historical mention. s3 is its own
+#       thread so T7's answer cannot anchor it (pattern: entity_binding_01 R1).
+#
+# Causal argument: QZX-7P4K-1180 is chat-exclusive (asserted offline by
+# tests/test_prevalence_scenario.py), so must_contain NEW in a fresh session
+# can only be satisfied by the episodic chat store.
+# ─────────────────────────────────────────────────────────────────
+id: document_prevalence_update_vs_distractor_01
+name: 'Document Prevalence: Conversation Update vs. Near-Miss Distractors'
+description: 'Prevalence test over the 60-document D16 corpus (d16_corpus_060). Turn 1 probes the calibration code of cooling loop LOOP-420, which exists only in corpus_000 (YKX-HMD0-7872). Turn 2 reports, through the conversation, that the code was rotated to QZX-7P4K-1180 — a value present in no document, so it can reach a later session only through the cross-thread episodic store. Turns 3-4 add distractors: an unconfirmed rumor that sibling loop LOOP-969 ''might have changed'' (it did not) and a same-entity scheduling change (LOOP-420''s maintenance window) that does not touch the code. Turns 5-6 re-probe both loops in-session; turns 7-9 re-probe them in a fresh session; turn 10 is an isolated strict probe that forbids historical values so the stale code can be graded absent. Prevalence passes only if the superseded value is replaced by the conversation update (LOOP-420 -> QZX-7P4K-1180) while the merely-similar, non-confirming distractors leave the document facts intact (LOOP-969 ->
+  BQR-485R-6500, RACK-923 -> UVA-046I-7504).'
+category: document_revision
+metadata:
+  difficulty: hard
+  stage: WS-D / prevalence
+  target_research_question: P2
+  corpus_dir: d16_corpus_060
+  corpus_docs: 60
+  chunk_size: 1200
+  chunk_size_ablation: 600
+  default_top_k: 8
+  sessions:
+  - s1
+  - s2
+  - s3
+  updated_fact:
+    entity: LOOP-420
+    doc_id: corpus_000
+    superseded_value: YKX-HMD0-7872
+    superseding_value: QZX-7P4K-1180
+    superseded_by: user turn 2 (source=chat)
+  preserved_document_facts:
+  - entity: LOOP-969
+    doc_id: corpus_045
+    value: BQR-485R-6500
+    distractor: unconfirmed rumor of change (turn 3)
+  - entity: RACK-923
+    doc_id: corpus_007
+    value: UVA-046I-7504
+    distractor: none (untouched control)
+  distractor_same_entity:
+    entity: LOOP-420
+    turn: 4
+    attribute: maintenance window -> Q4
+    must_not_invalidate:
+    - YKX-HMD0-7872
+    - QZX-7P4K-1180
+  prevalence_matrix:
+  - info_state: superseded by chat
+    session: s1
+    turn: 5
+    expect: QZX-7P4K-1180
+  - info_state: superseded by chat
+    session: s2
+    turn: 7
+    expect: QZX-7P4K-1180 (cross-thread, lenient)
+  - info_state: not superseded (distractor)
+    session: s1
+    turn: 6
+    expect: BQR-485R-6500
+  - info_state: not superseded (distractor)
+    session: s2
+    turn: 8
+    expect: BQR-485R-6500 (cross-thread)
+  - info_state: superseded by chat (strict)
+    session: s3
+    turn: 10
+    expect: QZX-7P4K-1180 with stale absent
+  expected_level_0_behavior: 'Fails (0%): no memory; T1 and every document probe fail.'
+  expected_level_1_behavior: Only T5 passes (the update is in-session history). T1/T6/T8 fail (no document store); T7/T10 fail (fresh threads, no cross-thread memory).
+  expected_level_2_behavior: T1/T5/T6/T8/T9 pass; T7 passes iff the chat update chunk (ep_s1_t2 or its echo) reaches top_k; T10 passes if the chat-exclusive new value survives cross-thread.
+documents:
+- doc_id: corpus_000
+  path: d16_corpus_060/corpus_000.md
+  metadata:
+    title: Synthetic operations note corpus_000
+- doc_id: corpus_001
+  path: d16_corpus_060/corpus_001.md
+  metadata:
+    title: Synthetic operations note corpus_001
+- doc_id: corpus_002
+  path: d16_corpus_060/corpus_002.md
+  metadata:
+    title: Synthetic operations note corpus_002
+- doc_id: corpus_003
+  path: d16_corpus_060/corpus_003.md
+  metadata:
+    title: Synthetic operations note corpus_003
+- doc_id: corpus_004
+  path: d16_corpus_060/corpus_004.md
+  metadata:
+    title: Synthetic operations note corpus_004
+- doc_id: corpus_005
+  path: d16_corpus_060/corpus_005.md
+  metadata:
+    title: Synthetic operations note corpus_005
+- doc_id: corpus_006
+  path: d16_corpus_060/corpus_006.md
+  metadata:
+    title: Synthetic operations note corpus_006
+- doc_id: corpus_007
+  path: d16_corpus_060/corpus_007.md
+  metadata:
+    title: Synthetic operations note corpus_007
+- doc_id: corpus_008
+  path: d16_corpus_060/corpus_008.md
+  metadata:
+    title: Synthetic operations note corpus_008
+- doc_id: corpus_009
+  path: d16_corpus_060/corpus_009.md
+  metadata:
+    title: Synthetic operations note corpus_009
+- doc_id: corpus_010
+  path: d16_corpus_060/corpus_010.md
+  metadata:
+    title: Synthetic operations note corpus_010
+- doc_id: corpus_011
+  path: d16_corpus_060/corpus_011.md
+  metadata:
+    title: Synthetic operations note corpus_011
+- doc_id: corpus_012
+  path: d16_corpus_060/corpus_012.md
+  metadata:
+    title: Synthetic operations note corpus_012
+- doc_id: corpus_013
+  path: d16_corpus_060/corpus_013.md
+  metadata:
+    title: Synthetic operations note corpus_013
+- doc_id: corpus_014
+  path: d16_corpus_060/corpus_014.md
+  metadata:
+    title: Synthetic operations note corpus_014
+- doc_id: corpus_015
+  path: d16_corpus_060/corpus_015.md
+  metadata:
+    title: Synthetic operations note corpus_015
+- doc_id: corpus_016
+  path: d16_corpus_060/corpus_016.md
+  metadata:
+    title: Synthetic operations note corpus_016
+- doc_id: corpus_017
+  path: d16_corpus_060/corpus_017.md
+  metadata:
+    title: Synthetic operations note corpus_017
+- doc_id: corpus_018
+  path: d16_corpus_060/corpus_018.md
+  metadata:
+    title: Synthetic operations note corpus_018
+- doc_id: corpus_019
+  path: d16_corpus_060/corpus_019.md
+  metadata:
+    title: Synthetic operations note corpus_019
+- doc_id: corpus_020
+  path: d16_corpus_060/corpus_020.md
+  metadata:
+    title: Synthetic operations note corpus_020
+- doc_id: corpus_021
+  path: d16_corpus_060/corpus_021.md
+  metadata:
+    title: Synthetic operations note corpus_021
+- doc_id: corpus_022
+  path: d16_corpus_060/corpus_022.md
+  metadata:
+    title: Synthetic operations note corpus_022
+- doc_id: corpus_023
+  path: d16_corpus_060/corpus_023.md
+  metadata:
+    title: Synthetic operations note corpus_023
+- doc_id: corpus_024
+  path: d16_corpus_060/corpus_024.md
+  metadata:
+    title: Synthetic operations note corpus_024
+- doc_id: corpus_025
+  path: d16_corpus_060/corpus_025.md
+  metadata:
+    title: Synthetic operations note corpus_025
+- doc_id: corpus_026
+  path: d16_corpus_060/corpus_026.md
+  metadata:
+    title: Synthetic operations note corpus_026
+- doc_id: corpus_027
+  path: d16_corpus_060/corpus_027.md
+  metadata:
+    title: Synthetic operations note corpus_027
+- doc_id: corpus_028
+  path: d16_corpus_060/corpus_028.md
+  metadata:
+    title: Synthetic operations note corpus_028
+- doc_id: corpus_029
+  path: d16_corpus_060/corpus_029.md
+  metadata:
+    title: Synthetic operations note corpus_029
+- doc_id: corpus_030
+  path: d16_corpus_060/corpus_030.md
+  metadata:
+    title: Synthetic operations note corpus_030
+- doc_id: corpus_031
+  path: d16_corpus_060/corpus_031.md
+  metadata:
+    title: Synthetic operations note corpus_031
+- doc_id: corpus_032
+  path: d16_corpus_060/corpus_032.md
+  metadata:
+    title: Synthetic operations note corpus_032
+- doc_id: corpus_033
+  path: d16_corpus_060/corpus_033.md
+  metadata:
+    title: Synthetic operations note corpus_033
+- doc_id: corpus_034
+  path: d16_corpus_060/corpus_034.md
+  metadata:
+    title: Synthetic operations note corpus_034
+- doc_id: corpus_035
+  path: d16_corpus_060/corpus_035.md
+  metadata:
+    title: Synthetic operations note corpus_035
+- doc_id: corpus_036
+  path: d16_corpus_060/corpus_036.md
+  metadata:
+    title: Synthetic operations note corpus_036
+- doc_id: corpus_037
+  path: d16_corpus_060/corpus_037.md
+  metadata:
+    title: Synthetic operations note corpus_037
+- doc_id: corpus_038
+  path: d16_corpus_060/corpus_038.md
+  metadata:
+    title: Synthetic operations note corpus_038
+- doc_id: corpus_039
+  path: d16_corpus_060/corpus_039.md
+  metadata:
+    title: Synthetic operations note corpus_039
+- doc_id: corpus_040
+  path: d16_corpus_060/corpus_040.md
+  metadata:
+    title: Synthetic operations note corpus_040
+- doc_id: corpus_041
+  path: d16_corpus_060/corpus_041.md
+  metadata:
+    title: Synthetic operations note corpus_041
+- doc_id: corpus_042
+  path: d16_corpus_060/corpus_042.md
+  metadata:
+    title: Synthetic operations note corpus_042
+- doc_id: corpus_043
+  path: d16_corpus_060/corpus_043.md
+  metadata:
+    title: Synthetic operations note corpus_043
+- doc_id: corpus_044
+  path: d16_corpus_060/corpus_044.md
+  metadata:
+    title: Synthetic operations note corpus_044
+- doc_id: corpus_045
+  path: d16_corpus_060/corpus_045.md
+  metadata:
+    title: Synthetic operations note corpus_045
+- doc_id: corpus_046
+  path: d16_corpus_060/corpus_046.md
+  metadata:
+    title: Synthetic operations note corpus_046
+- doc_id: corpus_047
+  path: d16_corpus_060/corpus_047.md
+  metadata:
+    title: Synthetic operations note corpus_047
+- doc_id: corpus_048
+  path: d16_corpus_060/corpus_048.md
+  metadata:
+    title: Synthetic operations note corpus_048
+- doc_id: corpus_049
+  path: d16_corpus_060/corpus_049.md
+  metadata:
+    title: Synthetic operations note corpus_049
+- doc_id: corpus_050
+  path: d16_corpus_060/corpus_050.md
+  metadata:
+    title: Synthetic operations note corpus_050
+- doc_id: corpus_051
+  path: d16_corpus_060/corpus_051.md
+  metadata:
+    title: Synthetic operations note corpus_051
+- doc_id: corpus_052
+  path: d16_corpus_060/corpus_052.md
+  metadata:
+    title: Synthetic operations note corpus_052
+- doc_id: corpus_053
+  path: d16_corpus_060/corpus_053.md
+  metadata:
+    title: Synthetic operations note corpus_053
+- doc_id: corpus_054
+  path: d16_corpus_060/corpus_054.md
+  metadata:
+    title: Synthetic operations note corpus_054
+- doc_id: corpus_055
+  path: d16_corpus_060/corpus_055.md
+  metadata:
+    title: Synthetic operations note corpus_055
+- doc_id: corpus_056
+  path: d16_corpus_060/corpus_056.md
+  metadata:
+    title: Synthetic operations note corpus_056
+- doc_id: corpus_057
+  path: d16_corpus_060/corpus_057.md
+  metadata:
+    title: Synthetic operations note corpus_057
+- doc_id: corpus_058
+  path: d16_corpus_060/corpus_058.md
+  metadata:
+    title: Synthetic operations note corpus_058
+- doc_id: corpus_059
+  path: d16_corpus_060/corpus_059.md
+  metadata:
+    title: Synthetic operations note corpus_059
+turns:
+- turn_number: 1
+  session_id: s1
+  role: user
+  content: What is the calibration code for the cooling loop LOOP-420?
+  assertions:
+  - type: must_contain
+    value: YKX-HMD0-7872
+    case_sensitive: false
+  - type: must_retrieve_chunk
+    value: corpus_000
+    case_sensitive: false
+- turn_number: 2
+  session_id: s1
+  role: user
+  content: 'Change-window update: the calibration code for cooling loop LOOP-420 has been rotated as of this morning. The new code is QZX-7P4K-1180 — treat it as the current value from now on.'
+  assertions: []
+- turn_number: 3
+  session_id: s1
+  role: user
+  content: Separately, someone mentioned that the calibration code for cooling loop LOOP-969 might have changed too, but it was only an unconfirmed rumor — nothing official. So LOOP-969's code in the operations notes still stands.
+  assertions: []
+- turn_number: 4
+  session_id: s1
+  role: user
+  content: Also, the maintenance window for cooling loop LOOP-420 has moved to the fourth quarter; that's a scheduling change.
+  assertions: []
+- turn_number: 5
+  session_id: s1
+  role: user
+  content: What is the current calibration code for cooling loop LOOP-420?
+  assertions:
+  - type: must_contain
+    value: QZX-7P4K-1180
+    case_sensitive: false
+- turn_number: 6
+  session_id: s1
+  role: user
+  content: Reply with ONLY the calibration code for cooling loop LOOP-969, nothing else.
+  assertions:
+  - type: must_contain
+    value: BQR-485R-6500
+    case_sensitive: false
+  - type: must_not_contain
+    value: QZX-7P4K-1180
+    case_sensitive: false
+  - type: must_retrieve_chunk
+    value: corpus_045
+    case_sensitive: false
+- turn_number: 7
+  session_id: s2
+  role: user
+  content: New session. What is the current calibration code for cooling loop LOOP-420?
+  assertions:
+  - type: must_contain
+    value: QZX-7P4K-1180
+    case_sensitive: false
+  - type: must_retrieve_chunk
+    value: ep_s1_t2
+    case_sensitive: false
+- turn_number: 8
+  session_id: s2
+  role: user
+  content: Reply with ONLY the calibration code for cooling loop LOOP-969, nothing else.
+  assertions:
+  - type: must_contain
+    value: BQR-485R-6500
+    case_sensitive: false
+  - type: must_not_contain
+    value: QZX-7P4K-1180
+    case_sensitive: false
+  - type: must_retrieve_chunk
+    value: corpus_045
+    case_sensitive: false
+- turn_number: 9
+  session_id: s2
+  role: user
+  content: What is the provisioning code for the rack row RACK-923?
+  assertions:
+  - type: must_contain
+    value: UVA-046I-7504
+    case_sensitive: false
+  - type: must_retrieve_chunk
+    value: corpus_007
+    case_sensitive: false
+- turn_number: 10
+  session_id: s3
+  role: user
+  content: New session. Reply with ONLY the single current calibration code for cooling loop LOOP-420 — no explanation, no earlier or historical values, just the code that is current right now.
+  assertions:
+  - type: must_contain
+    value: QZX-7P4K-1180
+    case_sensitive: false
+  - type: must_not_contain
+    value: YKX-HMD0-7872
+    case_sensitive: false

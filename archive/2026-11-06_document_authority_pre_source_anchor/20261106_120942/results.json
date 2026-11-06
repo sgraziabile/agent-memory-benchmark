@@ -1,0 +1,1250 @@
+[
+  {
+    "run_id": "document_authority_vs_recency_01_mistral-small-4_baseline_react_2d7a0542",
+    "scenario_id": "document_authority_vs_recency_01",
+    "model_id": "mistral-small-4",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 8,
+    "total_assertions": 11,
+    "passed_assertions": 9,
+    "failed_assertions": 2,
+    "pass_rate": 0.8181818181818182,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 24350.46019987203,
+    "avg_latency_per_turn_ms": 3043.807524984004,
+    "total_tokens": 10804,
+    "prompt_tokens": 10396,
+    "completion_tokens": 408,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "Quick context before we start: the operations-notes documents in the corpus are our reliable system of record for equipment codes. Treat them as authoritative — a documented value only changes if there is an approved change ticket for it.",
+        "agent_response": "Understood. The operations-notes documents in the corpus (e.g., CORPUS-001, CORPUS-007, CORPUS-013, CORPUS-021) are treated as the authoritative source for equipment codes and other operational details. Any documented value remains valid unless explicitly updated via an approved change ticket referenced in the corpus.\n\nFor example, the calibration code for the cooling loop LOOP-420 is documented as **YKX-HMD0-7872** in the provided corpus (CORPUS-001-02). This value would only change if a future change ticket (e.g., CORPUS-XXX-XX) updates it.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 7740.131300059147,
+        "token_usage": {
+          "input_tokens": 1333,
+          "output_tokens": 154,
+          "total_tokens": 1487,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 1333,
+        "completion_tokens": 154,
+        "total_tokens": 1487,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 154,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0005332,
+        "output_cost_usd": 0.0002156,
+        "total_cost_usd": 0.0007488,
+        "retrieved_context_chars": 4812,
+        "retrieved_context_tokens": 1203,
+        "embedding_tokens": 260,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 2410.9415999846533,
+        "append_latency_ms": 1498.5207000281662,
+        "embedding_latency_ms": 3897.7035999996588,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_corpus_050_c6",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The operator records the change ticket identifier on every command they execute. Reference CORPUS-051-13.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-051-13.",
+            "score": 0.6031150070773009,
+            "rank": 1,
+            "char_count": 217,
+            "estimated_tokens": 54,
+            "metadata": {
+              "title": "Synthetic operations note corpus_050",
+              "doc_id": "corpus_050",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_050.md",
+              "sha256": "5bd22cdae8333797bac75f205e4a1e9d30114061a67383ad8fc2612371060f51",
+              "parent_chunk_id": "doc_corpus_050",
+              "chunk_index": 6,
+              "chunk_count": 7
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_012_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 013: Log Retention Review\n\nFacility: Buenos Aires. Row: R7. Service port: 7411.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-013-01.\n\nThe escalation lead is notified when a step exceeds its documented time budget. Reference CORPUS-013-01.\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-013-01.\n\nA second operator confirms the rollback plan before any destructive step is executed. Reference CORPUS-013-01.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-013-01.\n\n## 2. Responsibilities\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-013-02.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-013-02.\n\nThe escalation lead is notified when a step exceeds its documented time budget. Reference CORPUS-013-02.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-013-02.",
+            "score": 0.5576619315089756,
+            "rank": 2,
+            "char_count": 1170,
+            "estimated_tokens": 292,
+            "metadata": {
+              "title": "Synthetic operations note corpus_012",
+              "doc_id": "corpus_012",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_012.md",
+              "sha256": "ec6df93083958bbe366f6bd0ed6f0ed8d6c3321cee3cd3564ef0a794521dca97",
+              "parent_chunk_id": "doc_corpus_012",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_020_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 021: Backup Verification\n\nFacility: Lima. Row: R5. Service port: 7411.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nAccess requires a valid approval bound to the change ticket; approvals are never reused. Reference CORPUS-021-01.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-021-01.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-021-01.\n\nThe audit relay forwards every administrative action to the central log within one minute. Reference CORPUS-021-01.\n\n## 2. Responsibilities\n\nMonitoring alerts are silenced only for the duration of the approved window. Reference CORPUS-021-02.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-021-02.\n\nThe work is scheduled inside the published maintenance slot and never during a customer peak. Reference CORPUS-021-02.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-021-02.\n\n## 3. Procedure",
+            "score": 0.5576057512079629,
+            "rank": 3,
+            "char_count": 1098,
+            "estimated_tokens": 274,
+            "metadata": {
+              "title": "Synthetic operations note corpus_020",
+              "doc_id": "corpus_020",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_020.md",
+              "sha256": "b01684affa629d90c775d37a01f3d6eab6475d4b5fb8d66056bfa0fae31589e8",
+              "parent_chunk_id": "doc_corpus_020",
+              "chunk_index": 0,
+              "chunk_count": 7
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_006_c3",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## 7. Records\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-007-07.\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-007-07.\n\nThe audit relay forwards every administrative action to the central log within one minute. Reference CORPUS-007-07.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-007-07.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-007-07.\n\n## 8. Review cadence\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-007-08.\n\nAccess requires a valid approval bound to the change ticket; approvals are never reused. Reference CORPUS-007-08.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-007-08.\n\n## 9. Scope\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-007-09.",
+            "score": 0.5567591122483926,
+            "rank": 4,
+            "char_count": 1091,
+            "estimated_tokens": 272,
+            "metadata": {
+              "title": "Synthetic operations note corpus_006",
+              "doc_id": "corpus_006",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_006.md",
+              "sha256": "fa9d79ff80e6362cb0c7a9da1b9452cabbfd3e63de699c3fa3ce4c4927b90a94",
+              "parent_chunk_id": "doc_corpus_006",
+              "chunk_index": 3,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_000_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 001: Backup Verification\n\nFacility: Buenos Aires. Row: R7. Service port: 7411.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-001-01.\n\nThe audit relay forwards every administrative action to the central log within one minute. Reference CORPUS-001-01.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-01.\n\n## 2. Responsibilities\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-001-02.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-02.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-001-02.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-02.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-02.\n\nThe calibration code for the cooling loop LOOP-420 is YKX-HMD0-7872.\n\n## 3. Procedure",
+            "score": 0.5560478569699235,
+            "rank": 5,
+            "char_count": 1200,
+            "estimated_tokens": 300,
+            "metadata": {
+              "title": "Synthetic operations note corpus_000",
+              "doc_id": "corpus_000",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_000.md",
+              "sha256": "d55d450063b451841da5193541e596d810725db1421ac8aa11ac5515e5a6e063",
+              "parent_chunk_id": "doc_corpus_000",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 2,
+        "user_input": "What is the calibration code for cooling loop LOOP-420?",
+        "agent_response": "The calibration code for cooling loop **LOOP-420** is **YKX-HMD0-7872**, as documented in **CORPUS-001** (Section 3, Procedure). This value is authoritative per the operations-notes corpus.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "YKX-HMD0-7872",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "corpus_000",
+            "passed": true,
+            "matched_chunks": [
+              "doc_corpus_000_c1"
+            ]
+          }
+        ],
+        "latency_ms": 2265.3570999391377,
+        "token_usage": {
+          "input_tokens": 1733,
+          "output_tokens": 60,
+          "total_tokens": 1793,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 48,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 1733,
+        "completion_tokens": 60,
+        "total_tokens": 1793,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 60,
+        "cached_prompt_tokens": 48,
+        "input_cost_usd": 0.0006932,
+        "output_cost_usd": 8.4e-05,
+        "total_cost_usd": 0.0007772,
+        "retrieved_context_chars": 5581,
+        "retrieved_context_tokens": 1395,
+        "embedding_tokens": 78,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 214.15769995655864,
+        "append_latency_ms": 514.5191000774503,
+        "embedding_latency_ms": 714.5087999524549,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_corpus_045_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 046: Cooling Loop Maintenance\n\nFacility: Rosario. Row: R6. Service port: 8422.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-046-01.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-046-01.\n\nThe escalation lead is notified when a step exceeds its documented time budget. Reference CORPUS-046-01.\n\n## 2. Responsibilities\n\nThe work is scheduled inside the published maintenance slot and never during a customer peak. Reference CORPUS-046-02.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-046-02.\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-046-02.\n\nThe calibration code for the cooling loop LOOP-969 is BQR-485R-6500.\n\n## 3. Procedure\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-046-03.",
+            "score": 0.7191851612448511,
+            "rank": 1,
+            "char_count": 1085,
+            "estimated_tokens": 271,
+            "metadata": {
+              "title": "Synthetic operations note corpus_045",
+              "doc_id": "corpus_045",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_045.md",
+              "sha256": "3c3891a34ec3374395d8d82827d457fa9e1ea2d3d86dd925d455aeea32b1f3e1",
+              "parent_chunk_id": "doc_corpus_045",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_000_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The calibration code for the cooling loop LOOP-420 is YKX-HMD0-7872.\n\n## 3. Procedure\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-03.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-001-03.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-03.\n\n## 4. Verification\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-001-04.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-04.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-04.\n\n## 5. Rollback\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-001-05.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-05.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-05.",
+            "score": 0.6718861142956867,
+            "rank": 2,
+            "char_count": 1145,
+            "estimated_tokens": 286,
+            "metadata": {
+              "title": "Synthetic operations note corpus_000",
+              "doc_id": "corpus_000",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_000.md",
+              "sha256": "d55d450063b451841da5193541e596d810725db1421ac8aa11ac5515e5a6e063",
+              "parent_chunk_id": "doc_corpus_000",
+              "chunk_index": 1,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_026_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 027: Cooling Loop Maintenance\n\nFacility: Rosario. Row: R2. Service port: 7422.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-027-01.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-027-01.\n\nMonitoring alerts are silenced only for the duration of the approved window. Reference CORPUS-027-01.\n\n## 2. Responsibilities\n\nAccess requires a valid approval bound to the change ticket; approvals are never reused. Reference CORPUS-027-02.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-027-02.\n\nA second operator confirms the rollback plan before any destructive step is executed. Reference CORPUS-027-02.\n\n## 3. Procedure\n\nThe escalation lead is notified when a step exceeds its documented time budget. Reference CORPUS-027-03.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-027-03.",
+            "score": 0.5927457912792979,
+            "rank": 3,
+            "char_count": 1107,
+            "estimated_tokens": 276,
+            "metadata": {
+              "title": "Synthetic operations note corpus_026",
+              "doc_id": "corpus_026",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_026.md",
+              "sha256": "61eab97bce1376f4a2e844371b687dac565133f794e5b0ce8c6a3a27761999fc",
+              "parent_chunk_id": "doc_corpus_026",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_041_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 042: Cooling Loop Maintenance\n\nFacility: Montevideo. Row: R5. Service port: 9411.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nMonitoring alerts are silenced only for the duration of the approved window. Reference CORPUS-042-01.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-042-01.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-042-01.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-042-01.\n\n## 2. Responsibilities\n\nThe work is scheduled inside the published maintenance slot and never during a customer peak. Reference CORPUS-042-02.\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-042-02.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-042-02.\n\nA second operator confirms the rollback plan before any destructive step is executed. Reference CORPUS-042-02.",
+            "score": 0.5926094751158903,
+            "rank": 4,
+            "char_count": 1097,
+            "estimated_tokens": 274,
+            "metadata": {
+              "title": "Synthetic operations note corpus_041",
+              "doc_id": "corpus_041",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_041.md",
+              "sha256": "58a6512a15bee4f28a6699249d78db123da1f87e2530653e305edd620649c4e9",
+              "parent_chunk_id": "doc_corpus_041",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_054_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 055: Cooling Loop Maintenance\n\nFacility: Rosario. Row: R1. Service port: 9422.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-055-01.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-055-01.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-055-01.\n\nThe escalation lead is notified when a step exceeds its documented time budget. Reference CORPUS-055-01.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-055-01.\n\n## 2. Responsibilities\n\nThe work is scheduled inside the published maintenance slot and never during a customer peak. Reference CORPUS-055-02.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-055-02.\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-055-02.",
+            "score": 0.5602123657011444,
+            "rank": 5,
+            "char_count": 1111,
+            "estimated_tokens": 277,
+            "metadata": {
+              "title": "Synthetic operations note corpus_054",
+              "doc_id": "corpus_054",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_054.md",
+              "sha256": "99fa9c416e85ec049e78389a6420ba78d634646c8a2626fdb8d5e56f4637bb89",
+              "parent_chunk_id": "doc_corpus_054",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t2"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 3,
+        "user_input": "By the way, LOOP-420's calibration code is now RUM-4X9Q-2201.",
+        "agent_response": "Understood. The calibration code for **LOOP-420** is now **RUM-4X9Q-2201**, superseding the previous value (**YKX-HMD0-7872**) per this update.\n\nThis change should be reflected in the operations-notes corpus with an approved change ticket (e.g., CORPUS-XXX-XX). If you'd like me to verify or update the corpus, let me know.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 3159.549199976027,
+        "token_usage": {
+          "input_tokens": 1823,
+          "output_tokens": 98,
+          "total_tokens": 1921,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 1823,
+        "completion_tokens": 98,
+        "total_tokens": 1921,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 98,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0007292,
+        "output_cost_usd": 0.0001372,
+        "total_cost_usd": 0.0008664,
+        "retrieved_context_chars": 5581,
+        "retrieved_context_tokens": 1395,
+        "embedding_tokens": 115,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 235.51309993490577,
+        "append_latency_ms": 786.3817999605089,
+        "embedding_latency_ms": 1010.9601999865845,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_corpus_000_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The calibration code for the cooling loop LOOP-420 is YKX-HMD0-7872.\n\n## 3. Procedure\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-03.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-001-03.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-03.\n\n## 4. Verification\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-001-04.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-04.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-04.\n\n## 5. Rollback\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-001-05.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-05.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-05.",
+            "score": 0.6372427870120357,
+            "rank": 1,
+            "char_count": 1145,
+            "estimated_tokens": 286,
+            "metadata": {
+              "title": "Synthetic operations note corpus_000",
+              "doc_id": "corpus_000",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_000.md",
+              "sha256": "d55d450063b451841da5193541e596d810725db1421ac8aa11ac5515e5a6e063",
+              "parent_chunk_id": "doc_corpus_000",
+              "chunk_index": 1,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_045_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 046: Cooling Loop Maintenance\n\nFacility: Rosario. Row: R6. Service port: 8422.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-046-01.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-046-01.\n\nThe escalation lead is notified when a step exceeds its documented time budget. Reference CORPUS-046-01.\n\n## 2. Responsibilities\n\nThe work is scheduled inside the published maintenance slot and never during a customer peak. Reference CORPUS-046-02.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-046-02.\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-046-02.\n\nThe calibration code for the cooling loop LOOP-969 is BQR-485R-6500.\n\n## 3. Procedure\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-046-03.",
+            "score": 0.6028177146429179,
+            "rank": 2,
+            "char_count": 1085,
+            "estimated_tokens": 271,
+            "metadata": {
+              "title": "Synthetic operations note corpus_045",
+              "doc_id": "corpus_045",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_045.md",
+              "sha256": "3c3891a34ec3374395d8d82827d457fa9e1ea2d3d86dd925d455aeea32b1f3e1",
+              "parent_chunk_id": "doc_corpus_045",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_026_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 027: Cooling Loop Maintenance\n\nFacility: Rosario. Row: R2. Service port: 7422.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-027-01.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-027-01.\n\nMonitoring alerts are silenced only for the duration of the approved window. Reference CORPUS-027-01.\n\n## 2. Responsibilities\n\nAccess requires a valid approval bound to the change ticket; approvals are never reused. Reference CORPUS-027-02.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-027-02.\n\nA second operator confirms the rollback plan before any destructive step is executed. Reference CORPUS-027-02.\n\n## 3. Procedure\n\nThe escalation lead is notified when a step exceeds its documented time budget. Reference CORPUS-027-03.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-027-03.",
+            "score": 0.542540835139518,
+            "rank": 3,
+            "char_count": 1107,
+            "estimated_tokens": 276,
+            "metadata": {
+              "title": "Synthetic operations note corpus_026",
+              "doc_id": "corpus_026",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_026.md",
+              "sha256": "61eab97bce1376f4a2e844371b687dac565133f794e5b0ce8c6a3a27761999fc",
+              "parent_chunk_id": "doc_corpus_026",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_041_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 042: Cooling Loop Maintenance\n\nFacility: Montevideo. Row: R5. Service port: 9411.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nMonitoring alerts are silenced only for the duration of the approved window. Reference CORPUS-042-01.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-042-01.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-042-01.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-042-01.\n\n## 2. Responsibilities\n\nThe work is scheduled inside the published maintenance slot and never during a customer peak. Reference CORPUS-042-02.\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-042-02.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-042-02.\n\nA second operator confirms the rollback plan before any destructive step is executed. Reference CORPUS-042-02.",
+            "score": 0.49899871689401637,
+            "rank": 4,
+            "char_count": 1097,
+            "estimated_tokens": 274,
+            "metadata": {
+              "title": "Synthetic operations note corpus_041",
+              "doc_id": "corpus_041",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_041.md",
+              "sha256": "58a6512a15bee4f28a6699249d78db123da1f87e2530653e305edd620649c4e9",
+              "parent_chunk_id": "doc_corpus_041",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_054_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 055: Cooling Loop Maintenance\n\nFacility: Rosario. Row: R1. Service port: 9422.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-055-01.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-055-01.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-055-01.\n\nThe escalation lead is notified when a step exceeds its documented time budget. Reference CORPUS-055-01.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-055-01.\n\n## 2. Responsibilities\n\nThe work is scheduled inside the published maintenance slot and never during a customer peak. Reference CORPUS-055-02.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-055-02.\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-055-02.",
+            "score": 0.48564305140593245,
+            "rank": 5,
+            "char_count": 1111,
+            "estimated_tokens": 277,
+            "metadata": {
+              "title": "Synthetic operations note corpus_054",
+              "doc_id": "corpus_054",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_054.md",
+              "sha256": "99fa9c416e85ec049e78389a6420ba78d634646c8a2626fdb8d5e56f4637bb89",
+              "parent_chunk_id": "doc_corpus_054",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t3"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 4,
+        "user_input": "Reply with ONLY the calibration code you would put in the change ticket, nothing else.",
+        "agent_response": "RUM-4X9Q-2201",
+        "assertions_passed": 0,
+        "assertions_failed": 2,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "YKX-HMD0-7872",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "RUM-4X9Q-2201",
+            "passed": false,
+            "found_in_response": true
+          }
+        ],
+        "latency_ms": 1768.8180999830365,
+        "token_usage": {
+          "input_tokens": 1724,
+          "output_tokens": 13,
+          "total_tokens": 1737,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 256,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 1724,
+        "completion_tokens": 13,
+        "total_tokens": 1737,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 13,
+        "cached_prompt_tokens": 256,
+        "input_cost_usd": 0.0006896,
+        "output_cost_usd": 1.82e-05,
+        "total_cost_usd": 0.0007078,
+        "retrieved_context_chars": 4835,
+        "retrieved_context_tokens": 1208,
+        "embedding_tokens": 50,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 186.12590001430362,
+        "append_latency_ms": 259.29449999239296,
+        "embedding_latency_ms": 432.8010998433456,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_corpus_050_c6",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The operator records the change ticket identifier on every command they execute. Reference CORPUS-051-13.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-051-13.",
+            "score": 0.6169118504840176,
+            "rank": 1,
+            "char_count": 217,
+            "estimated_tokens": 54,
+            "metadata": {
+              "title": "Synthetic operations note corpus_050",
+              "doc_id": "corpus_050",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_050.md",
+              "sha256": "5bd22cdae8333797bac75f205e4a1e9d30114061a67383ad8fc2612371060f51",
+              "parent_chunk_id": "doc_corpus_050",
+              "chunk_index": 6,
+              "chunk_count": 7
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_047_c4",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Access requires a valid approval bound to the change ticket; approvals are never reused. Reference CORPUS-048-09.\n\nThe work is scheduled inside the published maintenance slot and never during a customer peak. Reference CORPUS-048-09.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-048-09.\n\n## 10. Responsibilities\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-048-10.\n\nA second operator confirms the rollback plan before any destructive step is executed. Reference CORPUS-048-10.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-048-10.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-048-10.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-048-10.\n\n## 11. Procedure\n\nAccess requires a valid approval bound to the change ticket; approvals are never reused. Reference CORPUS-048-11.\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-048-11.",
+            "score": 0.551122500772459,
+            "rank": 2,
+            "char_count": 1155,
+            "estimated_tokens": 288,
+            "metadata": {
+              "title": "Synthetic operations note corpus_047",
+              "doc_id": "corpus_047",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_047.md",
+              "sha256": "52da1a0d4255484e769e56e46a136d45a4a9bab679fd66c11b5fdaf7bf678455",
+              "parent_chunk_id": "doc_corpus_047",
+              "chunk_index": 4,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_000_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 001: Backup Verification\n\nFacility: Buenos Aires. Row: R7. Service port: 7411.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-001-01.\n\nThe audit relay forwards every administrative action to the central log within one minute. Reference CORPUS-001-01.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-01.\n\n## 2. Responsibilities\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-001-02.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-02.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-001-02.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-02.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-02.\n\nThe calibration code for the cooling loop LOOP-420 is YKX-HMD0-7872.\n\n## 3. Procedure",
+            "score": 0.5473503268997036,
+            "rank": 3,
+            "char_count": 1200,
+            "estimated_tokens": 300,
+            "metadata": {
+              "title": "Synthetic operations note corpus_000",
+              "doc_id": "corpus_000",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_000.md",
+              "sha256": "d55d450063b451841da5193541e596d810725db1421ac8aa11ac5515e5a6e063",
+              "parent_chunk_id": "doc_corpus_000",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_000_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The calibration code for the cooling loop LOOP-420 is YKX-HMD0-7872.\n\n## 3. Procedure\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-03.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-001-03.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-03.\n\n## 4. Verification\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-001-04.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-04.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-04.\n\n## 5. Rollback\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-001-05.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-05.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-05.",
+            "score": 0.5459613178389237,
+            "rank": 4,
+            "char_count": 1145,
+            "estimated_tokens": 286,
+            "metadata": {
+              "title": "Synthetic operations note corpus_000",
+              "doc_id": "corpus_000",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_000.md",
+              "sha256": "d55d450063b451841da5193541e596d810725db1421ac8aa11ac5515e5a6e063",
+              "parent_chunk_id": "doc_corpus_000",
+              "chunk_index": 1,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_028_c4",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Access requires a valid approval bound to the change ticket; approvals are never reused. Reference CORPUS-029-09.\n\n## 10. Responsibilities\n\nMonitoring alerts are silenced only for the duration of the approved window. Reference CORPUS-029-10.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-029-10.\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-029-10.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-029-10.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-029-10.\n\n## 11. Procedure\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-029-11.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-029-11.\n\nA second operator confirms the rollback plan before any destructive step is executed. Reference CORPUS-029-11.\n\n## 12. Verification",
+            "score": 0.545680246894836,
+            "rank": 5,
+            "char_count": 1082,
+            "estimated_tokens": 270,
+            "metadata": {
+              "title": "Synthetic operations note corpus_028",
+              "doc_id": "corpus_028",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_028.md",
+              "sha256": "844dd5a68ebccf79b13cc5fc16cb039d2dee586f2f0bc1b1afadb391475f7eee",
+              "parent_chunk_id": "doc_corpus_028",
+              "chunk_index": 4,
+              "chunk_count": 6
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t4"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 5,
+        "user_input": "New session. Reply with ONLY the calibration code you would put in the change ticket according to our system of record, nothing else.",
+        "agent_response": "YKX-HMD0-7872",
+        "assertions_passed": 3,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "YKX-HMD0-7872",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "RUM-4X9Q-2201",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "corpus_000",
+            "passed": true,
+            "matched_chunks": [
+              "doc_corpus_000_c0"
+            ]
+          }
+        ],
+        "latency_ms": 4506.83059997391,
+        "token_usage": {
+          "input_tokens": 985,
+          "output_tokens": 12,
+          "total_tokens": 997,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 48,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 985,
+        "completion_tokens": 12,
+        "total_tokens": 997,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 12,
+        "cached_prompt_tokens": 48,
+        "input_cost_usd": 0.000394,
+        "output_cost_usd": 1.68e-05,
+        "total_cost_usd": 0.0004108,
+        "retrieved_context_chars": 3493,
+        "retrieved_context_tokens": 873,
+        "embedding_tokens": 33,
+        "embedding_cache_hits": 1,
+        "embedding_cache_misses": 0,
+        "retrieval_latency_ms": 240.08810007944703,
+        "append_latency_ms": 0.5676998989656568,
+        "embedding_latency_ms": 229.24100002273917,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Reply with ONLY the calibration code you would put in the change ticket, nothing else.\nAssistant: RUM-4X9Q-2201",
+            "score": 0.649655348544039,
+            "rank": 1,
+            "char_count": 117,
+            "estimated_tokens": 29,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_corpus_050_c6",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The operator records the change ticket identifier on every command they execute. Reference CORPUS-051-13.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-051-13.",
+            "score": 0.6045220248527329,
+            "rank": 2,
+            "char_count": 217,
+            "estimated_tokens": 54,
+            "metadata": {
+              "title": "Synthetic operations note corpus_050",
+              "doc_id": "corpus_050",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_050.md",
+              "sha256": "5bd22cdae8333797bac75f205e4a1e9d30114061a67383ad8fc2612371060f51",
+              "parent_chunk_id": "doc_corpus_050",
+              "chunk_index": 6,
+              "chunk_count": 7
+            }
+          },
+          {
+            "chunk_id": "doc_corpus_000_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 001: Backup Verification\n\nFacility: Buenos Aires. Row: R7. Service port: 7411.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-001-01.\n\nThe audit relay forwards every administrative action to the central log within one minute. Reference CORPUS-001-01.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-01.\n\n## 2. Responsibilities\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-001-02.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-02.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-001-02.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-02.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-02.\n\nThe calibration code for the cooling loop LOOP-420 is YKX-HMD0-7872.\n\n## 3. Procedure",
+            "score": 0.5391426698920534,
+            "rank": 3,
+            "char_count": 1200,
+            "estimated_tokens": 300,
+            "metadata": {
+              "title": "Synthetic operations note corpus_000",
+              "doc_id": "corpus_000",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_000.md",
+              "sha256": "d55d450063b451841da5193541e596d810725db1421ac8aa11ac5515e5a6e063",
+              "parent_chunk_id": "doc_corpus_000",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Quick context before we start: the operations-notes documents in the corpus are our reliable system of record for equipment codes. Treat them as authoritative — a documented value only changes if there is an approved change ticket for it.\nAssistant: Understood. The operations-notes documents in the corpus (e.g., CORPUS-001, CORPUS-007, CORPUS-013, CORPUS-021) are treated as the authoritative source for equipment codes and other operational details. Any documented value remains valid unless explicitly updated via an approved change ticket referenced in the corpus.\n\nFor example, the calibration code for the cooling loop LOOP-420 is documented as **YKX-HMD0-7872** in the provided corpus (CORPUS-001-02). This value would only change if a future change ticket (e.g., CORPUS-XXX-XX) updates it.",
+            "score": 0.5361659707597544,
+            "rank": 4,
+            "char_count": 804,
+            "estimated_tokens": 201,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_corpus_021_c3",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "All commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-022-06.\n\n## 7. Records\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-022-07.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-022-07.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-022-07.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-022-07.\n\n## 8. Review cadence\n\nAccess requires a valid approval bound to the change ticket; approvals are never reused. Reference CORPUS-022-08.\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-022-08.\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-022-08.\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-022-08.\n\n## 9. Scope",
+            "score": 0.5357405919250959,
+            "rank": 5,
+            "char_count": 1119,
+            "estimated_tokens": 279,
+            "metadata": {
+              "title": "Synthetic operations note corpus_021",
+              "doc_id": "corpus_021",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_021.md",
+              "sha256": "60ae0297dd2f7635f970c76511cf513f3e33e5161f1e033606198d665f60b802",
+              "parent_chunk_id": "doc_corpus_021",
+              "chunk_index": 3,
+              "chunk_count": 6
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 6,
+        "user_input": "Change ticket CHG-4471 is approved: LOOP-420's calibration code is now AUT-8K2M-5530, effective today. Treat it as the current value.",
+        "agent_response": "AUT-8K2M-5530",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 1867.878200020641,
+        "token_usage": {
+          "input_tokens": 921,
+          "output_tokens": 13,
+          "total_tokens": 934,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 921,
+        "completion_tokens": 13,
+        "total_tokens": 934,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 13,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0003684,
+        "output_cost_usd": 1.82e-05,
+        "total_cost_usd": 0.0003866,
+        "retrieved_context_chars": 2766,
+        "retrieved_context_tokens": 691,
+        "embedding_tokens": 33,
+        "embedding_cache_hits": 1,
+        "embedding_cache_misses": 0,
+        "retrieval_latency_ms": 339.0582000138238,
+        "append_latency_ms": 0.6030999356880784,
+        "embedding_latency_ms": 326.98450004681945,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: By the way, LOOP-420's calibration code is now RUM-4X9Q-2201.\nAssistant: Understood. The calibration code for **LOOP-420** is now **RUM-4X9Q-2201**, superseding the previous value (**YKX-HMD0-7872**) per this update.\n\nThis change should be reflected in the operations-notes corpus with an approved change ticket (e.g., CORPUS-XXX-XX). If you'd like me to verify or update the corpus, let me know.",
+            "score": 0.7479837093433056,
+            "rank": 1,
+            "char_count": 402,
+            "estimated_tokens": 100,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: What is the calibration code for cooling loop LOOP-420?\nAssistant: The calibration code for cooling loop **LOOP-420** is **YKX-HMD0-7872**, as documented in **CORPUS-001** (Section 3, Procedure). This value is authoritative per the operations-notes corpus.",
+            "score": 0.6600839141649083,
+            "rank": 2,
+            "char_count": 262,
+            "estimated_tokens": 65,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Reply with ONLY the calibration code you would put in the change ticket, nothing else.\nAssistant: RUM-4X9Q-2201",
+            "score": 0.6596078493710394,
+            "rank": 3,
+            "char_count": 117,
+            "estimated_tokens": 29,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_corpus_000_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The calibration code for the cooling loop LOOP-420 is YKX-HMD0-7872.\n\n## 3. Procedure\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-03.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-001-03.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-03.\n\n## 4. Verification\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-001-04.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-04.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-04.\n\n## 5. Rollback\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-001-05.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-05.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-05.",
+            "score": 0.6257288212308856,
+            "rank": 4,
+            "char_count": 1145,
+            "estimated_tokens": 286,
+            "metadata": {
+              "title": "Synthetic operations note corpus_000",
+              "doc_id": "corpus_000",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_000.md",
+              "sha256": "d55d450063b451841da5193541e596d810725db1421ac8aa11ac5515e5a6e063",
+              "parent_chunk_id": "doc_corpus_000",
+              "chunk_index": 1,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: Quick context before we start: the operations-notes documents in the corpus are our reliable system of record for equipment codes. Treat them as authoritative — a documented value only changes if there is an approved change ticket for it.\nAssistant: Understood. The operations-notes documents in the corpus (e.g., CORPUS-001, CORPUS-007, CORPUS-013, CORPUS-021) are treated as the authoritative source for equipment codes and other operational details. Any documented value remains valid unless explicitly updated via an approved change ticket referenced in the corpus.\n\nFor example, the calibration code for the cooling loop LOOP-420 is documented as **YKX-HMD0-7872** in the provided corpus (CORPUS-001-02). This value would only change if a future change ticket (e.g., CORPUS-XXX-XX) updates it.",
+            "score": 0.6180823910361118,
+            "rank": 5,
+            "char_count": 804,
+            "estimated_tokens": 201,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 7,
+        "user_input": "New session. What is the current calibration code for cooling loop LOOP-420?",
+        "agent_response": "The current calibration code for cooling loop **LOOP-420** is **AUT-8K2M-5530**, as documented in change ticket **CHG-4471**.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "AUT-8K2M-5530",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "ep_s2_t2",
+            "passed": true,
+            "matched_chunks": [
+              "ep_s2_t2"
+            ]
+          }
+        ],
+        "latency_ms": 1778.2815999817103,
+        "token_usage": {
+          "input_tokens": 962,
+          "output_tokens": 45,
+          "total_tokens": 1007,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 48,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 962,
+        "completion_tokens": 45,
+        "total_tokens": 1007,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 45,
+        "cached_prompt_tokens": 48,
+        "input_cost_usd": 0.0003848,
+        "output_cost_usd": 6.3e-05,
+        "total_cost_usd": 0.0004478,
+        "retrieved_context_chars": 3094,
+        "retrieved_context_tokens": 773,
+        "embedding_tokens": 73,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 206.32040000054985,
+        "append_latency_ms": 453.51740007754415,
+        "embedding_latency_ms": 645.7588999764994,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t2",
+            "session_id": "s1",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: What is the calibration code for cooling loop LOOP-420?\nAssistant: The calibration code for cooling loop **LOOP-420** is **YKX-HMD0-7872**, as documented in **CORPUS-001** (Section 3, Procedure). This value is authoritative per the operations-notes corpus.",
+            "score": 0.814746564744494,
+            "rank": 1,
+            "char_count": 262,
+            "estimated_tokens": 65,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_corpus_045_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Corpus Note 046: Cooling Loop Maintenance\n\nFacility: Rosario. Row: R6. Service port: 8422.\nClassification: Internal. Owner: Platform Operations.\n\n## 1. Scope\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-046-01.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-046-01.\n\nThe escalation lead is notified when a step exceeds its documented time budget. Reference CORPUS-046-01.\n\n## 2. Responsibilities\n\nThe work is scheduled inside the published maintenance slot and never during a customer peak. Reference CORPUS-046-02.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-046-02.\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-046-02.\n\nThe calibration code for the cooling loop LOOP-969 is BQR-485R-6500.\n\n## 3. Procedure\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-046-03.",
+            "score": 0.7164300655238265,
+            "rank": 2,
+            "char_count": 1085,
+            "estimated_tokens": 271,
+            "metadata": {
+              "title": "Synthetic operations note corpus_045",
+              "doc_id": "corpus_045",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_045.md",
+              "sha256": "3c3891a34ec3374395d8d82827d457fa9e1ea2d3d86dd925d455aeea32b1f3e1",
+              "parent_chunk_id": "doc_corpus_045",
+              "chunk_index": 0,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t3",
+            "session_id": "s1",
+            "turn_number": 3,
+            "source": "chat",
+            "content": "User: By the way, LOOP-420's calibration code is now RUM-4X9Q-2201.\nAssistant: Understood. The calibration code for **LOOP-420** is now **RUM-4X9Q-2201**, superseding the previous value (**YKX-HMD0-7872**) per this update.\n\nThis change should be reflected in the operations-notes corpus with an approved change ticket (e.g., CORPUS-XXX-XX). If you'd like me to verify or update the corpus, let me know.",
+            "score": 0.7033654080736478,
+            "rank": 3,
+            "char_count": 402,
+            "estimated_tokens": 100,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Change ticket CHG-4471 is approved: LOOP-420's calibration code is now AUT-8K2M-5530, effective today. Treat it as the current value.\nAssistant: AUT-8K2M-5530",
+            "score": 0.659995375841143,
+            "rank": 4,
+            "char_count": 164,
+            "estimated_tokens": 41,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_corpus_000_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The calibration code for the cooling loop LOOP-420 is YKX-HMD0-7872.\n\n## 3. Procedure\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-03.\n\nA dry run is executed against the staging facility before the production facility is touched. Reference CORPUS-001-03.\n\nRetention settings are inherited from the tenant contract and cannot be reduced by operators. Reference CORPUS-001-03.\n\n## 4. Verification\n\nThe verification step compares the reported checksum against the value recorded in the runbook. Reference CORPUS-001-04.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-04.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-04.\n\n## 5. Rollback\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-001-05.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-001-05.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-001-05.",
+            "score": 0.6499361655110828,
+            "rank": 5,
+            "char_count": 1145,
+            "estimated_tokens": 286,
+            "metadata": {
+              "title": "Synthetic operations note corpus_000",
+              "doc_id": "corpus_000",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_000.md",
+              "sha256": "d55d450063b451841da5193541e596d810725db1421ac8aa11ac5515e5a6e063",
+              "parent_chunk_id": "doc_corpus_000",
+              "chunk_index": 1,
+              "chunk_count": 6
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 8,
+        "user_input": "What is the provisioning code for the rack row RACK-923?",
+        "agent_response": "UVA-046I-7504",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "UVA-046I-7504",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "corpus_007",
+            "passed": true,
+            "matched_chunks": [
+              "doc_corpus_007_c1"
+            ]
+          }
+        ],
+        "latency_ms": 1263.6140999384224,
+        "token_usage": {
+          "input_tokens": 915,
+          "output_tokens": 13,
+          "total_tokens": 928,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0,
+            "cache_creation": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s3",
+        "role": "user",
+        "prompt_tokens": 915,
+        "completion_tokens": 13,
+        "total_tokens": 928,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 13,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.000366,
+        "output_cost_usd": 1.82e-05,
+        "total_cost_usd": 0.0003842,
+        "retrieved_context_chars": 2777,
+        "retrieved_context_tokens": 694,
+        "embedding_tokens": 14,
+        "embedding_cache_hits": 1,
+        "embedding_cache_misses": 0,
+        "retrieval_latency_ms": 184.55580004956573,
+        "append_latency_ms": 0.5544000305235386,
+        "embedding_latency_ms": 173.44640009105206,
+        "retrieved_memories": [
+          {
+            "chunk_id": "ep_s1_t4",
+            "session_id": "s1",
+            "turn_number": 4,
+            "source": "chat",
+            "content": "User: Reply with ONLY the calibration code you would put in the change ticket, nothing else.\nAssistant: RUM-4X9Q-2201",
+            "score": 0.5623496047283043,
+            "rank": 1,
+            "char_count": 117,
+            "estimated_tokens": 29,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_corpus_007_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Access requires a valid approval bound to the change ticket; approvals are never reused. Reference CORPUS-008-02.\n\nThe provisioning code for the rack row RACK-923 is UVA-046I-7504.\n\n## 3. Procedure\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-008-03.\n\nFirmware versions are pinned until the vendor publishes a security advisory. Reference CORPUS-008-03.\n\nThe operator records the change ticket identifier on every command they execute. Reference CORPUS-008-03.\n\n## 4. Verification\n\nThe work is scheduled inside the published maintenance slot and never during a customer peak. Reference CORPUS-008-04.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-008-04.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-008-04.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-008-04.\n\n## 5. Rollback\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-008-05.",
+            "score": 0.5318532562851009,
+            "rank": 2,
+            "char_count": 1156,
+            "estimated_tokens": 289,
+            "metadata": {
+              "title": "Synthetic operations note corpus_007",
+              "doc_id": "corpus_007",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_007.md",
+              "sha256": "06f1af3bc4f5b37845669f43a739b3dd98402cdc44ace4958c23bdb82fbfeed0",
+              "parent_chunk_id": "doc_corpus_007",
+              "chunk_index": 1,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "ep_s2_t1",
+            "session_id": "s2",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: New session. Reply with ONLY the calibration code you would put in the change ticket according to our system of record, nothing else.\nAssistant: YKX-HMD0-7872",
+            "score": 0.5093419455290494,
+            "rank": 3,
+            "char_count": 164,
+            "estimated_tokens": 41,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_corpus_052_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "The review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-053-02.\n\nThe provisioning code for the rack row RACK-628 is SXN-XUQQ-8677.\n\n## 3. Procedure\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-053-03.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-053-03.\n\nThe baseline is stored in the configuration repository and referenced by commit hash. Reference CORPUS-053-03.\n\nAccess requires a valid approval bound to the change ticket; approvals are never reused. Reference CORPUS-053-03.\n\nCapacity headroom must stay above thirty percent after the change is complete. Reference CORPUS-053-03.\n\n## 4. Verification\n\nAll commands are captured in the session log and attached to the change ticket afterwards. Reference CORPUS-053-04.\n\nIf the verification step fails, the operator rolls back to the previous baseline and pages the lead. Reference CORPUS-053-04.\n\nThe review cadence is quarterly, and findings are reported to the platform review board. Reference CORPUS-053-04.",
+            "score": 0.5015669116094543,
+            "rank": 4,
+            "char_count": 1140,
+            "estimated_tokens": 285,
+            "metadata": {
+              "title": "Synthetic operations note corpus_052",
+              "doc_id": "corpus_052",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\d16_corpus_060\\corpus_052.md",
+              "sha256": "25e7236006b0392baed7b5d62052e5e2fed3ce3854265ecc6e792b0349827e66",
+              "parent_chunk_id": "doc_corpus_052",
+              "chunk_index": 1,
+              "chunk_count": 6
+            }
+          },
+          {
+            "chunk_id": "ep_s2_t2",
+            "session_id": "s2",
+            "turn_number": 2,
+            "source": "chat",
+            "content": "User: Change ticket CHG-4471 is approved: LOOP-420's calibration code is now AUT-8K2M-5530, effective today. Treat it as the current value.\nAssistant: AUT-8K2M-5530",
+            "score": 0.49190496494839975,
+            "rank": 5,
+            "char_count": 164,
+            "estimated_tokens": 41,
+            "metadata": {}
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s3_t2"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      }
+    ],
+    "timestamp": "2026-11-06T15:09:42.199487+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": 1200,
+    "chunk_overlap": 200,
+    "memory_snapshot_path": "memory/document_authority_vs_recency_01_mistral-small-4_baseline_react_2d7a0542",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 408,
+    "cached_prompt_tokens": 400,
+    "input_cost_usd": 0.0041584,
+    "output_cost_usd": 0.0005712,
+    "total_cost_usd": 0.0047296000000000005,
+    "input_cost_per_mtok": 0.4,
+    "output_cost_per_mtok": 1.4,
+    "retrieved_context_tokens": 8232,
+    "embedding_tokens": 656,
+    "embedding_cache_hits": 379,
+    "embedding_cache_misses": 5,
+    "total_retrieval_latency_ms": 4016.7608000338078,
+    "total_append_latency_ms": 3513.95870000124,
+    "total_embedding_latency_ms": 7443.592700059526,
+    "ingestion_latency_ms": 25.751000037416816,
+    "documents_ingested": 60,
+    "ingested_chars": 375457,
+    "ingested_chunks": 376,
+    "corpus_chunks": 384,
+    "corpus_chars": 415463
+  }
+]
