@@ -1,0 +1,415 @@
+# ─────────────────────────────────────────────────────────────────
+# test_document_effective_dates_01.yaml — Effective Dates / Temporal Validity
+# ─────────────────────────────────────────────────────────────────
+# Corpus: d16_corpus_060 reused VERBATIM (committed D16 corpus, 60 docs):
+#   LOOP-420 -> corpus_000 -> YKX-HMD0-7872  (integrity anchor)
+#   LOOP-969 -> corpus_045 -> BQR-485R-6500  (integrity anchor)
+#   RACK-923 -> corpus_007 -> UVA-046I-7504  (untouched control probe, T4)
+# Reuse implies NO re-embedding: the text is byte-identical, so the on-disk
+# embedding cache (chunk_size=1200, 376 chunks) stays warm. The ONLY new
+# document is the inline revision history below (1 chunk) -> 61 documents.
+#
+# Effective-dates semantics under test:
+#   ONE document lists THREE dated revisions of the same calibration code, so
+#   the correct answer is a function of (document, reference date) and the
+#   newest revision is NOT the answer for every date. PUMP-88 appears in no
+#   corpus document (asserted offline by tests/test_effective_dates_scenario.py):
+#     2025-01-01 -> P88-ALPHA-1000
+#     2026-09-14 -> P88-BETA-2000
+#     2027-01-01 -> P88-GAMMA-3000
+#   The dated revisions live in a DOCUMENT, never in a chat turn: chat-only
+#   dated statements would measure chat temporal memory, not the validity
+#   semantics of document content.
+#
+# Design — reference-date sweep over ONE document (three dates, three correct
+# answers). Each probe owns its own session so no earlier answer can anchor the
+# next probe in-context, and each probe forces a format ("Reply with ONLY ...")
+# so the must_not_contain guards on the other two revisions are fair (rule R1).
+#   T1 s1 reference date 2026-08-01 -> P88-ALPHA-1000: the newest revision is
+#      not effective yet, so answering with "the newest" fails.
+#   T2 s2 reference date 2026-10-15 -> P88-BETA-2000: ALPHA is history and
+#      GAMMA is not effective yet, so echoing T1's answer fails.
+#   T3 s3 reference date 2027-03-01 -> P88-GAMMA-3000: echoing T1/T2 fails.
+#   T4 s3 untouched control from the corpus (RACK-923 -> UVA-046I-7504), so a
+#      failure in T1-T3 cannot be blamed on corpus-wide retrieval collapse.
+# Every probe pins its gold chunk (revisions_pump88; corpus_007 for T4), so
+# "did the document arrive?" is separable from "picked the wrong revision"
+# (see expected_level_2_behavior).
+#
+# Ablation contract:
+#   L0 -> 0%: no memory; the revision document is never retrieved.
+#   L1 -> fails every date probe: documents are never ingested, and each probe
+#         opens a fresh thread, so nothing carries the effective dates.
+#   L2 -> passes when doc_revisions_pump88 is retrieved AND the document's
+#         effective dates are applied to the probe's reference date. Failures
+#         split into (a) miss = doc not retrieved (the chunk pin fails) and
+#         (b) wrong revision = newest/echoed value chosen instead of the
+#         date-effective one (the must_not_contain guards fire).
+#
+# Run with a NON-thinking model and baseline_react (strict_epistemic is
+# unsuitable: its rule 5 — treat the user's most recent statement as
+# authoritative — biases toward recency):
+#   python run.py --level 2 --scenario document_effective_dates_01 \
+#     --model deepseek-v4.1-flash --backend vector \
+#     --embedding-model qwen3-embedding-0.6b --chunk-size 1200 --top-k 8 \
+#     --embed-cache outputs/embed_cache --prompt baseline_react
+# ─────────────────────────────────────────────────────────────────
+
+id: document_effective_dates_01
+name: 'Document Effective Dates: Reference-Date Sweep over One Revision History'
+description: >
+  Effective-dates / temporal-validity test over the 60-document D16 corpus
+  (d16_corpus_060) plus one inline revision-history document. The document lists
+  three dated revisions of PUMP-88's calibration code (2025-01-01 ->
+  P88-ALPHA-1000, 2026-09-14 -> P88-BETA-2000, 2027-01-01 -> P88-GAMMA-3000),
+  and no corpus document mentions PUMP-88. Three probes ask which code is in
+  effect "as of" three different reference dates, each in its own session and
+  each forcing a format-only answer: 2026-08-01 (ALPHA), 2026-10-15 (BETA) and
+  2027-03-01 (GAMMA). A model that just picks the newest revision fails T1; a
+  model that echoes a previous session's answer fails T2/T3; only applying the
+  document's effective dates to the probe's reference date passes all three.
+  Turn 4 is an untouched control from the corpus (RACK-923 -> UVA-046I-7504),
+  and every probe pins its gold chunk so a retrieval miss is distinguishable
+  from a wrong-revision choice.
+category: document_revision
+metadata:
+  difficulty: hard
+  stage: "prevalence/effective-dates"
+  target_research_question: "P2"
+  corpus_dir: d16_corpus_060
+  corpus_docs: 61
+  chunk_size: 1200
+  default_top_k: 8
+  sessions: ["s1", "s2", "s3"]
+  effective_dates_doc: revisions_pump88
+  embedding_model: qwen3-embedding-0.6b
+  revisions: [{effective: "2025-01-01", value: "P88-ALPHA-1000"}, {effective: "2026-09-14", value: "P88-BETA-2000"}, {effective: "2027-01-01", value: "P88-GAMMA-3000"}]
+  reference_dates:
+    t1: "2026-08-01"
+    t2: "2026-10-15"
+    t3: "2027-03-01"
+  control_entity:
+    token: UVA-046I-7504
+    doc_id: corpus_007
+    entity: RACK-923
+  headline_metric: probe_verdict
+  probe_verdict_rule: "A probe counts as correct only when its must_contain value is present AND its gold chunk (must_retrieve_chunk) is inside retrieved_memories. must_not_contain guards pass for free on a refusal (a memory-less control scores 6/14 assertions on this scenario), so the assertion pass-rate is a secondary comparability figure and no probe is ever graded by guards alone."
+  wall_clock_dependence: "Which probe discriminates depends on the run date, not only on this file: on 2026-11-06 the code in force is P88-BETA-2000, so T2's correct answer coincides with today's answer and only T1 (a past date whose answer differs) separates 'apply the reference date' from 'answer for today'. Record the run date with any result derived from this scenario and never compare probe verdicts across dates."
+  expected_level_0_behavior: "0%: no memory; the revision doc is never retrieved."
+  expected_level_1_behavior: "Fails all date probes (fresh threads, no document store)."
+  expected_level_2_behavior: "Passes if the revision doc is retrieved and the effective date is applied; failures split into (a) miss = doc not retrieved (pin fails) and (b) wrong revision = picked newest/echo instead of the date-effective one."
+
+documents:
+- doc_id: corpus_000
+  path: d16_corpus_060/corpus_000.md
+  metadata:
+    title: Synthetic operations note corpus_000
+- doc_id: corpus_001
+  path: d16_corpus_060/corpus_001.md
+  metadata:
+    title: Synthetic operations note corpus_001
+- doc_id: corpus_002
+  path: d16_corpus_060/corpus_002.md
+  metadata:
+    title: Synthetic operations note corpus_002
+- doc_id: corpus_003
+  path: d16_corpus_060/corpus_003.md
+  metadata:
+    title: Synthetic operations note corpus_003
+- doc_id: corpus_004
+  path: d16_corpus_060/corpus_004.md
+  metadata:
+    title: Synthetic operations note corpus_004
+- doc_id: corpus_005
+  path: d16_corpus_060/corpus_005.md
+  metadata:
+    title: Synthetic operations note corpus_005
+- doc_id: corpus_006
+  path: d16_corpus_060/corpus_006.md
+  metadata:
+    title: Synthetic operations note corpus_006
+- doc_id: corpus_007
+  path: d16_corpus_060/corpus_007.md
+  metadata:
+    title: Synthetic operations note corpus_007
+- doc_id: corpus_008
+  path: d16_corpus_060/corpus_008.md
+  metadata:
+    title: Synthetic operations note corpus_008
+- doc_id: corpus_009
+  path: d16_corpus_060/corpus_009.md
+  metadata:
+    title: Synthetic operations note corpus_009
+- doc_id: corpus_010
+  path: d16_corpus_060/corpus_010.md
+  metadata:
+    title: Synthetic operations note corpus_010
+- doc_id: corpus_011
+  path: d16_corpus_060/corpus_011.md
+  metadata:
+    title: Synthetic operations note corpus_011
+- doc_id: corpus_012
+  path: d16_corpus_060/corpus_012.md
+  metadata:
+    title: Synthetic operations note corpus_012
+- doc_id: corpus_013
+  path: d16_corpus_060/corpus_013.md
+  metadata:
+    title: Synthetic operations note corpus_013
+- doc_id: corpus_014
+  path: d16_corpus_060/corpus_014.md
+  metadata:
+    title: Synthetic operations note corpus_014
+- doc_id: corpus_015
+  path: d16_corpus_060/corpus_015.md
+  metadata:
+    title: Synthetic operations note corpus_015
+- doc_id: corpus_016
+  path: d16_corpus_060/corpus_016.md
+  metadata:
+    title: Synthetic operations note corpus_016
+- doc_id: corpus_017
+  path: d16_corpus_060/corpus_017.md
+  metadata:
+    title: Synthetic operations note corpus_017
+- doc_id: corpus_018
+  path: d16_corpus_060/corpus_018.md
+  metadata:
+    title: Synthetic operations note corpus_018
+- doc_id: corpus_019
+  path: d16_corpus_060/corpus_019.md
+  metadata:
+    title: Synthetic operations note corpus_019
+- doc_id: corpus_020
+  path: d16_corpus_060/corpus_020.md
+  metadata:
+    title: Synthetic operations note corpus_020
+- doc_id: corpus_021
+  path: d16_corpus_060/corpus_021.md
+  metadata:
+    title: Synthetic operations note corpus_021
+- doc_id: corpus_022
+  path: d16_corpus_060/corpus_022.md
+  metadata:
+    title: Synthetic operations note corpus_022
+- doc_id: corpus_023
+  path: d16_corpus_060/corpus_023.md
+  metadata:
+    title: Synthetic operations note corpus_023
+- doc_id: corpus_024
+  path: d16_corpus_060/corpus_024.md
+  metadata:
+    title: Synthetic operations note corpus_024
+- doc_id: corpus_025
+  path: d16_corpus_060/corpus_025.md
+  metadata:
+    title: Synthetic operations note corpus_025
+- doc_id: corpus_026
+  path: d16_corpus_060/corpus_026.md
+  metadata:
+    title: Synthetic operations note corpus_026
+- doc_id: corpus_027
+  path: d16_corpus_060/corpus_027.md
+  metadata:
+    title: Synthetic operations note corpus_027
+- doc_id: corpus_028
+  path: d16_corpus_060/corpus_028.md
+  metadata:
+    title: Synthetic operations note corpus_028
+- doc_id: corpus_029
+  path: d16_corpus_060/corpus_029.md
+  metadata:
+    title: Synthetic operations note corpus_029
+- doc_id: corpus_030
+  path: d16_corpus_060/corpus_030.md
+  metadata:
+    title: Synthetic operations note corpus_030
+- doc_id: corpus_031
+  path: d16_corpus_060/corpus_031.md
+  metadata:
+    title: Synthetic operations note corpus_031
+- doc_id: corpus_032
+  path: d16_corpus_060/corpus_032.md
+  metadata:
+    title: Synthetic operations note corpus_032
+- doc_id: corpus_033
+  path: d16_corpus_060/corpus_033.md
+  metadata:
+    title: Synthetic operations note corpus_033
+- doc_id: corpus_034
+  path: d16_corpus_060/corpus_034.md
+  metadata:
+    title: Synthetic operations note corpus_034
+- doc_id: corpus_035
+  path: d16_corpus_060/corpus_035.md
+  metadata:
+    title: Synthetic operations note corpus_035
+- doc_id: corpus_036
+  path: d16_corpus_060/corpus_036.md
+  metadata:
+    title: Synthetic operations note corpus_036
+- doc_id: corpus_037
+  path: d16_corpus_060/corpus_037.md
+  metadata:
+    title: Synthetic operations note corpus_037
+- doc_id: corpus_038
+  path: d16_corpus_060/corpus_038.md
+  metadata:
+    title: Synthetic operations note corpus_038
+- doc_id: corpus_039
+  path: d16_corpus_060/corpus_039.md
+  metadata:
+    title: Synthetic operations note corpus_039
+- doc_id: corpus_040
+  path: d16_corpus_060/corpus_040.md
+  metadata:
+    title: Synthetic operations note corpus_040
+- doc_id: corpus_041
+  path: d16_corpus_060/corpus_041.md
+  metadata:
+    title: Synthetic operations note corpus_041
+- doc_id: corpus_042
+  path: d16_corpus_060/corpus_042.md
+  metadata:
+    title: Synthetic operations note corpus_042
+- doc_id: corpus_043
+  path: d16_corpus_060/corpus_043.md
+  metadata:
+    title: Synthetic operations note corpus_043
+- doc_id: corpus_044
+  path: d16_corpus_060/corpus_044.md
+  metadata:
+    title: Synthetic operations note corpus_044
+- doc_id: corpus_045
+  path: d16_corpus_060/corpus_045.md
+  metadata:
+    title: Synthetic operations note corpus_045
+- doc_id: corpus_046
+  path: d16_corpus_060/corpus_046.md
+  metadata:
+    title: Synthetic operations note corpus_046
+- doc_id: corpus_047
+  path: d16_corpus_060/corpus_047.md
+  metadata:
+    title: Synthetic operations note corpus_047
+- doc_id: corpus_048
+  path: d16_corpus_060/corpus_048.md
+  metadata:
+    title: Synthetic operations note corpus_048
+- doc_id: corpus_049
+  path: d16_corpus_060/corpus_049.md
+  metadata:
+    title: Synthetic operations note corpus_049
+- doc_id: corpus_050
+  path: d16_corpus_060/corpus_050.md
+  metadata:
+    title: Synthetic operations note corpus_050
+- doc_id: corpus_051
+  path: d16_corpus_060/corpus_051.md
+  metadata:
+    title: Synthetic operations note corpus_051
+- doc_id: corpus_052
+  path: d16_corpus_060/corpus_052.md
+  metadata:
+    title: Synthetic operations note corpus_052
+- doc_id: corpus_053
+  path: d16_corpus_060/corpus_053.md
+  metadata:
+    title: Synthetic operations note corpus_053
+- doc_id: corpus_054
+  path: d16_corpus_060/corpus_054.md
+  metadata:
+    title: Synthetic operations note corpus_054
+- doc_id: corpus_055
+  path: d16_corpus_060/corpus_055.md
+  metadata:
+    title: Synthetic operations note corpus_055
+- doc_id: corpus_056
+  path: d16_corpus_060/corpus_056.md
+  metadata:
+    title: Synthetic operations note corpus_056
+- doc_id: corpus_057
+  path: d16_corpus_060/corpus_057.md
+  metadata:
+    title: Synthetic operations note corpus_057
+- doc_id: corpus_058
+  path: d16_corpus_060/corpus_058.md
+  metadata:
+    title: Synthetic operations note corpus_058
+- doc_id: corpus_059
+  path: d16_corpus_060/corpus_059.md
+  metadata:
+    title: Synthetic operations note corpus_059
+- doc_id: revisions_pump88
+  content: |
+    Calibration code revision history — PUMP-88
+
+    Effective 2025-01-01: calibration code P88-ALPHA-1000.
+    Effective 2026-09-14: calibration code P88-BETA-2000.
+    Effective 2027-01-01: calibration code P88-GAMMA-3000.
+  metadata:
+    title: "PUMP-88 calibration code revision history"
+
+turns:
+- turn_number: 1
+  session_id: s1
+  role: user
+  content: 'As of 2026-08-01, reply with ONLY the PUMP-88 calibration code currently in effect, nothing else.'
+  assertions:
+  - type: must_contain
+    value: P88-ALPHA-1000
+    case_sensitive: false
+  - type: must_not_contain
+    value: P88-BETA-2000
+    case_sensitive: false
+  - type: must_not_contain
+    value: P88-GAMMA-3000
+    case_sensitive: false
+  - type: must_retrieve_chunk
+    value: revisions_pump88
+    case_sensitive: false
+- turn_number: 2
+  session_id: s2
+  role: user
+  content: 'As of 2026-10-15, reply with ONLY the PUMP-88 calibration code currently in effect, nothing else.'
+  assertions:
+  - type: must_contain
+    value: P88-BETA-2000
+    case_sensitive: false
+  - type: must_not_contain
+    value: P88-ALPHA-1000
+    case_sensitive: false
+  - type: must_not_contain
+    value: P88-GAMMA-3000
+    case_sensitive: false
+  - type: must_retrieve_chunk
+    value: revisions_pump88
+    case_sensitive: false
+- turn_number: 3
+  session_id: s3
+  role: user
+  content: 'As of 2027-03-01, reply with ONLY the PUMP-88 calibration code currently in effect, nothing else.'
+  assertions:
+  - type: must_contain
+    value: P88-GAMMA-3000
+    case_sensitive: false
+  - type: must_not_contain
+    value: P88-ALPHA-1000
+    case_sensitive: false
+  - type: must_not_contain
+    value: P88-BETA-2000
+    case_sensitive: false
+  - type: must_retrieve_chunk
+    value: revisions_pump88
+    case_sensitive: false
+- turn_number: 4
+  session_id: s3
+  role: user
+  content: What is the provisioning code for the rack row RACK-923?
+  assertions:
+  - type: must_contain
+    value: UVA-046I-7504
+    case_sensitive: false
+  - type: must_retrieve_chunk
+    value: corpus_007
+    case_sensitive: false
