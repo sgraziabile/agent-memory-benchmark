@@ -53,6 +53,7 @@ DEFAULT_OUT_DIR = (
     REPO_ROOT
     / "datasets"
     / "conversations"
+    / "single_thread"
     / "retrieval_limit"
     / "document_corpus_size"
 )

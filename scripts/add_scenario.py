@@ -18,9 +18,12 @@ For each ```` ```yaml ```` block the script:
    ``<theme>/<category>/`` is its own source of truth), then the static
    ``SCENARIO_MAP``, and finally a ``category`` that already exists
    somewhere in the tree (keeping its theme).
-3. Validates the scenario against ``core.schemas.BenchmarkScenario`` —
+3. Resolves the thread-class directory from ``--thread`` first, then the
+   existing placement of that ID, then the block's own turns (one distinct
+   ``session_id`` → ``single_thread/``, more than one → ``multi_thread/``).
+4. Validates the scenario against ``core.schemas.BenchmarkScenario`` —
    the same model the runner uses — failing fast on schema errors.
-4. Writes ``datasets/conversations/<theme>/<category>/test_<id>.yaml``
+5. Writes ``datasets/conversations/<thread>/<theme>/<category>/test_<id>.yaml``
    (UTF-8, LF) unless an identical file already exists; an existing file
    that differs from the spec block is overwritten to match the spec.
 
@@ -40,27 +43,63 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from core.dataset_layout import (  # noqa: E402
+    MULTI_THREAD_DIR,
+    SCENARIO_MAP,
+    SINGLE_THREAD_DIR,
+    dataset_root,
+    scenario_id_from_filename,
+    theme_category_from_parts,
+    thread_dir_from_parts,
+    thread_dir_for_scenario,
+)
 from core.schemas import BenchmarkScenario  # noqa: E402
 
-DATASET_DIR = REPO_ROOT / "datasets" / "conversations"
+DATASET_DIR = dataset_root()
 YAML_FENCE = re.compile(r"```yaml\r?\n(.*?)```", re.DOTALL)
 
+#: CLI aliases for ``--thread``.
+_THREAD_ALIASES = {
+    "single": SINGLE_THREAD_DIR,
+    "single-thread": SINGLE_THREAD_DIR,
+    "multi": MULTI_THREAD_DIR,
+    "multi-thread": MULTI_THREAD_DIR,
+}
 
-def build_tree_index() -> tuple[dict[str, tuple[str, str]], dict[str, str]]:
-    """Scan the dataset tree for ``id -> (theme, category)`` and category themes.
 
-    Only organized files (``<theme>/<category>/test_<id>.yaml``) count;
-    top-level stragglers are ignored.
+def build_tree_index() -> tuple[
+    dict[str, tuple[str, str]], dict[str, str], dict[str, str]
+]:
+    """Scan the dataset tree for ids, category themes and thread classes.
+
+    Accepts both the current 4-part layout
+    (``<thread>/<theme>/<category>/test_<id>.yaml``) and the legacy 3-part
+    one, because :func:`core.dataset_layout.theme_category_from_parts` reads
+    the *last two* directory components instead of assuming a fixed depth.
+
+    Returns:
+        ``(ids, categories, threads)`` — ``ids`` maps an id to its
+        ``(theme, category)``, ``categories`` maps a category to its theme,
+        and ``threads`` maps an id to the thread-class directory it lives in
+        (``single_thread``/``multi_thread``), when present.
     """
     ids: dict[str, tuple[str, str]] = {}
     categories: dict[str, str] = {}
+    threads: dict[str, str] = {}
     for path in sorted(DATASET_DIR.rglob("test_*.yaml")):
         rel = path.relative_to(DATASET_DIR)
-        if len(rel.parts) != 3:
+        if len(rel.parts) < 3:
+            continue  # top-level stragglers are not organized
+        sid = scenario_id_from_filename(path.name)
+        if sid is None:
             continue
-        ids[path.name[len("test_") : -len(".yaml")]] = (rel.parts[0], rel.parts[1])
-        categories.setdefault(rel.parts[1], rel.parts[0])
-    return ids, categories
+        theme, category = theme_category_from_parts(rel.parts)
+        ids[sid] = (theme, category)
+        categories.setdefault(category, theme)
+        thread = thread_dir_from_parts(rel.parts)
+        if thread is not None:
+            threads[sid] = thread
+    return ids, categories, threads
 
 
 def resolve_destination(
@@ -121,6 +160,16 @@ def main(argv: list[str] | None = None) -> int:
         metavar="ID=THEME/CATEGORY",
         help="destination override for a scenario id (repeatable)",
     )
+    parser.add_argument(
+        "--thread",
+        choices=sorted(_THREAD_ALIASES),
+        default=None,
+        help=(
+            "force the thread-class directory for every block "
+            "(default: keep an existing placement, else classify from the "
+            "block's session_id values)"
+        ),
+    )
     args = parser.parse_args(argv)
 
     spec_text = args.spec.read_text(encoding="utf-8")
@@ -138,19 +187,14 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError:
             parser.error(f"--map expects ID=THEME/CATEGORY, got {item!r}")
 
-    # Import the shared registry from organize_datasets (self-contained script,
-    # so load it from its file path).
-    import importlib.util
+    # Static fallback registry lives in core.dataset_layout (single source of
+    # truth shared with the test suite).
+    static_map: dict[str, tuple[str, str]] = dict(SCENARIO_MAP)
 
-    spec_module_path = REPO_ROOT / "scripts" / "organize_datasets.py"
-    spec_module = importlib.util.spec_from_file_location(
-        "_organize_datasets", spec_module_path
+    tree_ids, tree_categories, tree_threads = build_tree_index()
+    thread_override = (
+        _THREAD_ALIASES[args.thread] if args.thread is not None else None
     )
-    organize = importlib.util.module_from_spec(spec_module)
-    spec_module.loader.exec_module(organize)
-    static_map: dict[str, tuple[str, str]] = dict(organize.SCENARIO_MAP)
-
-    tree_ids, tree_categories = build_tree_index()
     written = skipped = 0
     failures = 0
 
@@ -161,7 +205,7 @@ def main(argv: list[str] | None = None) -> int:
 
         # Schema-validate against the same model the runner uses.
         try:
-            BenchmarkScenario.model_validate(data)
+            validated = BenchmarkScenario.model_validate(data)
         except Exception as exc:  # pydantic.ValidationError
             print(f"  ! {sid}: schema validation failed: {exc}")
             failures += 1
@@ -178,8 +222,13 @@ def main(argv: list[str] | None = None) -> int:
             failures += 1
             continue
         theme, dest_category = dest
+        thread = (
+            thread_override
+            or tree_threads.get(sid)
+            or thread_dir_for_scenario(validated)
+        )
 
-        out = DATASET_DIR / theme / dest_category / f"test_{sid}.yaml"
+        out = DATASET_DIR / thread / theme / dest_category / f"test_{sid}.yaml"
         if out.exists() and out.read_text(encoding="utf-8") == block:
             print(f"  = {sid}: unchanged at {_fmt_path(out)}")
             skipped += 1
@@ -193,6 +242,7 @@ def main(argv: list[str] | None = None) -> int:
         written += 1
         tree_ids[sid] = (theme, dest_category)
         tree_categories.setdefault(dest_category, theme)
+        tree_threads[sid] = thread
 
     print(
         f"\n{len(blocks)} scenario block(s): {written} written, "

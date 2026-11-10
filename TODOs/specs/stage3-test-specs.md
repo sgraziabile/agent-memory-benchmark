@@ -529,4 +529,7 @@ turns:
 | 5 | IDs without `test_` prefix | ✅ |
 
 > [!NOTE]
-> For the coding-agent prompt later: the four new IDs need entries in `SCENARIO_MAP` in `scripts/reorganize_outputs.py` and `scripts/organize_datasets.py`, unless the dynamic `(theme, category)` inference from the L2 plan §5.4 has already been implemented.
+> ~~For the coding-agent prompt later: the four new IDs need entries in `SCENARIO_MAP` in `scripts/reorganize_outputs.py` and `scripts/organize_datasets.py`, unless the dynamic `(theme, category)` inference from the L2 plan §5.4 has already been implemented.~~
+> **Obsolete (2026-11-10):** both scripts were deleted. Theme/category resolution lives in
+> `core/dataset_layout.py` and is derived from each file's own path
+> (`<single_thread|multi_thread>/<theme>/<category>/`); `tests/test_dataset_layout.py` enforces it.

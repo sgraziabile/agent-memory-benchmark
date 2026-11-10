@@ -763,13 +763,7 @@ class TestScenarioLoading:
 import re
 from datetime import date, timedelta
 
-try:
-    from scripts.organize_datasets import scenario_id_from_filename
-except ImportError:  # scripts/ not importable — apply the same 2-line rule inline
-    def scenario_id_from_filename(filename: str) -> str | None:
-        if not (filename.startswith("test_") and filename.endswith(".yaml")):
-            return None
-        return filename[len("test_") : -len(".yaml")]
+from core.dataset_layout import scenario_id_from_filename
 
 
 STAGE3_IDS = [
@@ -779,25 +773,23 @@ STAGE3_IDS = [
     "in_context_derivation_01",
 ]
 
-# Nested layout: <theme>/<category>/ (the plan's flat paths are outdated).
-STAGE3_PATHS = {
-    "cross_thread_01": (
-        "datasets/conversations/retention_persistence/cross_thread/"
-        "test_cross_thread_01.yaml"
-    ),
-    "3hop_temporal_01": (
-        "datasets/conversations/compositional_reasoning/temporal_multi_hop/"
-        "test_3hop_temporal_01.yaml"
-    ),
-    "cross_thread_derived_01": (
-        "datasets/conversations/compositional_reasoning/cross_thread_derived/"
-        "test_cross_thread_derived_01.yaml"
-    ),
-    "in_context_derivation_01": (
-        "datasets/conversations/compositional_reasoning/in_context_derivation/"
-        "test_in_context_derivation_01.yaml"
-    ),
-}
+#: Scenario files are located by ID, never by a pinned path: the tree is
+#: organized as ``<single_thread|multi_thread>/<theme>/<category>/`` and a
+#: reclassification must not break these invariants.
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _scenario_path(scenario_id: str) -> Path:
+    """Return the single ``test_<id>.yaml`` file anywhere under the dataset."""
+    hits = sorted(
+        (_REPO_ROOT / "datasets" / "conversations").rglob(
+            f"test_{scenario_id}.yaml"
+        )
+    )
+    assert len(hits) == 1, (
+        f"{scenario_id}: expected exactly one dataset file, got {hits}"
+    )
+    return hits[0]
 
 # "Month D, YYYY" — used for the paired-control date parity check.
 _MONTH_DAY_YEAR_RE = re.compile(r"\b[A-Z][a-z]+ \d{1,2}, \d{4}\b")
@@ -841,9 +833,8 @@ class TestStage3Scenarios:
             )
 
     def test_id_matches_filename(self, stage3):
-        for sid, rel_path in STAGE3_PATHS.items():
-            path = self.REPO_ROOT / rel_path
-            assert path.is_file(), f"{rel_path} is missing"
+        for sid in STAGE3_IDS:
+            path = _scenario_path(sid)
             assert scenario_id_from_filename(path.name) == sid, (
                 f"id {sid!r} must equal scenario_id_from_filename({path.name!r})"
             )

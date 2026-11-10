@@ -5,6 +5,14 @@ they are chunked and appended to the active `EpisodicMemoryBackend` with
 `source="document"` **without ever invoking the chat model**. Ingestion costs
 embedding tokens only.
 
+## Where the scenarios live
+
+Scenario YAMLs live under
+`datasets/conversations/<single_thread|multi_thread>/<theme>/<category>/` — the
+thread class is derived from the number of distinct `session_id`s in the YAML.
+This directory holds only the **shared** fixtures; a scenario may still
+co-locate its own file next to its YAML, and that copy resolves first.
+
 ## Committed fixtures
 
 | File | Contents | Used by |

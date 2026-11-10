@@ -20,37 +20,32 @@ from pathlib import Path
 
 import pytest
 
+from core.dataset_layout import scenario_id_from_filename
 from core.runner import BenchmarkRunner
-
-try:
-    from scripts.organize_datasets import scenario_id_from_filename
-except ImportError:  # scripts/ not importable — apply the same 2-line rule inline
-    def scenario_id_from_filename(filename: str) -> str | None:
-        if not (filename.startswith("test_") and filename.endswith(".yaml")):
-            return None
-        return filename[len("test_") : -len(".yaml")]
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-STAGE4_PATHS = {
-    "overhead_baseline_01": (
-        "datasets/conversations/computational_cost/overhead_baseline/"
-        "test_overhead_baseline_01.yaml"
-    ),
-    "memory_injection_01": (
-        "datasets/conversations/robustness_security/memory_injection/"
-        "test_memory_injection_01.yaml"
-    ),
-    "top_k_saturation_01": (
-        "datasets/conversations/retention_persistence/top_k_saturation/"
-        "test_top_k_saturation_01.yaml"
-    ),
-    "entity_binding_01": (
-        "datasets/conversations/logical_consistency/entity_binding/"
-        "test_entity_binding_01.yaml"
-    ),
-}
+STAGE4_IDS = [
+    "overhead_baseline_01",
+    "memory_injection_01",
+    "top_k_saturation_01",
+    "entity_binding_01",
+]
+
+
+def scenario_path(scenario_id: str) -> Path:
+    """Locate ``test_<id>.yaml`` anywhere under ``datasets/conversations/``.
+
+    Pinned paths are deliberately avoided: the tree is organized as
+    ``<single_thread|multi_thread>/<theme>/<category>/`` and a
+    reclassification must not break these invariants.
+    """
+    hits = sorted(
+        (REPO_ROOT / "datasets" / "conversations").rglob(f"test_{scenario_id}.yaml")
+    )
+    assert len(hits) == 1, f"{scenario_id}: expected one file, got {hits}"
+    return hits[0]
 
 # 4.1: s1 = T1-T5 (write regime), s2 = T6-T10 (RAG-injection regime).
 OVERHEAD_SESSION_LAYOUT = {
@@ -82,7 +77,7 @@ MUST_NOT_CONTAIN_VALUES = ["poison-sink-99", "Vance", "PWNED_BY_NULL"]
 def stage4():
     """All Stage 4 scenarios, keyed by id."""
     runner = BenchmarkRunner()
-    scenarios = runner.load_scenarios(filter_ids=list(STAGE4_PATHS))
+    scenarios = runner.load_scenarios(filter_ids=STAGE4_IDS)
     return {s.id: s for s in scenarios}
 
 
@@ -110,33 +105,20 @@ def _turn_passes(response: str, rules, retrieved_ids=()) -> bool:
 
 class TestStage4Loading:
     def test_both_ids_load(self, stage4):
-        for sid in STAGE4_PATHS:
+        for sid in STAGE4_IDS:
             assert sid in stage4, (
                 f"scenario {sid!r} did not load — check for a silent "
                 f"'Skipping invalid scenario' warning"
             )
 
     def test_id_matches_filename(self, stage4):
-        for sid, rel_path in STAGE4_PATHS.items():
-            path = REPO_ROOT / rel_path
-            assert path.is_file(), f"{rel_path} is missing"
+        for sid in STAGE4_IDS:
+            path = scenario_path(sid)
             assert scenario_id_from_filename(path.name) == sid
             assert stage4[sid].id == sid
 
-    def test_registered_in_scenario_maps(self):
-        expected = {
-            "overhead_baseline_01": '("computational_cost", "overhead_baseline")',
-            "memory_injection_01": '("robustness_security", "memory_injection")',
-            "top_k_saturation_01": '("retention_persistence", "top_k_saturation")',
-            "entity_binding_01": '("logical_consistency", "entity_binding")',
-        }
-        for script in ("scripts/organize_datasets.py", "scripts/reorganize_outputs.py"):
-            text = (REPO_ROOT / script).read_text(encoding="utf-8")
-            for sid, entry in expected.items():
-                assert f'"{sid}": {entry}' in text, f"{script}: SCENARIO_MAP lacks {sid}"
-
     def test_all_turns_are_user_turns(self, stage4):
-        for sid in STAGE4_PATHS:
+        for sid in STAGE4_IDS:
             assert {t.role for t in stage4[sid].turns} == {"user"}, sid
 
 

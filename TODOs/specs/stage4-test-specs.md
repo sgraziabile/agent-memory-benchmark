@@ -1162,7 +1162,12 @@ turns:
 
 ## Implementation Checklist (when approved)
 
-1. Register the new Stage 4 scenario IDs in `SCENARIO_MAP` in [`scripts/organize_datasets.py`](file:///c:/Users/sgraz/Documents/Stefano/UNS/Tesis/agent-memory-benchmark/scripts/organize_datasets.py) and [`scripts/reorganize_outputs.py`](file:///c:/Users/sgraz/Documents/Stefano/UNS/Tesis/agent-memory-benchmark/scripts/reorganize_outputs.py):
+1. ~~Register the new Stage 4 scenario IDs in `SCENARIO_MAP`~~ — **obsolete
+   (2026-11-10).** `scripts/organize_datasets.py` and
+   `scripts/reorganize_outputs.py` were deleted: theme and category now resolve
+   from the file's own path under
+   `datasets/conversations/<single_thread|multi_thread>/<theme>/<category>/`, and
+   `tests/test_dataset_layout.py` enforces the layout. The historical mapping was:
    ```python
    "overhead_baseline_01": ("computational_cost", "overhead_baseline"),
    "memory_injection_01": ("robustness_security", "memory_injection"),
@@ -1175,8 +1180,8 @@ turns:
      --map top_k_saturation_01=retention_persistence/top_k_saturation \
      --map entity_binding_01=logical_consistency/entity_binding
    ```
-   *(If `SCENARIO_MAP` is updated first in step 1, `python scripts/add_scenario.py TODOs/specs/stage4-test-specs.md` resolves all four destinations automatically without `--map` flags.)*
+   *(All four destinations resolve automatically now: the IDs are already in the tree, so no `--map` flags are needed.)*
 3. Add offline invariant test classes (`TestTopKSaturation` and `TestEntityBinding`) in [`tests/test_stage4_scenarios.py`](file:///c:/Users/sgraz/Documents/Stefano/UNS/Tesis/agent-memory-benchmark/tests/test_stage4_scenarios.py) covering:
-   - `STAGE4_PATHS` registration and `SCENARIO_MAP` consistency across `scripts/organize_datasets.py` and `scripts/reorganize_outputs.py`.
+   - `STAGE4_IDS` loading plus the dataset-layout invariants in `tests/test_dataset_layout.py`.
    - **4.3 (`top_k_saturation_01`):** 3-session layout (`s1`: T1–T5, `s2`: T6–T10, `s3`: T11–T12), 10 competing episodes $> \text{DEFAULT\_TOP\_K}$, zero-lexical-echo paraphrase on T11/T12 (neither `"Room 3"` nor `"frozen"`/`"biological"`/`"tissue"`/`"Celsius"` nor any `"UPS-7C"` serial appears in T11/T12 user prompts), unasserted T1–T11, and 10 assertions on T12 (`must_contain: "UPS-7C42"` + 9 decoy `must_not_contain` guards).
    - **4.4 (`entity_binding_01`):** 3-session layout (`s1`: T1–T3, `s2`: T4–T5, `s3`: T6–T8), 5 pre-probe turns ($\le \text{DEFAULT\_TOP\_K}$), identical syntactic schema across T1/T3/T4, unasserted T1–T6, and symmetric paired assertions on T7 (`7443`, not `7080`/`7999`) and T8 (`7080`, not `7443`/`7999`).

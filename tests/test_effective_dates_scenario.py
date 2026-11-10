@@ -38,14 +38,21 @@ from core.schemas import BenchmarkScenario
 
 SCENARIO_ID = "document_effective_dates_01"
 CORPUS_DIR = DEFAULT_DOCUMENTS_DIR / "d16_corpus_060"
-#: The 60-document scenario whose ``documents:`` block is reused VERBATIM.
-CORPUS_SCENARIO_PATH = (
-    DEFAULT_DOCUMENTS_DIR.parent
-    / "conversations"
-    / "retrieval_limit"
-    / "document_corpus_size"
-    / "test_document_corpus_size_060_01.yaml"
-)
+def _corpus_scenario_path() -> Path:
+    """The 60-document scenario whose ``documents:`` block is reused VERBATIM.
+
+    Located by scenario ID rather than a pinned path, so a dataset re-layout
+    (``<single_thread|multi_thread>/<theme>/<category>/``) cannot break it.
+    """
+    hits = sorted(
+        (DEFAULT_DOCUMENTS_DIR.parent / "conversations").rglob(
+            "test_document_corpus_size_060_01.yaml"
+        )
+    )
+    assert len(hits) == 1, (
+        f"document_corpus_size_060_01: expected one dataset file, got {hits}"
+    )
+    return hits[0]
 
 REVISION_DOC = "revisions_pump88"
 ENTITY = "PUMP-88"
@@ -129,7 +136,7 @@ class TestScenarioShape:
 
     def test_corpus_entries_are_reused_verbatim(self, scenario):
         """The 60 document entries must be the committed D16 corpus, untouched."""
-        source = yaml.safe_load(CORPUS_SCENARIO_PATH.read_text(encoding="utf-8"))
+        source = yaml.safe_load(_corpus_scenario_path().read_text(encoding="utf-8"))
         reused = [
             (d["doc_id"], d["path"], d.get("metadata"))
             for d in source["documents"]

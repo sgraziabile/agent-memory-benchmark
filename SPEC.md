@@ -41,14 +41,12 @@ agent-memory-benchmark/
 │   └── prompts.yaml                # Banco de system prompts e invariantes epistémicas
 ├── datasets/
 │   ├── documents/                  # Corpus documental (WS-D): fixtures .md + README + generated/
-│   └── conversations/              # Casos de prueba YAML, organizados por tema
-│       ├── logical_consistency/    # belief_revision, document_revision, explicit_forget, in_context_control, negative_hallucination
-│       ├── retention_persistence/  # attrition, in_context_needle, needle_haystack, document_needle, document_dilution
-│       ├── compositional_reasoning/ # in_context_multihop, temporal_multi_hop
-│       ├── robustness_security/    # adversarial_forget, memory_injection
-│       └── computational_cost/     # pruebas de sobrecosto de latencia y tokens (P3)
+│   └── conversations/              # Casos YAML: <hilo>/<tema>/<categoría>/
+│       ├── single_thread/          # Un solo session_id (18): L0/L1 pueden responderlos
+│       └── multi_thread/           # Varios session_id (15): requieren memoria cross-thread
 ├── core/
 │   ├── __init__.py
+│   ├── dataset_layout.py            # Layout del dataset + clasificación hilo/tema/categoría
 │   ├── documents.py                # Resolución, lectura y records de documentos (WS-D)
 │   ├── model_factory.py            # Instanciador dinámico multi-proveedor (LLMs y Embeddings)
 │   ├── schemas.py                  # Modelos Pydantic y TypedDicts para Estado y Tests
@@ -68,7 +66,7 @@ agent-memory-benchmark/
 │       └── backends/               # Contrato EpisodicMemoryBackend + VectorMemoryBackend
 ├── outputs/
 │   ├── runs/                       # Resultados crudos (JSON), consolidados (CSV) y resúmenes (MD)
-│   └── by_theme/                   # Corridas reorganizadas por eje temático
+│   └── by_theme/                   # Snapshot histórico congelado (ya no se regenera)
 ├── tests/                          # Pruebas deterministas de integración del arnés (pytest)
 ├── pyproject.toml                  # Dependencias y configuración de packaging
 └── SPEC.md                         # Este documento de especificación

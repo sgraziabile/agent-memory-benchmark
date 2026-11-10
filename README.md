@@ -72,7 +72,7 @@ flowchart LR
     end
 
     subgraph data["📋 Datasets"]
-        S["Scenario YAMLs\n(27 scenarios, 5 themes)"]
+        S["Scenario YAMLs\n(33 scenarios, 6 themes,\nsingle/multi-thread)"]
     end
 
     subgraph runner["🔄 BenchmarkRunner"]
@@ -182,8 +182,11 @@ document-memory results in [`notes/`](notes/), so they are worth stating before 
 
 ## Benchmark Scenarios
 
-**27 scenarios** across five themes. The tables below document the ones cited most often; the source
-of truth is `datasets/conversations/` (`python run.py --list-scenarios`):
+**33 scenarios** across six themes, split by thread count: **18** live under
+`datasets/conversations/single_thread/` (all turns share one `session_id` — L0/L1 can answer
+them) and **15** under `datasets/conversations/multi_thread/` (several sessions — only a
+cross-thread store can answer them). The tables below document the ones cited most often; the
+source of truth is `datasets/conversations/` (`python run.py --list-scenarios`):
 
 | Scenario | Category | Turns | Difficulty | Research Question | What It Tests |
 |----------|----------|:-----:|:----------:|:-----------------:|---------------|
@@ -210,13 +213,14 @@ to) chat turns. See [`datasets/documents/README.md`](datasets/documents/README.m
 
 ### Scenario families
 
-| Theme (`datasets/conversations/…`) | Scenarios | Focus |
-|---|---:|---|
-| `logical_consistency/` | 10 | belief revision, contradictions, modus tollens, document revision, explicit forget, entity binding, hallucination control |
-| `retention_persistence/` | 8 | attrition, needle-in-haystack, document needle / dilution / cross-thread, top-k saturation |
-| `compositional_reasoning/` | 5 | multi-hop and derived-fact probes, in-context controls |
-| `robustness_security/` | 3 | adversarial forget, memory injection |
-| `computational_cost/` | 1 | P3 overhead baseline |
+| Theme (`datasets/conversations/<thread>/…`) | Scenarios | Single / Multi | Focus |
+|---|---:|---:|---|
+| `logical_consistency/` | 13 | 6 / 7 | belief revision, contradictions, modus tollens, document revision, explicit forget, entity binding, hallucination control |
+| `retention_persistence/` | 8 | 3 / 5 | attrition, needle-in-haystack, document needle / dilution / cross-thread, top-k saturation |
+| `compositional_reasoning/` | 5 | 4 / 1 | multi-hop and derived-fact probes, in-context controls |
+| `robustness_security/` | 3 | 2 / 1 | adversarial forget, memory injection |
+| `retrieval_limit/` | 3 | 3 / 0 | D16 corpus-size curve (8 / 60 / 200 documents) |
+| `computational_cost/` | 1 | 0 / 1 | P3 overhead baseline |
 
 ---
 
@@ -450,25 +454,33 @@ agent-memory-benchmark/
 │   └── schemas.py                       # Pydantic v2 contracts + LangGraph state
 ├── datasets/
 │   ├── documents/                       # WS-D document corpus + generator docs
-│   └── conversations/                   # Scenario YAMLs, organized by research theme
-│       ├── logical_consistency/         # belief_revision, document_revision, explicit_forget, ...
-│       ├── retention_persistence/       # attrition, needle_haystack, document_needle, document_dilution, ...
-│       ├── compositional_reasoning/     # in_context_multihop, temporal_multi_hop
-│       ├── robustness_security/         # adversarial_forget, memory_injection
-│       └── computational_cost/          # overhead_baseline (P3)
+│   └── conversations/                   # Scenario YAMLs: <thread>/<theme>/<category>/
+│       ├── single_thread/               # One session_id — L0/L1 can answer (18)
+│       │   ├── logical_consistency/     # belief_revision, explicit_forget, in_context_control, ...
+│       │   ├── retention_persistence/   # attrition, needle_haystack, in_context_needle
+│       │   ├── compositional_reasoning/ # in_context_multihop, temporal_multi_hop, ...
+│       │   ├── robustness_security/     # adversarial_forget
+│       │   └── retrieval_limit/         # document_corpus_size (8 / 60 / 200 docs)
+│       └── multi_thread/                # Several sessions — needs cross-thread memory (15)
+│           ├── logical_consistency/     # document_revision, entity_binding, derived_belief_revision, ...
+│           ├── retention_persistence/   # cross_thread, document_needle, document_dilution, top_k_saturation
+│           ├── compositional_reasoning/ # cross_thread_derived
+│           ├── robustness_security/     # memory_injection
+│           └── computational_cost/      # overhead_baseline (P3)
 ├── outputs/
 │   ├── runs/                            # Timestamped results (JSON + CSV + Markdown + memory/)
-│   └── by_theme/                        # Runs reorganized by theme/category (generated)
+│   └── by_theme/                        # FROZEN historical snapshot (no longer regenerated)
 ├── archive/                             # Deprecated runs kept for provenance
 ├── notes/                               # Experiment write-ups (results, caveats, next steps)
 ├── TODOs/                               # Phase plans, stress-test designs, open decisions
 ├── scripts/
 │   ├── add_scenario.py                  # Materialize YAML blocks from a stage spec
+│   ├── build_d16_scenarios.py           # Generate the D16 corpus-size scenarios
 │   ├── generate_corpus.py               # Deterministic synthetic document corpus
-│   ├── organize_datasets.py             # Reorganize scenario YAMLs by theme
-│   ├── reorganize_outputs.py            # Group runs by theme under outputs/by_theme/
+│   ├── lr_report.py                     # Chunk-level recall report across runs
 │   └── token_report.py                  # Token/latency breakdown per run
 ├── tests/                               # Harness, L2 and scenario-shape tests (no API keys)
+│   ├── test_dataset_layout.py           # Dataset tree invariants (thread/theme/category)
 │   ├── test_document_ingestion.py       # Document scenarios + ingestion
 │   ├── test_harness_m3.py               # Telemetry capture
 │   ├── test_harness_m5.py               # Backend injection and CLI flags

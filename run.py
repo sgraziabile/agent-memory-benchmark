@@ -257,7 +257,10 @@ def main() -> int:
 
     if args.list_scenarios:
         scenarios = runner.load_scenarios()
-        print("\nAvailable Scenarios (datasets/conversations/):")
+        print(
+            "\nAvailable Scenarios "
+            "(datasets/conversations/{single,multi}_thread/):"
+        )
         for sc in scenarios:
             docs = f", {len(sc.documents)} docs" if sc.documents else ""
             print(
