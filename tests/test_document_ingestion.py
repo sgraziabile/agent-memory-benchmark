@@ -723,6 +723,124 @@ class TestRetrievalAssertions:
         assert summary.failed_assertions == 1
 
 
+class TestRetrievalRecallMetric:
+    """SPEC §5.8: ``passed / declared`` ``must_retrieve_chunk`` pins."""
+
+    @staticmethod
+    def _rules():
+        return [
+            AssertionRule(type="must_contain", value="answer"),
+            AssertionRule(type="must_retrieve_chunk", value="doc_a"),
+            AssertionRule(type="must_retrieve_chunk", value="doc_b"),
+            AssertionRule(type="must_retrieve_chunk", value="doc_c"),
+            # Precision guard: must never enter the recall denominator (D3).
+            AssertionRule(type="must_not_retrieve_chunk", value="doc_decoy"),
+        ]
+
+    def test_summary_reports_rule_level_recall(self):
+        scenario = make_scenario(
+            [
+                make_turn(1, "q1", assertions=self._rules()),
+                make_turn(2, "q2", assertions=self._rules()),
+            ]
+        )
+        memories = [
+            {"chunk_id": "doc_a_c0", "source": "document"},
+            {"chunk_id": "doc_b_c0", "source": "document"},
+        ]
+
+        summary = run_scenario(RetrievalGraph(["answer", "answer"], memories), scenario)
+
+        # 3 chunk pins per turn (the text rule and the guard do not count).
+        assert summary.retrieval_assertions_total == 6
+        assert summary.retrieval_assertions_evaluated == 6
+        assert summary.retrieval_assertions_passed == 4
+        assert summary.retrieval_recall == pytest.approx(4 / 6)
+        assert summary.retrieval_recall_ci_low < summary.retrieval_recall
+        assert summary.retrieval_recall_ci_high > summary.retrieval_recall
+
+    def test_retrieve_source_rule_is_reported_separately(self):
+        """D3: a channel pin is an assertion, not a gold item."""
+        rules = [
+            AssertionRule(type="must_retrieve_chunk", value="doc_a"),
+            AssertionRule(type="must_retrieve_source", value="document"),
+        ]
+        scenario = make_scenario([make_turn(1, "q", assertions=rules)])
+
+        summary = run_scenario(
+            RetrievalGraph(
+                ["answer"], [{"chunk_id": "doc_a_c0", "source": "document"}]
+            ),
+            scenario,
+        )
+
+        assert summary.passed_assertions == 2  # both rules passed…
+        assert summary.retrieval_assertions_total == 1  # …but only one is a pin
+        assert summary.retrieval_assertions_passed == 1
+        assert summary.retrieval_recall == pytest.approx(1.0)
+
+    def test_recall_is_none_without_retrieval_pins(self):
+        """A text-only scenario is not "0 % recall"."""
+        scenario = make_scenario(
+            [
+                make_turn(
+                    1,
+                    "q",
+                    assertions=[AssertionRule(type="must_contain", value="answer")],
+                )
+            ]
+        )
+
+        summary = run_scenario(RetrievalGraph(["answer"], []), scenario)
+
+        assert summary.retrieval_assertions_total == 0
+        assert summary.retrieval_recall is None
+        assert summary.retrieval_recall_ci_low is None
+        assert summary.retrieval_recall_ci_high is None
+
+    def test_error_turn_counts_as_a_recall_miss(self):
+        """D1: the declared denominator keeps an unscored probe in the count."""
+        pin = AssertionRule(type="must_retrieve_chunk", value="doc_a")
+        scenario = make_scenario(
+            [
+                make_turn(1, "q1", assertions=[pin]),
+                make_turn(2, "q2", assertions=[pin]),
+            ]
+        )
+        memories = [{"chunk_id": "doc_a_c0", "source": "document"}]
+        # Second answer is blank -> flagged as an error turn and never scored.
+        graph = RetrievalGraph(["answer", "   "], memories)
+
+        summary = run_scenario(graph, scenario)
+
+        assert summary.error_turns == 1
+        assert summary.retrieval_assertions_total == 2
+        assert summary.retrieval_assertions_evaluated == 1
+        assert summary.retrieval_assertions_passed == 1
+        assert summary.retrieval_recall == pytest.approx(0.5)
+
+    def test_l0_style_graph_scores_zero_over_the_declared_denominator(self):
+        """No retrieval telemetry -> 0.0, never ``None`` (pins were declared)."""
+        scenario = make_scenario(
+            [
+                make_turn(
+                    1,
+                    "q",
+                    assertions=[
+                        AssertionRule(type="must_retrieve_chunk", value="doc_a")
+                    ],
+                )
+            ]
+        )
+
+        summary = run_scenario(FakeGraph(["answer"]), scenario)
+
+        assert summary.retrieval_assertions_total == 1
+        assert summary.retrieval_assertions_evaluated == 1
+        assert summary.retrieval_assertions_passed == 0
+        assert summary.retrieval_recall == pytest.approx(0.0)
+
+
 # ── Committed scenarios ──────────────────────────────────────────────────────
 
 

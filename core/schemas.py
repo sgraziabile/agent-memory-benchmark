@@ -365,6 +365,23 @@ class BenchmarkRunSummary(BaseModel):
         failed_assertions: Count of failed assertions.
         pass_rate: Fraction of assertions passed (0.0–1.0), computed over
                    successfully completed turns only.
+        retrieval_assertions_total: Positive retrieval pins declared by the
+                   scenario (``must_retrieve_chunk`` on ``user`` turns).
+                   Denominator of ``retrieval_recall``; ``0`` for scenarios
+                   without retrieval pins (L0/L1 text-only cases included).
+        retrieval_assertions_evaluated: Pins actually scored (``ok`` turns
+                   only). ``total - evaluated`` is the number of probes lost
+                   to infrastructure errors, each of which counts as a miss.
+        retrieval_assertions_passed: Pins satisfied by the turn's
+                   ``retrieved_memories`` telemetry.
+        retrieval_recall: ``retrieval_assertions_passed /
+                   retrieval_assertions_total``, or ``None`` when nothing was
+                   declared. Rule-level and document-level: each pin/turn is
+                   one unit and a sibling sub-chunk of the gold document
+                   satisfies it (see ``core.metrics`` for the three policies
+                   and ``scripts/lr_report.py`` for chunk-level ``Recall@k``).
+        retrieval_recall_ci_low: Lower bound of the Wilson 95% interval.
+        retrieval_recall_ci_high: Upper bound of the Wilson 95% interval.
         error_turns: Number of turns that failed at the infrastructure level
                      and were excluded from all metrics.
         error_rate: Fraction of turns that errored (0.0–1.0).
@@ -428,6 +445,25 @@ class BenchmarkRunSummary(BaseModel):
     passed_assertions: int = 0
     failed_assertions: int = 0
     pass_rate: float = 0.0
+    # ── Retrieval recall (positive retrieval pins; SPEC §5.8) ──────────────
+    #: Pins *declared* by the scenario (`must_retrieve_chunk` on `user` turns).
+    #: This is the denominator: an errored probe stays in it and counts as a
+    #: miss, so an infrastructure failure can never improve the metric.
+    retrieval_assertions_total: int = 0
+    #: Pins actually scored (turns with ``status == "ok"`` only). Exported so
+    #: the ``total - evaluated`` gap — probes lost to infrastructure errors —
+    #: is visible next to the rate instead of silently shrinking it.
+    retrieval_assertions_evaluated: int = 0
+    retrieval_assertions_passed: int = 0
+    #: ``passed / total`` (0.0–1.0), or ``None`` when the scenario declares no
+    #: positive retrieval pin (text-only scenarios are not "0 % recall").
+    #: Rule-level unit: one pin on one turn = one unit, so the same gold
+    #: document pinned on three turns counts three times. Document-level
+    #: (``chunk_id`` substring) — not the chunk-level ``Recall@k`` of
+    #: ``scripts/lr_report.py``.
+    retrieval_recall: float | None = None
+    retrieval_recall_ci_low: float | None = None
+    retrieval_recall_ci_high: float | None = None
     error_turns: int = 0
     error_rate: float = 0.0
     total_latency_ms: float = 0.0

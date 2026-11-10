@@ -517,6 +517,25 @@ def _print_run_report(results: list, run_dir: Path | None = None) -> None:
         if res.error_turns:
             print(f"Error Turns:  {res.error_turns} ({res.error_rate * 100:.1f}%) — excluded from metrics")
         print(f"Assertions:   {res.passed_assertions}/{res.total_assertions} passed ({pass_pct:.1f}%)")
+        if res.retrieval_assertions_total > 0:
+            recall = res.retrieval_recall or 0.0
+            ci = ""
+            if res.retrieval_recall_ci_low is not None:
+                ci = (
+                    f"  CI95 [{res.retrieval_recall_ci_low * 100:.0f}%, "
+                    f"{res.retrieval_recall_ci_high * 100:.0f}%]"
+                )
+            print(
+                f"Retrieval:    {res.retrieval_assertions_passed}/"
+                f"{res.retrieval_assertions_total} must_retrieve pins hit "
+                f"({recall * 100:.1f}%){ci}"
+            )
+            lost = res.retrieval_assertions_total - res.retrieval_assertions_evaluated
+            if lost:
+                print(
+                    f"              {lost} declared pin(s) never evaluated "
+                    "(infrastructure error) - scored as misses"
+                )
         print(f"Avg Latency:  {res.avg_latency_per_turn_ms:.1f} ms/turn")
         print(f"Total Time:   {res.total_latency_ms:.1f} ms")
         if res.total_tokens > 0:

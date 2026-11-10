@@ -344,6 +344,38 @@ Ingestion volume/cost is reported separately from chat metrics:
 `ingestion_latency_ms` (see `results.json` / `summary.csv`), and snapshot
 provenance lands in `outputs/runs/<ts>/memory/<run_id>/manifest.json`.
 
+#### Retrieval recall (`must_retrieve` assertions)
+
+Scenarios that declare `must_retrieve_chunk` assertions get a recall figure in
+every export — `passed / declared` pins, with a Wilson 95% interval:
+
+```bash
+# Per-run fields: retrieval_recall, retrieval_assertions_passed/total/evaluated
+python scripts/retrieval_recall.py --scenario-prefix document_ --verbose
+
+# Grouped CSV, including archived runs whose results.json predates the fields
+python scripts/retrieval_recall.py --csv outputs/retrieval_recall.csv
+```
+
+Runs produced **before** the fields existed can be retro-fitted in place
+(`results.json` + `summary.csv`; originals are kept as `*.bak` and a
+`retrieval_recall_backfill.json` manifest records what was used):
+
+```bash
+python scripts/backfill_retrieval_recall.py --dry-run   # report only
+python scripts/backfill_retrieval_recall.py             # write the fields
+```
+
+Three policies define the number (SPEC §5.8): the denominator is the **declared**
+pin count from the scenario YAML (an errored probe stays in it and counts as a
+miss, so infrastructure failures can never inflate recall); the unit is **one
+pin on one turn**; and only `must_retrieve_chunk` counts — `must_not_retrieve_*`
+guards and `must_retrieve_source` stay out. The ratio is **document-level**: a
+sibling sub-chunk of the gold document satisfies a pin. Chunk-level `Recall@k`
+is a different metric — see `scripts/lr_report.py`. A `!` after the figure marks
+runs whose scenario gained pins after the run: the denominator used is today's
+(larger) one, so those figures are lower bounds.
+
 Repeat a corpus for free with the opt-in ingestion-embedding cache:
 
 ```bash
@@ -478,6 +510,8 @@ agent-memory-benchmark/
 │   ├── build_d16_scenarios.py           # Generate the D16 corpus-size scenarios
 │   ├── generate_corpus.py               # Deterministic synthetic document corpus
 │   ├── lr_report.py                     # Chunk-level recall report across runs
+│   ├── retrieval_recall.py            # Assertion-level must_retrieve recall report
+│   ├── backfill_retrieval_recall.py   # Retro-fit recall fields into old runs
 │   └── token_report.py                  # Token/latency breakdown per run
 ├── tests/                               # Harness, L2 and scenario-shape tests (no API keys)
 │   ├── test_dataset_layout.py           # Dataset tree invariants (thread/theme/category)
@@ -487,6 +521,7 @@ agent-memory-benchmark/
 │   ├── test_l2_contracts.py             # EpisodeRecord + backend protocol
 │   ├── test_l2_graph.py                 # L2 graph behaviour
 │   ├── test_l2_vector_backend.py        # Chunking, ranking, telemetry
+│   ├── test_retrieval_recall.py         # Retrieval-recall metric + report
 │   ├── test_scaffolding.py              # Base agent/harness contracts
 │   ├── test_stage4_scenarios.py         # Stage 4 scenario-shape guards
 │   └── test_stage5_scenarios.py         # Stage 5 scenario-shape guards

@@ -96,6 +96,11 @@ from core.schemas import (
     TurnResult,
 )
 from core.model_factory import get_model_pricing
+from core.metrics import (
+    assertion_recall,
+    declared_retrieval_assertions,
+    recall_with_ci,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -1068,6 +1073,26 @@ class BenchmarkRunner:
         total_failed = sum(tr.assertions_failed for tr in chat_ok_turns)
         total_latency = sum(tr.latency_ms for tr in chat_ok_turns)
 
+        # ── Retrieval recall (SPEC §5.8) ───────────────────────────────────
+        # Positive retrieval pins only (``must_retrieve_chunk``): negative
+        # rules are precision guards and ``must_retrieve_source`` pins a
+        # channel, not a gold item. The denominator is the DECLARED count
+        # from the scenario YAML, not the evaluated one, so a probe lost to an
+        # infrastructure error counts as a miss instead of vanishing (the
+        # "pass_rate = 1.0 over 9 of 11 assertions" artefact, notes/ F7).
+        retrieval_total = declared_retrieval_assertions(scenario.turns)
+        retrieval_evaluated = 0
+        retrieval_passed = 0
+        for tr in chat_ok_turns:
+            turn_passed, turn_total = assertion_recall(tr.assertion_details)
+            retrieval_passed += turn_passed
+            retrieval_evaluated += turn_total
+        (
+            retrieval_recall,
+            retrieval_recall_ci_low,
+            retrieval_recall_ci_high,
+        ) = recall_with_ci(retrieval_passed, retrieval_total)
+
         # Aggregate token usage across successfully completed chat turns
         total_tokens = 0
         prompt_tokens = 0
@@ -1213,6 +1238,13 @@ class BenchmarkRunner:
             passed_assertions=total_passed,
             failed_assertions=total_failed,
             pass_rate=total_passed / total_assertions if total_assertions > 0 else 0.0,
+            # ── Retrieval recall (SPEC §5.8) ───────────────────────────
+            retrieval_assertions_total=retrieval_total,
+            retrieval_assertions_evaluated=retrieval_evaluated,
+            retrieval_assertions_passed=retrieval_passed,
+            retrieval_recall=retrieval_recall,
+            retrieval_recall_ci_low=retrieval_recall_ci_low,
+            retrieval_recall_ci_high=retrieval_recall_ci_high,
             error_turns=error_count,
             error_rate=error_count / num_turns if num_turns > 0 else 0.0,
             total_latency_ms=total_latency,
@@ -1488,6 +1520,14 @@ class BenchmarkRunner:
             "passed_assertions",
             "failed_assertions",
             "pass_rate",
+            # ── Retrieval recall (SPEC §5.8): declared denominator + rule-level
+            # unit, so an errored probe still counts in `retrieval_assertions_total`.
+            "retrieval_assertions_total",
+            "retrieval_assertions_evaluated",
+            "retrieval_assertions_passed",
+            "retrieval_recall",
+            "retrieval_recall_ci_low",
+            "retrieval_recall_ci_high",
             "error_turns",
             "error_rate",
             "total_latency_ms",
@@ -1516,7 +1556,13 @@ class BenchmarkRunner:
 
         # ── Markdown Table (immediate human-friendly preview) ─────────
         md_path = run_dir / "summary.md"
+        # Retrieval recall only makes sense when at least one run declares
+        # positive retrieval pins; text-only batches keep the legacy table.
+        # Appended last so the existing alignment rules still apply.
+        show_recall = any(s.retrieval_assertions_total > 0 for s in results)
         headers = ["Scenario", "Model", "Prompt", "Level", "Turns", "Pass Rate", "Avg Latency", "Total Tokens", "Cost (USD)", "Errors"]
+        if show_recall:
+            headers.append("Retrieval Recall")
         table_rows = []
         for summary in results:
             pass_pct = f"{summary.pass_rate * 100:.1f}%"
@@ -1527,7 +1573,7 @@ class BenchmarkRunner:
                 or summary.output_cost_per_mtok is not None
             )
             cost = f"${summary.total_cost_usd:.6f}" if priced else "N/A"
-            table_rows.append([
+            row = [
                 f"`{summary.scenario_id}`",
                 f"`{summary.model_id}`",
                 f"`{summary.prompt_id}`",
@@ -1538,7 +1584,25 @@ class BenchmarkRunner:
                 tokens,
                 cost,
                 str(summary.error_turns),
-            ])
+            ]
+            if show_recall:
+                if summary.retrieval_recall is None:
+                    row.append("N/A")
+                else:
+                    cell = (
+                        f"{summary.retrieval_assertions_passed}/"
+                        f"{summary.retrieval_assertions_total} "
+                        f"({summary.retrieval_recall * 100:.1f}%)"
+                    )
+                    # Probes lost to infrastructure errors stay in the
+                    # denominator (they count as misses) - flag the gap.
+                    if (
+                        summary.retrieval_assertions_evaluated
+                        < summary.retrieval_assertions_total
+                    ):
+                        cell += "*"
+                    row.append(cell)
+            table_rows.append(row)
 
         col_widths = [len(h) for h in headers]
         for row in table_rows:
@@ -1570,6 +1634,15 @@ class BenchmarkRunner:
                     else:
                         row_cells.append(cell.ljust(col_widths[i]))
                 fh.write("| " + " | ".join(row_cells) + " |\n")
+            if show_recall:
+                fh.write(
+                    "\n`Retrieval Recall` = passed / declared `must_retrieve_chunk` "
+                    "pins (rule-level; a sibling sub-chunk of the gold document "
+                    "satisfies a pin). `*` marks a run where at least one declared "
+                    "probe was never evaluated (infrastructure error) and counts "
+                    "as a miss. Chunk-level `Recall@k` is a different metric: "
+                    "`scripts/lr_report.py`.\n"
+                )
 
         logger.info("Exported Markdown: %s", md_path)
         logger.info("Results directory: %s", run_dir)
