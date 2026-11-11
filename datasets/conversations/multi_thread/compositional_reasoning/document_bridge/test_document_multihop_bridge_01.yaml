@@ -1,0 +1,214 @@
+# ─────────────────────────────────────────────────────────────────
+# test_document_multihop_bridge_01.yaml — Compositional retrieval
+# ─────────────────────────────────────────────────────────────────
+# One question, two documents, and no single retrieval can serve it.
+#
+#   hop 1  the probe names the asset by DESCRIPTION only
+#          ("the west-aisle cooling loop") -> asset_registry_01 maps
+#          description -> identifier (NBL-420) and holds no figure.
+#   hop 2  the identifier is the only key to the figure ->
+#          calibration_register_02 lists "NBL-420 | QMV-T3R8-4402".
+#
+# Design invariants (verified offline, see tests/):
+#   * the phrase "west-aisle cooling loop" occurs in exactly 1 chunk;
+#   * the identifier occurs in exactly 2 documents / 2 chunks;
+#   * the answer token occurs in exactly 1 chunk, corpus-wide;
+#   * the register shares no content word with the probe, so no single
+#     query reaches it: BM25 ranks it 42/42 for the composed probe and
+#     1/42 for the identifier query.
+# Therefore k cannot buy the answer: L2a at k=5 and k=15 both fail,
+# and only a second, identifier-bearing query closes the hop.
+# ─────────────────────────────────────────────────────────────────
+
+id: document_multihop_bridge_01
+name: "Document Multi-Hop Bridge (Compositional Retrieval)"
+description: >
+  The agent must answer a question whose evidence is split across two documents that
+  cannot be co-retrieved. Document one maps a spoken description to an asset identifier;
+  document two maps that identifier to the figure. The probe names only the description,
+  and the second document contains none of the probe's words, so a single retrieval — at
+  any k — can find one half but not both. L2a (one-shot) is expected to fail at k=5 and
+  at a budget-matched k=15; only an agent that issues a second, identifier-bearing query
+  can close the hop.
+category: document_bridge
+metadata:
+  difficulty: hard
+  stage: "6.5"
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  chunk_size: 1200
+  chunk_overlap: 200
+  default_top_k: 5
+  sessions: ["s1", "s2"]
+  documents_count: 14
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "partial"
+    level_4: "partial"
+  corpus_difficulty:
+    # BM25 (k1=1.5, b=0.75) over the same 1200/200 chunks, probe = T2 text.
+    # hit@5 counts probes whose FULL gold set (both hops) is retrieved.
+    lexical_baseline_hit_at_5: 0.0
+    lexical_baseline_hop1_hit_at_1: 1.0
+    lexical_baseline_hop2_hit_at_5: 0.0
+    lexical_baseline_hop2_rank_for_composed_probe: 42
+    lexical_baseline_hop2_hit_at_1_for_identifier_query: 1.0
+    method: "BM25 k1=1.5 b=0.75, chunk_size=1200/overlap=200, 42 chunks"
+  calibration:
+    hop_1_doc: asset_registry_01
+    hop_2_doc: calibration_register_02
+    documents: 14
+    chunks_measured: 42
+    unique_sentence_ratio: 1.0
+    probe_wording_identical_across_arms: true
+    expected_arms:
+      L2a_k5: "fail"
+      L2a_k15: "fail"
+      L2b_3x5: "partial"
+  target_claims:
+    - id: C1
+      subject: west-aisle cooling loop
+      predicate: asset_identifier
+      value: NBL-420
+      stated_in: asset_registry_01
+      hop: 1
+    - id: C2
+      subject: NBL-420
+      predicate: limit
+      value: QMV-T3R8-4402
+      stated_in: calibration_register_02
+      hop: 2
+  failure_taxonomy:
+    hop1_missed: "F2 — the registry chunk never reached the prompt; the description is unreadable to the retriever."
+    hop2_missed: "F2 — the registry arrived but no identifier query was issued, or the register chunk ranked outside top_k."
+    wrong_asset_read: "F3 — a sibling figure (decoy_01/decoy_02/decoy_03) was quoted; check whether the description was resolved to the wrong identifier."
+    invented_identifier: "F3 — an identifier appears in the answer that exists in no document."
+  headline_metric: >
+    Report the TURN-LEVEL verdict of T2 (all four rules) and of T3 separately.
+    T2 asserts a dependent pair: `must_contain` can only pass when both hop pins
+    pass, so one retrieval miss costs two rule units and the pooled rule-level
+    `pass_rate` reads lower than the number of failed probes. Do not compare this
+    cell's `pass_rate` across arms or levels; compare T2 turn-pass, the pin set,
+    and `retrieval_recall`.
+  in_context_twin: in_context_bridge_01
+
+
+documents:
+  - doc_id: asset_registry_01
+    path: calibration/asset_registry_01.md
+    metadata: {title: "Asset registry — Viaduct facility (excerpt)", version: "2026.02", authority: registry, published: "2026-02-10"}
+  - doc_id: calibration_register_02
+    path: calibration/calibration_register_02.md
+    metadata: {title: "Limit schedule — Viaduct facility", version: "2026.02", authority: register, published: "2026-02-10"}
+  - doc_id: decoy_01
+    path: calibration/decoy_01.md
+    metadata: {title: "Calibration record — east-aisle cooling loop", version: "2026.02", authority: maintenance, published: "2026-02-18"}
+  - doc_id: decoy_02
+    path: calibration/decoy_02.md
+    metadata: {title: "Commissioning note — north cooling loop", version: "2025.11", authority: maintenance, published: "2025-11-06"}
+  - doc_id: decoy_03
+    path: calibration/decoy_03.md
+    metadata: {title: "Air-handling inspection — rows 3 and 5", version: "2026.01", authority: maintenance, published: "2026-01-22"}
+  - doc_id: decoy_04
+    path: calibration/decoy_04.md
+    metadata: {title: "Limit schedule — Rosario facility", version: "2025.12", authority: register, published: "2025-12-03"}
+  - doc_id: bg_01
+    path: calibration/bg_01.md
+    metadata: {title: "Change-control checklist", version: "2026.01", authority: policy, published: "2026-01-09"}
+  - doc_id: bg_02
+    path: calibration/bg_02.md
+    metadata: {title: "Access control — facility policy section 3", version: "2025.10", authority: policy, published: "2025-10-14"}
+  - doc_id: bg_03
+    path: calibration/bg_03.md
+    metadata: {title: "Capacity review — Q1 memo", version: "2026.01", authority: memo, published: "2026-01-28"}
+  - doc_id: bg_04
+    path: calibration/bg_04.md
+    metadata: {title: "Incident communications template", version: "2025.08", authority: template, published: "2025-08-19"}
+  - doc_id: bg_05
+    path: calibration/bg_05.md
+    metadata: {title: "Retention and evidence policy", version: "2025.09", authority: policy, published: "2025-09-30"}
+  - doc_id: bg_06
+    path: calibration/bg_06.md
+    metadata: {title: "Secrets rotation runbook", version: "2026.02", authority: runbook, published: "2026-02-04"}
+  - doc_id: bg_07
+    path: calibration/bg_07.md
+    metadata: {title: "Facility audit — changelog", version: "2026.02", authority: changelog, published: "2026-02-17"}
+  - doc_id: bg_08
+    path: calibration/bg_08.md
+
+turns:
+  # ── s1: the corpus is ingested before turn 1 (scenario-level preload) ──
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "I have loaded the Viaduct facility documents into your document memory: the asset registry, the limit schedule, the maintenance records and the standing policies. I will ask you about them in a later session. Just confirm you have them."
+    assertions: []
+
+  # ── s2: new thread. The composed probe: both hops, one question ────────
+  - turn_number: 2
+    session_id: s2
+    role: user
+    content: "New session. What is the recorded figure for the west-aisle cooling loop?"
+    probe:
+      query_kind: semantic
+    assertions:
+      - type: must_contain
+        value: "QMV-T3R8-4402"
+      # Both halves must reach the prompt — that is the whole claim.
+      - type: must_retrieve_chunk
+        value: "asset_registry_01"
+      - type: must_retrieve_chunk
+        value: "calibration_register_02"
+      # Precision: an unrelated runbook must not pollute the window.
+      - type: must_not_retrieve_chunk
+        value: "bg_06"
+
+  # ── hop 1 in isolation: makes the two halves separately attributable ───
+  - turn_number: 3
+    session_id: s2
+    role: user
+    content: "Separate question: which asset is the west-aisle cooling loop?"
+    probe:
+      query_kind: semantic
+    assertions:
+      - type: must_contain
+        value: "NBL-420"
+      - type: must_retrieve_chunk
+        value: "asset_registry_01"
+
+  # ── single-hop control: the corpus is not globally unreadable ──────────
+  # The asserted token is "six weeks" (two words, no hyphen) because the
+  # harness matches substrings literally: an earlier "six-week" rule failed a
+  # correct answer that said "every six weeks" (run 20261111_131812) and passed
+  # the same fact in a run that happened to write "six-week" in its explanation.
+  # The probe therefore pins the answer to the worded form, so digits ("6
+  # weeks") cannot slip past the rule.
+  - turn_number: 4
+    session_id: s2
+    role: user
+    content: "How often is the facility walkthrough audit run now? Answer in words, not digits."
+    probe:
+      query_kind: semantic
+    assertions:
+      - type: must_contain
+        value: "six weeks"
+      - type: must_retrieve_chunk
+        value: "bg_07"
+
+  # ── over-disclosure guard: silence on a facility out of scope ──────────
+  - turn_number: 5
+    session_id: s2
+    role: user
+    content: "Last thing: is the Rosario facility covered by this audit? Answer yes or no."
+    probe:
+      query_kind: guard
+    assertions:
+      - type: must_not_contain
+        value: "QMV-8L5R-3301"
+      - type: must_not_contain
+        value: "TRB-902"
+
+    metadata: {title: "Escalation matrix and shift handover", version: "2025.12", authority: policy, published: "2025-12-11"}

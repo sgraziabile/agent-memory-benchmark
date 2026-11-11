@@ -112,9 +112,182 @@ L2-vs-L2b comparison has no signal:
 diagnostic that both agents face; it can land with Phase 3. The remaining two of the six build-order cells
 (`document_precision_scope_01`, `document_injection_01`) are Phase 3 by construction.
 
+### 2.1 Corpus economics for these cells (size, reuse, generation)
+
+**Size: 40–80 chunks per cell, not 60 documents.** The binding constraint is that the gold and its
+competitors must actually compete inside the `top_k` window, so chunk count should be **8–16 × top_k**
+(40–80 at `k=5`):
+
+| Chunks | What happens |
+|---|---|
+| < 25 (< 5×k) | everything fits in the window → both agents pass, no discrimination |
+| **40–80 (8–16×k)** | competition binds; the gold does not always dominate; decoys sometimes surface, so `must_not_retrieve_chunk` becomes meaningful |
+| > 200 | the failure mode becomes "gold never retrieved" (a `top_k` provisioning finding) and the competitors vanish from the window → conflict tests stop measuring conflict |
+
+Size for the **largest `k` you intend to sweep**, not just the default: your notes run `k ∈ {1, 2, 5, 8}`,
+so a cell that will also be run at `k=8` needs **65–130 chunks** (8–16 × 8) to keep the competition binding.
+If you only ever measure at `k=5`, stay at 40–80.
+
+The existing 60-document corpus is **376 chunks at `chunk_size=1200` / 880 at 600** (measured) — 5–20× more
+than a Phase-1 cell needs, and actively harmful for conflict/prevalence cells because the siblings get
+diluted out of the window.
+
+**Documents: 2–4 kB each, not 6 kB.** At `chunk_size=1200 / overlap=200` a 6 kB document yields 6.3 chunks
+(measured), so **8 documents × ~4 kB ≈ 45–60 chunks** — one eighth of the current corpus and roughly one
+minute of cold embedding. Keep `chunk_size = 1200` for the new cells (the three hand-authored revision cells
+already declare 1200; only the D16 scaling cells use 600, for comparability with their existing notes). The
+one exception is `document_split_evidence_01`, where chunk size *is* the treatment and must be declared
+explicitly.
+
+**Reuse: yes — one shared background + a per-cell claim cluster.**
+
+```
+datasets/documents/calibration/
+  shared_bg_00.md … shared_bg_07.md     # byte-identical across all cells → embedded once, cached forever
+  conflict_c01.md … conflict_c04.md     # entity namespace LOOP-*
+  bridge_c01.md … bridge_c03.md         # entity namespace RACK-*
+  prevalence_c01.md … prevalence_c06.md # entity namespace VAULT-* (5 stale copies + 1 current)
+```
+
+Three rules make reuse safe:
+
+1. **Disjoint entity namespaces per cell.** Otherwise one cell's stale copies become another cell's
+   distractors and the cells stop being independent.
+2. **Shared filler mentions no cell entity.** Otherwise the "gold entity occurs once" invariant breaks and a
+   pin can be satisfied by background text.
+3. **One `chunk_size` for every cell that shares the filler.** The embedding cache is content-addressed on
+   `sha256(model_id | dims | chunk_text)` (`core/embedding_cache.py::make_key`), so changing chunk size
+   invalidates the whole cache — freeze it per experiment.
+
+**Generation: LLM-drafted at authoring time, committed to disk; the deterministic generator only for volume
+and for the scaling curve.**
+
+| Part of the corpus | How | Why |
+|---|---|---|
+| Surrounding prose of claim-bearing documents | LLM-drafted, then reviewed and **committed as static files** | the template generator's unique-sentence ratio is 0.067 (measured); V5 wants 0.5–0.9, and exact-template prose makes retrieval solvable by token matching |
+| The claim sentences themselves | **hand-written / hand-approved** | they carry the ground truth and the assertion tokens |
+| Opaque answer tokens + bulk filler + the 8/60/200 scaling corpora | deterministic `generate_corpus.py` | byte-identical regeneration, unguessable answers, cheap volume |
+| Anything at *run* time | **never** an LLM | breaks reproducibility, the cache, and offline re-runs |
+
+**Embedding cost — the 10–15 min is paid once, not per cell.** `--embed-cache DIR` stores chunk vectors by
+content hash and the backend reuses them across runs (`embedding_cache_hits/misses` are in the telemetry, so
+confirm hits ≈ chunk count before trusting a timing). Query embeddings are deliberately *not* cached, so
+retrieval latency stays honest. Budget for the four cells:
+
+| Cell | Documents | Chunks @1200 | Cold embed | Warm |
+|---|---|---:|---:|---:|
+| shared background (once) | 8 | ~30 | ~1 min | ~0 |
+| `document_multihop_bridge_01` | +3 | ~40 total | ~1 min | ~15 s |
+| `document_conflict_dilution_01` | +4 | ~45 total | ~1 min | ~20 s |
+| `document_prevalence_trap_01` | +6 | ~50 total | ~1 min | ~25 s |
+| `document_split_evidence_01` | 2 (no shared) | 6–8 | seconds | ~0 |
+
+**Development vs measurement.** While building the L2b loop, use a 2-document smoke corpus (~6 chunks) with a
+single probe; only the measurement runs need the full cell corpus. That split — plus the cache — is where the
+`10–15 min × N` waste actually comes from. (There is no BM25/markdown backend yet: `MarkdownMemoryBackend`
+is declared *deferred* in `agents/level_2_episodic_rag/backends/__init__.py`, so the smoke corpus is the only
+cheap iteration path.)
+
+### 2.4 Built: `document_multihop_bridge_01` (as executed, 2026-11-11)
+
+The first of the three pre-L2b cells is in the tree. Measured, not estimated:
+
+| Item | Value |
+|---|---|
+| Corpus | 14 documents in `datasets/documents/calibration/` (2 012–3 022 chars each) |
+| Chunks at 1200/200 | **42** (band 35–70) |
+| Gold hop-1 chunk | `doc_asset_registry_01_c0` (rank **1** for the composed probe) |
+| Gold hop-2 chunk | `doc_calibration_register_02_c1` (rank **42/42** for the composed probe, rank **1** for `NBL-420`) |
+| Unique-sentence ratio | 1.000 (256/256) |
+| Scenario | `datasets/conversations/multi_thread/compositional_reasoning/document_bridge/test_document_multihop_bridge_01.yaml` |
+| Twin | `datasets/conversations/single_thread/compositional_reasoning/in_context_bridge/test_in_context_bridge_01.yaml` |
+| Tests | `tests/test_document_multihop_bridge_01.py` — 28 offline invariants, all green |
+
+The design lock is the register's vocabulary: it contains **none** of the probe's content words, so hop 2 is
+unreachable without the identifier at *any* `k` — this is what makes `L2a_k15` fail as well, i.e. breadth
+cannot substitute for a second query. `pytest -q` = **642 passed**; `--list-scenarios` = **35**.
+
+One deliberate edit outside the new files: `tests/test_assertion_hygiene.py` gained an H1 exemption for
+`in_context_bridge_01`, because a ceiling control necessarily contains its own answer (the ratchet already
+requires such exemptions to be justified by a `control_in_context` kind, which the twin declares).
+
+
+
 **Add the lexical-baseline test (V1) in the same pass.** If BM25 solves a cell, both agents saturate and the
 cell cannot discriminate — that check is what prevents repeating the current corpus' failure on a new budget
 line.
+
+### 2.2 These cells are not L2b-only: they are the **baseline arm** of the same experiment
+
+All three are valuable — and two of them are *primarily* L2a cells. A delta claim needs the baseline measured
+on the **same corpus, same model, same prompt, same budget**; running the new agent alone yields an
+uninterpretable number.
+
+| Cell | What L2a (one-shot) tests in it | What L2b adds |
+|---|---|---|
+| `document_conflict_dilution_01` | read-time disambiguation with **no recency/authority term** in the store (session/turn/source never score) → the canonical naive-RAG failure ("correct value attributed to the wrong sibling") | a second, entity-qualified query |
+| `document_prevalence_trap_01` | **top-k dilution**: five stale copies fill a `k=5` window → failure by dilution, not by reasoning. Needs no agentic arm at all to be a result | re-queries, which re-surface stale copies (may make it *worse*) — the shared negative control |
+| `document_multihop_bridge_01` | **capability ceiling**: can one retrieval ever co-locate both halves? | query 1 → bridge entity → query 2 |
+
+**Why the five existing chat multihop cells do not cover this** (measured):
+
+| Scenario | User turns / sessions | Retrievable pool at the last probe (L2, other sessions) | Pins | Verdict |
+|---|---|---|---:|---|
+| `in_context_multihop_01` | 1 / 1 | **0** | no | both premises in one prompt — no retrieval, no memory |
+| `temporal_multi_hop_01` | 4 / 1 | **0** (single session ⇒ `exclude_session_id` empties the pool) | no | pure checkpointer/context test |
+| `3hop_temporal_01` | 9 / 1 | **0** | no | same; also never been run (0 results in `outputs/`) |
+| `cross_thread_derived_01` | 11 / 3 | 10 | no | never been run; no pins ⇒ failure unattributable |
+| `derived_belief_revision_01` | 13 / 3 | 10 | no | **one call already carries the premise set** |
+| `backward_modus_tollens_01` | 13 / 3 | 10 | no | same |
+
+The decisive datum is in the recorded L2 runs: at `derived_belief_revision_01` T12 the retriever returned
+`['ep_s1_t5', 'ep_s2_t2', 'ep_s1_t6', 'ep_s1_t4', 'ep_s1_t3']` — the rule chunk, the revision chunk and three
+neighbours, out of a pool of ~7 usable episodes. `backward_modus_tollens_01` shows the same shape. So the
+"two-hop" is performed **in-context** by the model, not by retrieval: a single `retrieve(query, 5)` suffices,
+and no amount of agentic cleverness changes the outcome. That is why those cells test *compositional
+reasoning* (useful, and they need pins) but not *compositional retrieval*.
+
+The new document cell is the only one where the store is much larger than the window **and** the two premises
+share no vocabulary, so the composition can only happen through two queries. Cheapest complement, worth doing
+in the same sitting: add `must_retrieve_chunk` pins to `cross_thread_derived_01` (it has no runs at all) and
+cite the pair in the thesis as *reasoning vs retrieval* composition.
+
+**One-line framing:** same logic, different bottleneck. `cross_thread_derived_01` = retrieval is trivially
+sufficient, so the hop is done in-context (tests reasoning); `document_multihop_bridge_01` = retrieval is
+*insufficient by construction*, so the hop can only be closed by a second query (tests retrieval
+composition). It is not a "denser" version — density alone makes both arms fail equally; what creates the
+requirement is **window-sparsity**: store ≫ k plus vocabulary-disjoint premise chunks joined by one bridge
+token.
+
+
+
+They also serve the rest of the ladder, which is the strongest argument for building them once: L1 fails all
+three trivially ("is the answer guessable?" control), L3 is the interesting arm for conflict/prevalence (does
+reflection collapse duplicate bindings?), and L4 (defeasible logic) is the natural arm for the prevalence trap
+(majority ≠ authority).
+
+### 2.3 The budget confound — the control everyone forgets
+
+L2b with 3 calls × `k=5` sees **15 chunks**; L2a at `k=5` sees 5. Without a budget-matched arm, any L2b win is
+equally explainable as *more context*. So each cell runs **three** arms, not two:
+
+| Arm | Retrieval | Why |
+|---|---|---|
+| `L2a-5` | one call, `k=5` | the default baseline |
+| `L2a-15` | one call, `k=15` (≈ calls × k) | **the null hypothesis for agency**: "just retrieve more" |
+| `L2b-3x5` | ≤3 tool calls, `k=5` each | the agentic arm |
+
+Expected pattern, which is also the acceptance criterion for the corpus design:
+
+| Cell | L2a-5 | L2a-15 | L2b-3x5 |
+|---|---|---|---|
+| multihop bridge | fail | **fail** (gold halves must live in *separate* topical clusters, or breadth solves it) | pass if reformulation works |
+| conflict dilution | partial | **worse than k=5** (all siblings enter the window) | partial |
+| prevalence trap | fail | **worse** (more stale copies) | partial / fail |
+
+If `L2a-15` matches `L2b-3x5` on the bridge cell, the corpus is not testing agency — separate the two gold
+clusters further apart in vocabulary before trusting any L2b result.
+
 
 **Definition of done per cell** (all six, or it is not a test). Tier labels are *optional bookkeeping* — what
 must be true is that the cell discriminates:
@@ -145,8 +318,22 @@ Build order inside the agent, each step independently testable:
 5. **Failure classification** — emit F0–F4 per probe (`failure_class` on `TurnResult` when the turn declares
    pins).
 
-Then run the paired experiment: **L2 (one-shot) vs L2b (agentic), same cells, same model, same prompt, same
-`top_k`, same call budget.** Report accuracy, pins, calls/probe, tokens, latency and the F0–F4 distribution.
+Then run the paired experiment: **L2a (one-shot) vs L2b (agentic), same cells, same model, same prompt**, with
+**three arms — `L2a-5`, `L2a-15` (budget-matched one-shot: calls × k), and `L2b-3x5`** (§2.3), because a
+two-arm design cannot separate *better queries* from *more context*. Report accuracy, pins, calls/probe,
+tokens, latency and the F0–F4 distribution.
+
+**Naming — keep the ladder honest.** Your planning note proposes `level_3_agentic_rag`. Don't: in SPEC §1 and
+P2, **L3 is the semantic store (reflection / CRUD / belief revision)**, so reusing that name would put a
+*retrieval strategy* on the *memory-tier* axis and make every slide ambiguous. Register it as
+`level_2b_agentic_rag` (and add the `2b` alias so `--level 2b` resolves — `resolve_level_ids` currently only
+accepts digits). Then the demo reads "L2a vs L2b", and L3 stays reserved for CRUD.
+
+**Demo vehicle.** Do not use `in_context_multihop_01` (single turn — nothing to retrieve, so L2a and L2b are
+identical), `cross_thread_derived_01` (chat channel, no documents, no pins) or `top_k_saturation_01` (no pins,
+so "one retrieve does not suffice" is inferred, not proven). `document_multihop_bridge_01` *is* the demo
+vehicle, and it can be authored in a few hours with 8 shared + 3 cell documents (~40 chunks).
+
 
 
 ## 4. Phase 3 — widen, with the lessons in hand (3–5 days)

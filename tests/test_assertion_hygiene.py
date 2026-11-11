@@ -159,6 +159,15 @@ EXEMPT: tuple[Exemption, ...] = (
     ),
     Exemption(
         check="H1",
+        scenario="in_context_bridge_01",
+        turn=1,
+        value="QMV-T3R8-4402",
+        reason="In-context twin of the document bridge: both extracts sit inside the probe.",
+        finding="The figure is present by construction; the cell measures reading, not retrieval.",
+    ),
+
+    Exemption(
+        check="H1",
         scenario="in_context_derived_revision_01",
         turn=1,
         value="Level-1",
