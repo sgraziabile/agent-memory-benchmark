@@ -43,6 +43,15 @@ description: 'Prevalence test over the 60-document D16 corpus (d16_corpus_060). 
   BQR-485R-6500, RACK-923 -> UVA-046I-7504).'
 category: document_revision
 metadata:
+  kind: "revision"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "partial"
+    level_2: "partial"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: hard
   stage: WS-D / prevalence
   target_research_question: P2
@@ -346,6 +355,8 @@ turns:
 - turn_number: 1
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the calibration code for the cooling loop LOOP-420?
   assertions:
   - type: must_contain
@@ -372,6 +383,8 @@ turns:
 - turn_number: 5
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the current calibration code for cooling loop LOOP-420?
   assertions:
   - type: must_contain
@@ -380,6 +393,8 @@ turns:
 - turn_number: 6
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: Reply with ONLY the calibration code for cooling loop LOOP-969, nothing else.
   assertions:
   - type: must_contain
@@ -394,6 +409,8 @@ turns:
 - turn_number: 7
   session_id: s2
   role: user
+  probe:
+    query_kind: lookup
   content: New session. What is the current calibration code for cooling loop LOOP-420?
   assertions:
   - type: must_contain
@@ -405,6 +422,8 @@ turns:
 - turn_number: 8
   session_id: s2
   role: user
+  probe:
+    query_kind: lookup
   content: Reply with ONLY the calibration code for cooling loop LOOP-969, nothing else.
   assertions:
   - type: must_contain
@@ -419,6 +438,8 @@ turns:
 - turn_number: 9
   session_id: s2
   role: user
+  probe:
+    query_kind: lookup
   content: What is the provisioning code for the rack row RACK-923?
   assertions:
   - type: must_contain
@@ -430,8 +451,13 @@ turns:
 - turn_number: 10
   session_id: s3
   role: user
+  probe:
+    query_kind: lookup
   content: New session. Reply with ONLY the single current calibration code for cooling loop LOOP-420 — no explanation, no earlier or historical values, just the code that is current right now.
   assertions:
+  - type: must_not_retrieve_chunk
+    value: "corpus_000"
+    case_sensitive: false
   - type: must_contain
     value: QZX-7P4K-1180
     case_sensitive: false

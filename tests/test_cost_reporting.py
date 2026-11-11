@@ -140,9 +140,14 @@ class TestGetModelPricing:
         assert get_model_pricing("bad-model", path) == (None, None)
 
     def test_rebuilt_registry_prices_every_model(self):
-        """Every shipped chat model must declare USD unit prices."""
+        """Every shipped chat model must declare USD unit prices.
+
+        No cardinality assertion: the contract is "every shipped model is
+        priced", not "the catalog has N entries" (DIFFICULTY_AUDIT.md
+        Appendix D flagged the old ``len(registry) == 10`` as brittle).
+        """
         registry = load_model_registry()
-        assert len(registry) == 10
+        assert registry, "models.yaml ships no chat models"
         for model_id, cfg in registry.items():
             pricing = cfg.get("pricing")
             assert isinstance(pricing, dict), f"{model_id} missing pricing block"

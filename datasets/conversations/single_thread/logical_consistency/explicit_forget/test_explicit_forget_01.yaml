@@ -17,6 +17,15 @@ description: >
   disclose the revoked PIN, but must continue to retain the Employee ID.
 category: explicit_forget
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "partial"
+    level_1: "partial"
+    level_2: "n/a"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: moderate
   target_research_question: "P2"
   expected_level_0_behavior: "Trivially passes negative assertion due to amnesia, but fails recall of preserved fact"
@@ -29,6 +38,8 @@ turns:
 
   - turn_number: 2
     role: user
+    probe:
+      query_kind: semantic
     content: "Can you confirm what my Employee ID and server access PIN are?"
     assertions:
       - type: must_contain
@@ -45,6 +56,8 @@ turns:
 
   - turn_number: 4
     role: user
+    probe:
+      query_kind: semantic
     content: "What is my server access PIN?"
     assertions:
       - type: must_not_contain
@@ -53,6 +66,8 @@ turns:
 
   - turn_number: 5
     role: user
+    probe:
+      query_kind: semantic
     content: "And what is my active Employee ID?"
     assertions:
       - type: must_contain

@@ -64,10 +64,21 @@ EXPECTED_ASSERTIONS = {
     "derived_belief_revision_01": {
         "commit": [("must_contain", "Level-1"), ("must_not_contain", "Level-3")],
         "control": "Level-3",
+        "control_shape": [("must_contain", "Level-3")],
     },
     "backward_modus_tollens_01": {
-        "commit": [("must_contain", "NO_EU_CENTRAL")],
+        "commit": [
+            ("must_contain", "NO_EU_CENTRAL"),
+            # M6: the probe prints the menu, so the rejected labels are guarded.
+            ("must_not_contain", "YES_EU_CENTRAL"),
+            ("must_not_contain", "CANNOT_DETERMINE"),
+        ],
         "control": "YES_BASTION",
+        "control_shape": [
+            ("must_contain", "YES_BASTION"),
+            ("must_not_contain", "NO_BASTION"),
+            ("must_not_contain", "CANNOT_DETERMINE"),
+        ],
     },
 }
 
@@ -194,17 +205,36 @@ class TestStage5AssertionPolicy:
         for sid in STAGE5_IDS:
             rules = _turn(stage5[sid], CONTROL_TURN).assertions
             shape = [(r.type, r.value) for r in rules]
-            assert shape == [("must_contain", EXPECTED_ASSERTIONS[sid]["control"])], sid
+            assert shape == EXPECTED_ASSERTIONS[sid]["control_shape"], sid
 
-    def test_must_not_contain_only_on_5_1_commitment_turn(self, stage5):
-        hits = {
-            (sid, t.turn_number)
-            for sid in STAGE5_IDS
-            for t in stage5[sid].turns
-            for r in t.assertions
-            if r.type == "must_not_contain"
-        }
-        assert hits == {("derived_belief_revision_01", COMMITMENT_TURN)}
+    def test_negative_rules_reject_a_named_alternative(self, stage5):
+        """M6: ``must_not_contain`` names a printed label or a declared stale value.
+
+        Two legitimate targets exist: a label the probe prints (forced-choice
+        menu guard) or a value the scenario's own metadata declares as stale
+        (``stale_answer``). Nothing else may be negated.
+        """
+        for sid in STAGE5_IDS:
+            scenario = stage5[sid]
+            declared = " ".join(
+                str(value)
+                for value in scenario.metadata.values()
+                if isinstance(value, (str, list, tuple))
+            ).casefold()
+            for turn in scenario.turns:
+                for rule in turn.assertions:
+                    if rule.type != "must_not_contain":
+                        continue
+                    assert turn.turn_number in (COMMITMENT_TURN, CONTROL_TURN), (
+                        f"{sid} T{turn.turn_number}: negatives belong on the "
+                        "graded turns only"
+                    )
+                    value = rule.value.casefold()
+                    assert value in turn.content.casefold() or value in declared, (
+                        f"{sid} T{turn.turn_number}: {rule.value!r} is neither a "
+                        "printed menu label nor a value the metadata declares "
+                        "stale — a guard must name a real alternative"
+                    )
 
     def test_all_assertions_case_insensitive(self, stage5):
         for sid in STAGE5_IDS:
@@ -433,10 +463,18 @@ class TestBackwardModusTollens01:
         assert BenchmarkRunner.evaluate_assertions("I don't know.", [rule])[0]["passed"]
 
     def test_decline_gets_zero_credit(self, sc):
-        # With must_contain only, amnesic decline scores 0% cleanly.
+        """A safe decline fails the positive rule; the menu guards pass free.
+
+        Turn-level credit is ``all()``, so the emitted menu guards cannot make
+        a decline look like a partial success.
+        """
         rules = _turn(sc, COMMITMENT_TURN).assertions
-        results = BenchmarkRunner.evaluate_assertions("I don't know.", rules)
-        assert [r["passed"] for r in results] == [False]
+        passed = {
+            (r["rule_type"], r["value"]): r["passed"]
+            for r in BenchmarkRunner.evaluate_assertions("I don't know.", rules)
+        }
+        assert passed[("must_contain", "NO_EU_CENTRAL")] is False
+        assert _turn_passes("I don't know.", rules) is False
 
 
 # ── Paired single-prompt controls (5.1c and 5.4c) ────────────────────────────

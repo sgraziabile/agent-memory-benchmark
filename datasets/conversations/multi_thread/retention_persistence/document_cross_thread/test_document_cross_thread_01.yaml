@@ -31,6 +31,15 @@ description: >
   rather than the conversation being replayed.
 category: document_cross_thread
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "pass"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: moderate
   stage: "WS-D"
   defects_fixed: ["X8"]
@@ -67,8 +76,13 @@ turns:
   - turn_number: 3
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Back in a new session. Which port does the telemetry ingestion gateway listen on?"
     assertions:
+      - type: must_retrieve_chunk
+        value: "ops_handbook"
+        case_sensitive: false
       - type: must_contain
         value: "7443"
         case_sensitive: false
@@ -76,6 +90,8 @@ turns:
   - turn_number: 4
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Who is the escalation lead for the Rosario facility?"
     assertions:
       - type: must_contain
@@ -85,8 +101,13 @@ turns:
   - turn_number: 5
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "And what is the failover cluster identifier for the disaster-recovery pair?"
     assertions:
+      - type: must_retrieve_chunk
+        value: "ops_handbook"
+        case_sensitive: false
       - type: must_contain
         value: "dr-atlas-04"
         case_sensitive: false
@@ -95,8 +116,13 @@ turns:
   - turn_number: 6
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Last thing, unrelated: what is a canary release?"
     assertions:
+      - type: must_not_retrieve_chunk
+        value: "ops_handbook"
+        case_sensitive: false
       - type: must_not_contain
         value: "dr-atlas-04"
         case_sensitive: false

@@ -77,6 +77,15 @@ description: >
   pending survey, whose id exists only in the ninth document.
 category: document_dilution
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: hard
   stage: "WS-D"
   defects_fixed: ["X6", "X7", "X9", "X10"]
@@ -191,8 +200,13 @@ turns:
   - turn_number: 2
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Which UPS unit supplies power to the cold-storage medical biobank chamber?"
     assertions:
+      - type: must_not_retrieve_chunk
+        value: "power_audit_room8"
+        case_sensitive: false
       - type: must_contain
         value: "UPS-7C42"
         case_sensitive: false
@@ -203,6 +217,8 @@ turns:
   - turn_number: 3
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Which room provides the redundant conditioning loop for the cold-storage medical biobank chamber?"
     assertions:
       - type: must_contain
@@ -214,6 +230,8 @@ turns:
   - turn_number: 4
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Different room: which UPS unit serves the build fleet?"
     assertions:
       - type: must_contain
@@ -226,6 +244,8 @@ turns:
   - turn_number: 5
     session_id: s2
     role: user
+    probe:
+      query_kind: lookup
     content: "And the UPS for Room 11 — what serial does that one carry?"
     assertions:
       - type: must_not_contain
@@ -236,6 +256,8 @@ turns:
   - turn_number: 6
     session_id: s2
     role: user
+    probe:
+      query_kind: lookup
     content: "Which ticket covers the pending facilities survey for Room 11?"
     assertions:
       - type: must_contain

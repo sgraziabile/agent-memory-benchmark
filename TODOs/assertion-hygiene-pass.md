@@ -12,6 +12,24 @@ exist only as prose.
 
 **Effort:** ~2–3 h. The diagnostic below has already been run — every count is measured, not estimated.
 
+> **Status — implemented.** [`tests/test_assertion_hygiene.py`](../tests/test_assertion_hygiene.py)
+> enforces H1–H8 over all 33 YAMLs; the data edits below are in place; the `EXEMPT` ratchet fails
+> both when an entry stops being necessary and when an entry is not justified by a declared
+> control kind. Three deliberate deviations from the text above:
+>
+> 1. `probe.query_kind` accepts a third value, **`guard`**, for seed/confirmation turns whose only
+>    rules are leakage guards. Labelling those `lookup` or `semantic` would be false, and the
+>    schema plus H8 both refuse `guard` on a turn that carries a positive rule.
+> 2. H1's "fix" for forced-label probes is implemented as a **guarded-menu rule**, not a data
+>    trick: a positive token that appears in its own probe is accepted iff the same turn guards a
+>    *rejected* label that also appears in the probe (audit step M6). `backward_modus_tollens_01`
+>    therefore gained the guards and needs no exemption; only declared controls are exempt.
+> 3. H5 is enforced with no exemption. Two pins measure known context-blending behaviour rather
+>    than asserting a healthy retriever — `document_addendum_revision_01` T4 (`ep_s1_t1`, the
+>    stale in-session answer) and `document_cross_thread_01` T6 (`ops_handbook`, injected into an
+>    unrelated turn) are expected to stay red until the retriever stops mixing channels. Their
+>    failure is the finding, not a false negative.
+
 ---
 
 ## 1. The eight checks

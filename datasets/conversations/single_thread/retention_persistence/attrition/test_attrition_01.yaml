@@ -14,6 +14,15 @@ description: >
   the agent to recall the original project details.
 category: attrition
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "partial"
+    level_1: "pass"
+    level_2: "n/a"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: moderate
   distractor_turns: 6
   expected_level_0_behavior: "Likely fails — early facts may be lost without persistent memory"
@@ -30,6 +39,8 @@ turns:
 
   - turn_number: 2
     role: user
+    probe:
+      query_kind: lookup
     content: "By the way, what's the capital of Portugal?"
     assertions:
       - type: must_contain
@@ -43,6 +54,8 @@ turns:
 
   - turn_number: 4
     role: user
+    probe:
+      query_kind: lookup
     content: "What are the three primary colors in the RGB color model?"
     assertions:
       - type: must_contain
@@ -57,6 +70,8 @@ turns:
 
   - turn_number: 5
     role: user
+    probe:
+      query_kind: lookup
     content: "Who wrote the novel 'One Hundred Years of Solitude'?"
     assertions:
       - type: must_contain
@@ -65,11 +80,13 @@ turns:
 
   - turn_number: 6
     role: user
+    probe:
+      query_kind: lookup
     content: "What is the chemical symbol for gold?"
     assertions:
       - type: must_contain
         value: "Au"
-        case_sensitive: false
+        case_sensitive: true
 
   - turn_number: 7
     role: user
@@ -78,6 +95,8 @@ turns:
 
   - turn_number: 8
     role: user
+    probe:
+      query_kind: lookup
     content: >
       OK, now going back to what I told you at the very beginning —
       when does Project Falcon launch, what is its budget, and who

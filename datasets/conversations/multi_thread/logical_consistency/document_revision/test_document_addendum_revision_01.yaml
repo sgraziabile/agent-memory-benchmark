@@ -46,6 +46,15 @@ description: >
   the document.
 category: document_revision
 metadata:
+  kind: "revision"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: hard
   stage: "WS-D"
   defects_fixed: ["X1", "X2", "X3", "X4"]
@@ -71,6 +80,8 @@ turns:
   - turn_number: 1
     session_id: s1
     role: user
+    probe:
+      query_kind: semantic
     content: "According to our access policy, what approval level does a production-tier reboot require?"
     assertions:
       - type: must_contain
@@ -91,6 +102,8 @@ turns:
   - turn_number: 3
     session_id: s1
     role: user
+    probe:
+      query_kind: semantic
     content: "Remind me: what approval do production-tier reboots require now, after the addendum?"
     assertions:
       - type: must_contain
@@ -103,8 +116,13 @@ turns:
   - turn_number: 4
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "New session. Which approval level applies to production-tier reboots in the current policy?"
     assertions:
+      - type: must_not_retrieve_chunk
+        value: "ep_s1_t1"
+        case_sensitive: false
       - type: must_contain
         value: "Level-2"
         case_sensitive: false
@@ -115,6 +133,8 @@ turns:
   - turn_number: 5
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Do we have to update our runbooks for this change, and by what date?"
     assertions:
       - type: must_contain

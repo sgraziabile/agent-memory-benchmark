@@ -153,6 +153,30 @@ class DocumentSpec(BaseModel):
         return self
 
 
+class ProbeSpec(BaseModel):
+    """Machine-readable classification of a graded probe (hygiene check H8).
+
+    The L2b sequencing experiment must separate *"the agent reformulated the
+    query well"* from *"the probe handed it the key"*. Without a declared
+    query kind the two are indistinguishable in the results.
+
+    Attributes:
+        query_kind: ``lookup`` when the probe supplies the opaque identifier
+            needed to find the answer (code, serial, server name, room
+            number, forced label); ``semantic`` when it describes the
+            entity/need without that key (paraphrase, derivation, pronoun);
+            ``guard`` for a seed/confirmation turn whose only rules are
+            leakage guards — no probe is asked, so neither label fits.
+
+    Example::
+
+        probe:
+          query_kind: semantic
+    """
+
+    query_kind: Literal["lookup", "semantic", "guard"]
+
+
 class ConversationTurn(BaseModel):
     """One turn in a benchmark conversation scenario.
 
@@ -175,6 +199,9 @@ class ConversationTurn(BaseModel):
               ``source="document"`` — the chat model is never invoked.
               Resolved relative to the scenario YAML file, falling back to
               ``datasets/documents/``. Empty on ``user`` turns.
+        probe: Machine-readable probe classification (assertion-hygiene pass
+              H8, TODOs/assertion-hygiene-pass.md §1). ``None`` on
+              ungraded turns.
     """
 
     turn_number: int
@@ -183,6 +210,7 @@ class ConversationTurn(BaseModel):
     assertions: list[AssertionRule] = Field(default_factory=list)
     session_id: str = "default"
     attachments: list[str] = Field(default_factory=list)
+    probe: ProbeSpec | None = None
 
     @model_validator(mode="after")
     def _attachments_only_on_system_events(self) -> "ConversationTurn":
@@ -199,6 +227,31 @@ class ConversationTurn(BaseModel):
                 "role='system_event' turns. Declare documents under the "
                 "scenario's top-level 'documents:' key for preloads."
             )
+        return self
+
+    @model_validator(mode="after")
+    def _guard_probe_is_guard_only(self) -> "ConversationTurn":
+        """``query_kind: guard`` labels a leakage guard, not a probe.
+
+        A guard turn (a seed/confirmation turn whose only rules are
+        ``must_not_contain`` guards) does not ask for anything, so neither
+        ``lookup`` nor ``semantic`` is an honest label. Accepting ``guard``
+        only when no positive rule exists keeps the escape hatch from being
+        used to skip H8 on a real probe.
+        """
+        if self.probe is not None and self.probe.query_kind == "guard":
+            positive = [
+                rule
+                for rule in self.assertions
+                if rule.type
+                in {"must_contain", "must_retrieve_chunk", "must_retrieve_source"}
+            ]
+            if positive:
+                raise ValueError(
+                    f"Turn {self.turn_number}: probe.query_kind='guard' is "
+                    "only valid on turns whose assertions are all negative "
+                    f"(found {[rule.type for rule in positive]})."
+                )
         return self
 
 

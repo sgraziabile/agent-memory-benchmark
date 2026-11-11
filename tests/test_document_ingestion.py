@@ -1041,27 +1041,9 @@ class TestDocumentScenarios:
             for a in scope_turn.assertions
         ), "scope probe must pin the scope-note chunk"
 
-    def test_no_positive_assertion_echoes_its_own_probe(self):
-        """R10: a `must_contain` token must not appear in its own user turn.
-
-        An assertion satisfied by echoing the question measures nothing. This is
-        why ``must_contain: "Room 11"`` was rejected as an abstention check
-        (X10b): every answer, hallucinated or not, would have passed.
-        """
-        for scenario in self._load().values():
-            if not scenario.id.startswith("document_"):
-                continue
-            for turn in scenario.turns:
-                if turn.role != "user":
-                    continue
-                probe = turn.content.casefold()
-                for rule in turn.assertions:
-                    if rule.type != "must_contain":
-                        continue
-                    assert rule.value.casefold() not in probe, (
-                        f"{scenario.id} T{turn.turn_number}: assertion "
-                        f"{rule.value!r} is satisfied by the probe itself"
-                    )
+    # R10 (a positive assertion must not echo its own probe) now lives in the
+    # dataset-wide tests/test_assertion_hygiene.py::TestH1NoEcho — this file
+    # used to check only ``document_*`` scenarios.
 
     def test_documents_are_not_chat_turns(self):
         """Documents must be ingested out-of-band, never as user turns."""

@@ -36,6 +36,15 @@ description: >
   L2's top_k=5 cutoff against nine lookalike competitors.
 category: top_k_saturation
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "partial"
+    level_4: "n/a"
   difficulty: hard
   stage: "4.3"
   sessions: ["s1", "s2", "s3"]
@@ -160,6 +169,8 @@ turns:
   - turn_number: 12
     session_id: s3
     role: user
+    probe:
+      query_kind: semantic
     content: "From the inventory log entries for the March 2026 datacenter audit, what is the backup power UPS unit serial (last inspected March 2026) for the cold-storage medical biobank chamber? Reply with ONLY the exact serial, nothing else."
     assertions:
       - type: must_contain

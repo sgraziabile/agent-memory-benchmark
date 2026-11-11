@@ -30,6 +30,15 @@ description: >
   exists in no stored fact.
 category: cross_thread_derived
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: hard
   sessions: ["s1", "s2", "s3"]
   derivation: "2024-01-20 + 100 calendar days = 2024-04-29 (crosses Feb 29, 2024)"
@@ -112,6 +121,8 @@ turns:
   - turn_number: 8
     session_id: s2
     role: user
+    probe:
+      query_kind: guard
     content: "Log entry: under the Halcyon terms, delivery is due 100 calendar days after the contract signing date. Again, nothing to calculate yet. Just confirm you've noted it."
     assertions:
       - type: must_not_contain
@@ -123,6 +134,8 @@ turns:
   - turn_number: 9
     session_id: s2
     role: user
+    probe:
+      query_kind: guard
     content: "Log entry: Halcyon invoices are payable 30 days after delivery. Just confirm you've noted it."
     assertions:
       - type: must_not_contain
@@ -139,6 +152,8 @@ turns:
   - turn_number: 11
     session_id: s3
     role: user
+    probe:
+      query_kind: semantic
     content: "What's the latest date the Halcyon shipment can arrive and still be on time? Reply with the date only, in the format Month D, YYYY (for example: March 5, 2023)."
     assertions:
       - type: must_contain

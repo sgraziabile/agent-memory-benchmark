@@ -199,6 +199,30 @@ source of truth is `datasets/conversations/` (`python run.py --list-scenarios`):
 
 Each scenario is a YAML file with structured `assertions` per turn, enabling fully automated pass/fail evaluation without human judgment. Text assertions (`must_contain` / `must_not_contain`) grade the answer; retrieval assertions (`must_retrieve_chunk`, `must_not_retrieve_chunk`, `must_retrieve_source`, `must_not_retrieve_source`) grade what the retriever actually injected, so top-k dilution failures are causal rather than inferred.
 
+Every scenario also declares the contract its assertions are allowed to imply, enforced dataset-wide by [`tests/test_assertion_hygiene.py`](tests/test_assertion_hygiene.py):
+
+```yaml
+metadata:
+  kind: recall                 # recall | revision | privacy | security | scaling | control_p3 | control_in_context
+  amnesia_passes: false        # required for every accuracy cell (privacy cells set true)
+  quality_eligible: true       # false for controls and amnesia-passing privacy cells
+  expected:                    # machine-readable pass/fail matrix, levels 0-4
+    level_0: fail
+    level_1: fail
+    level_2: partial
+    level_3: n/a
+    level_4: n/a
+turns:
+  - turn_number: 11
+    role: user
+    probe:
+      query_kind: semantic     # lookup (probe hands over the key) | semantic (it describes the entity) | guard
+    content: "..."
+    assertions: [...]
+```
+
+The hygiene pass (see [`TODOs/assertion-hygiene-pass.md`](TODOs/assertion-hygiene-pass.md)) makes those declarations mandatory: a `must_contain` token may not appear in its own probe, a value shorter than three characters must be case-sensitive (or belong to a declared cost control), document cells need both a positive and a precision retrieval pin, and every asserting turn must declare its query kind so the L2b sequencing experiment can separate query reformulation from a handed-over key.
+
 ### Document-memory scenarios (plan WS-D)
 
 These scenarios ingest **documents** into memory instead of (or in addition

@@ -27,6 +27,15 @@ description: >
   the prompt states verbatim that billing-api is hosted in eu-central.
 category: in_context_control
 metadata:
+  kind: "control_in_context"
+  quality_eligible: false
+  controls: "In-context twin of backward_modus_tollens_01: separates Modus Tollens reasoning from cross-session revision."
+  expected:
+    level_0: "control"
+    level_1: "n/a"
+    level_2: "n/a"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: hard
   stage: "5.4c"
   paired_with: "backward_modus_tollens_01"
@@ -49,6 +58,8 @@ metadata:
 turns:
   - turn_number: 1
     role: user
+    probe:
+      query_kind: lookup
     content: |
       Here is the log of what I told you over our earlier sessions, in chronological order. Read it carefully:
 
@@ -64,4 +75,12 @@ turns:
     assertions:
       - type: must_contain
         value: "NO_EU_CENTRAL"
+        case_sensitive: false
+      # M6 guard, identical to the paired commitment turn: the menu is printed
+      # in the log, so the two rejected labels must be ruled out as well.
+      - type: must_not_contain
+        value: "YES_EU_CENTRAL"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "CANNOT_DETERMINE"
         case_sensitive: false
