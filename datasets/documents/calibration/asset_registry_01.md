@@ -1,4 +1,4 @@
-﻿# Asset registry — Viaduct facility (excerpt)
+# Asset registry — Viaduct facility (excerpt)
 
 The registry is the index of assets at the Viaduct facility. It answers one question: which asset am I
 looking at, and what is its identifier? Recorded values are deliberately excluded — each row names the

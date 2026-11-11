@@ -1,0 +1,279 @@
+﻿
+# ─────────────────────────────────────────────────────────────────
+# test_document_split_evidence_01.yaml — Evidence severed by a header
+# ─────────────────────────────────────────────────────────────────
+# Two exports of valve records carry no header row: the field order for
+# each family lives in a *separate* reading guide, and the two families
+# use different orders. So a record is syntactically readable and
+# semantically undecidable until the guide is read.
+#
+# This is HALF of the split-evidence pair: the DIAGNOSTIC half. The binding
+# verdict comes from `document_split_binding_01`, which asks the same kind of
+# probe with no term of art in the question and asks it FIRST in its own run.
+# They are separate scenarios because one value probe's answer hands the next
+# one the schema — measured, see failure_taxonomy.t2_leaks_the_field_order.
+# Read the pair: bound = binding-cell pass AND diagnostic-cell pass.
+#
+#   T2  "What limit does valve VLV-220 carry?   -> needs split_rows_01
+#        Reply with the code only."                AND split_legend_01
+#   T3  "Which export does VLV-331 belong to?"  -> needs the export's TITLE
+#                                                  chunk, which never ranks
+#   T4  "What order are the fields in ...?"     -> solvability control:
+#                                                  the guide IS reachable
+#
+# Turn order is not free: the format probe (T4) answers with the field order, so
+# it runs LAST. The family probe (T3) used to run after it and inherited the
+# order — measured in run 20261111_163657, where it decoded the north-riser row
+# with the third-riser order "per the field order you described earlier".
+#
+# Measured (BM25, 1200/200, 37 chunks): for T2 the rows rank 1 and the
+# guide ranks 10 of 37 — a single retrieval cannot interpret the record.
+# (The guide ranked 36/37 before T2 demanded a bare code; the word "code"
+# appears in its prose, which lifted it to 10. Still twice outside k=5.)
+# For T4 the probe that names the format reaches the guide (rank 3), so
+# the cell is solvable in two hops and impossible in one.
+#
+# T2 names "limit", which this corpus never binds to an asset, so a model may
+# legitimately read it as a pressure limit; a T2 failure is therefore diagnostic
+# only. Both value probes are strict (single token + guard on the other code),
+# because a hedge passes must_contain while certifying nothing — measured: run
+# 20261111_155622 listed both codes and passed, 20261111_154640 committed to one
+# and failed, on the same window shape.
+#
+# This is the same shape as the bridge cell but a different construct:
+# there the missing piece was an *identifier*, here it is the *schema*.
+# ─────────────────────────────────────────────────────────────────
+
+id: document_split_evidence_01
+name: "Split Evidence (Headerless Export, Field Order Elsewhere)"
+description: >
+  Two valve exports list one record per line with no header row, and the field
+  order for each family is recorded only in a separate reading guide — with the
+  two riser families deliberately ordered differently. Asked for a valve's limit,
+  the agent retrieves the record but not the guide, so the record is readable yet
+  undecidable: one of its two opaque values is the certified value and the other
+  is a test pressure, and nothing in the row says which. Answering requires either
+  recognising the ambiguity and asking a second question, or guessing at a coin
+  flip per probe.
+category: document_split
+metadata:
+  difficulty: hard
+  stage: "6.7"
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  chunk_size: 1200
+  chunk_overlap: 200
+  default_top_k: 5
+  sessions: ["s1", "s2"]
+  documents_count: 12
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "partial"
+    level_4: "partial"
+  corpus_difficulty:
+    measured_variable: "interpreting a headerless record whose field order lives in another document"
+    lexical_baseline_note: >
+      The record itself is easy to reach — the probe names the asset. The guide is
+      not: it shares no content word with the value probes, so it stays outside the
+      window unless the agent asks for the format explicitly.
+    measured_ranks_bm25:
+      note: >
+        Measured over the scenario's own document order. Ranks past the matching
+        chunks are tie-dominated (every chunk that shares no term with the probe
+        scores zero), so they are declared as bounds rather than exact values.
+      t2_probe: {rows_01_best: 1, legend_01_at_least: 8}
+      t4_probe: {legend_01_at_most: 5}
+    order_trap:
+      third-riser: "asset | certified value | test pressure | date"
+      north-riser: "asset | test pressure | certified value | date"
+      consequence: "a record read with the wrong family's order parses and reads wrongly"
+  calibration:
+    legend_doc: split_legend_01
+    export_docs: [split_rows_01, split_rows_02]
+    reused_filler: [bg_01, bg_02, bg_03, bg_04, bg_05, bg_06, bg_07, bg_08]
+    reused_decoy: decoy_01
+    documents: 12
+    chunks_measured: 37
+    expected_arms:
+      L2a_k5: "partial"
+      L2a_k15: "partial"
+      L2b_3x5: "partial"
+  target_claims:
+    - id: C1
+      subject: VLV-220
+      predicate: certified_value
+      value: KVN-4C8R-1194
+      stated_in: split_rows_01
+      decode_required: split_legend_01
+    - id: C2
+      subject: VLV-247
+      predicate: certified_value
+      value: KVN-8T2D-4417
+      stated_in: split_rows_01
+      decode_required: split_legend_01
+    - id: C3
+      subject: third-riser assembly
+      predicate: field_order
+      value: "asset identifier, certified value, test pressure, verification date"
+      stated_in: split_legend_01
+  failure_taxonomy:
+    field_misbinding: "T2 answers TST-9F2M-6630: the second code in the row was reported as the answer, so the row was read with the wrong field position. Diagnostic here, decisive in `document_split_binding_01`, because this probe names 'limit' and that one names nothing."
+    guide_unreachable: "the answer is hedged, or guesses between the two opaque values, because split_legend_01 never entered the window."
+    wrong_family: "the record was decoded with the other family's order — the trap the two families create. No longer reachable by inheritance from this cell's own format probe, which now runs last; it needs the guide in the window."
+    title_chunk_absent: "T3 cannot name the family because the only chunk carrying the export's title did not reach the window — the records arrive unattributed even though the rows themselves were retrieved. Measured in run 20261111_154640: the window held rows_02_c1/c2 and three rows_01 chunks, never rows_02_c0."
+    refused_but_retrievable: "T4 fails: the probe that names the format does not reach the guide, so the failure is plumbing, not interpretation."
+    refused_at_value_probe: "T2 refuses instead of answering: 'none of them is a limit or rating code'. Measured in run 20261111_163657 (k=15) where the guide WAS in the window (legend chunks at ranks 11 and 14) and the model listed the four field names in the CORRECT order before declining — so it had the schema and still would not map 'limit' onto it. A refusal at T2 is not evidence about field position; the binding cell decides that."
+    t2_leaks_the_field_order: "RESOLVED BY SPLITTING THE CELL. A value probe's answer contains the decode key — either the field names ('asset identifier, certified value, test pressure, verification date') or, as a bare code, the prefix of the field to report — and `graph.py` puts the prior thread history in the prompt verbatim, so a second value probe in the same thread reads the position out of its own conversation instead of the corpus. Measured at k=5 with identical retrieval windows: second probe after the first -> KVN-8T2D-4417 (PASS, twice); with the first probe removed -> TST-3M6Q-9058 (FAIL); with it in another session -> TST-3M6Q-9058 (FAIL, and the first probe's episode came back at rank 1, 0.7444, so session isolation is not a fix); asked before it -> TST-3M6Q-9058 (FAIL). Hence one value probe per scenario, asked first, and the two value probes now live in `document_split_evidence_01` and `document_split_binding_01`. Artefacts: archive/2026-11-11_document_split_t2_leak_experiment/."
+    probe_noun_ambiguous: "T2's noun is a term of art the corpus never binds to an asset ('limit' occurs only in bg_03 and bg_08, in unrelated senses), so a pressure reading of it is defensible and answering with TST-9F2M-6630 may be a field mis-binding OR the other plausible reading. Measured with the guide already in the window (run 20261111_162001, k=15, legend chunks at ranks 10 and 13): the model still answered TST-9F2M-6630 — and in 20261111_163657 it refused. Rewording was rejected because every unambiguous wording retrieves the guide (see the T2 block), so this probe stays DIAGNOSTIC and `document_split_binding_01` carries the verdict."
+  headline_metric: >
+    This cell is the DIAGNOSTIC half of the split-evidence pair; the binding
+    verdict comes from `document_split_binding_01`. Report both cells at TURN
+    level and combine them across runs — they are independent samples because
+    they run in separate memory stores. Bound = binding-cell pass AND this
+    cell's T2 pass (0.5 x 0.5 = 25% false-positive if each is a coin flip);
+    mis-bound = the binding cell answered with the pressure token; a T2 pass
+    here with a binding-cell fail is the noun reading ("limit" = pressure
+    limit), not a binding error. T3 is the family probe and needs the export's
+    title chunk, not the schema; T4 is the solvability control: if T4 fails, the
+    corpus is unreachable and none of the above is attributable to interpretation.
+
+documents:
+  - doc_id: split_legend_01
+    path: calibration/split_legend_01.md
+    metadata: {title: "Export reading guide — riser assembly extracts", version: "2026.01", authority: policy, published: "2026-01-08"}
+  - doc_id: split_rows_01
+    path: calibration/split_rows_01.md
+    metadata: {title: "Third-riser assembly export", version: "2026.01", authority: export, published: "2026-01-22"}
+  - doc_id: split_rows_02
+    path: calibration/split_rows_02.md
+    metadata: {title: "North-riser assembly export", version: "2025.11", authority: export, published: "2025-11-26"}
+  - doc_id: decoy_01
+    path: calibration/decoy_01.md
+    metadata: {title: "Calibration record — east-aisle cooling loop", version: "2026.02", authority: maintenance, published: "2026-02-18"}
+  - doc_id: bg_01
+    path: calibration/bg_01.md
+    metadata: {title: "Change-control checklist", version: "2026.01", authority: policy, published: "2026-01-09"}
+  - doc_id: bg_02
+    path: calibration/bg_02.md
+    metadata: {title: "Access control — facility policy section 3", version: "2025.10", authority: policy, published: "2025-10-14"}
+  - doc_id: bg_03
+    path: calibration/bg_03.md
+    metadata: {title: "Capacity review — Q1 memo", version: "2026.01", authority: memo, published: "2026-01-28"}
+  - doc_id: bg_04
+    path: calibration/bg_04.md
+    metadata: {title: "Incident communications template", version: "2025.08", authority: template, published: "2025-08-19"}
+  - doc_id: bg_05
+    path: calibration/bg_05.md
+    metadata: {title: "Retention and evidence policy", version: "2025.09", authority: policy, published: "2025-09-30"}
+  - doc_id: bg_06
+    path: calibration/bg_06.md
+    metadata: {title: "Secrets rotation runbook", version: "2026.02", authority: runbook, published: "2026-02-04"}
+  - doc_id: bg_07
+    path: calibration/bg_07.md
+    metadata: {title: "Facility audit — changelog", version: "2026.02", authority: changelog, published: "2026-02-17"}
+  - doc_id: bg_08
+    path: calibration/bg_08.md
+    metadata: {title: "Escalation matrix and shift handover", version: "2025.12", authority: policy, published: "2025-12-11"}
+
+turns:
+  # ── s1: corpus preloaded before turn 1 ────────────────────────────────
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "I have loaded the facility documentation into your document memory. I will ask you about it in a later session. Just confirm you have it."
+    assertions: []
+
+  # ── T2: a record that cannot be decoded from the row alone ────────────
+  # STRICT probe: single token demanded, and the other code in the row is
+  # guarded. Without the format constraint a model can list both codes and pass
+  # whether or not it knows which is which (measured: run 20261111_155622 passed
+  # this probe with the guide absent, while 20261111_154640 failed it on the same
+  # window shape — the verdict turned on the answer's form, not on knowledge).
+  #
+  # The noun stays "limit" on purpose. Naming the corpus's own field ("certified
+  # value") makes the guide rank 1 and the record only 3 for this probe — the
+  # schema would arrive with the row and the severance would dissolve. Measured:
+  #   probe                                   rows_01  legend
+  #   "limit"                        + strict     1      10
+  #   "certified value"              + strict     3       1
+  # A model may object that "limit" is not defined in the corpus (the k=15 run of
+  # 20261111_155646 did) — that objection is recorded, not prevented.
+  #
+  # Known confound, measured: with the guide IN the window the model still answered
+  # the pressure code (run 20261111_162001, k=15: legend chunks at ranks 10 and 13 of
+  # T2's window, answer "TST-9F2M-6630"). That failure is not cleanly a field
+  # mis-binding — "a valve's limit" also reads as a pressure limit. Every wording
+  # that removes the reading retrieves the guide, because the guide is the only
+  # document that distinguishes the two fields (BM25, T2 probe):
+  #   "limit"                          -> rows 1, guide 10   (severed, ambiguous)
+  #   "rating"                         -> rows 1, guide  3   (unambiguous, guide in k=5)
+  #   "certified rating"               -> rows 2, guide  1
+  #   "rating the team maintains"      -> rows 4, guide  1
+  #   "value the certifying team keeps"-> rows 9, guide  1
+  # So the severance depends on the probe being underspecified as much as on the
+  # corpus split. Accepted rather than fixed (2026-11-11): this probe stays
+  # DIAGNOSTIC, and `document_split_binding_01` carries the binding verdict with
+  # the same row shape and no term of art. See
+  # failure_taxonomy.probe_noun_ambiguous.
+  - turn_number: 2
+    session_id: s2
+    role: user
+    content: "New session. What limit does valve VLV-220 carry? Reply with the code only."
+    probe:
+      query_kind: lookup
+    assertions:
+      - type: must_contain
+        value: "KVN-4C8R-1194"
+      # Mis-binding guard: with "the code only" the other field cannot be a
+      # legitimate disclosure, so this rule is fair.
+      - type: must_not_contain
+        value: "TST-9F2M-6630"
+      - type: must_retrieve_chunk
+        value: "split_rows_01"
+      - type: must_not_retrieve_chunk
+        value: "bg_02"
+
+  # ── T3: family attribution — a third instance of the severance ────────
+  # Moved ahead of the format probe on purpose. The format probe's answer IS the
+  # field order, so any probe asked after it is handed the schema: measured in
+  # run 20261111_163657, where this probe decoded the north-riser row with the
+  # third-riser order "per the field order you described earlier" and called the
+  # block third-riser. Asked first, its verdict is its own.
+  #
+  # The family label lives ONLY in the export's first chunk ("North-riser
+  # assembly export"), while the rows live in c1/c2. A single retrieval for
+  # "which export does VLV-331 belong to" returns the row chunks and not the
+  # title, so the records arrive unattributed (measured: run 20261111_154640,
+  # where the model said the blocks "weren't titled" and asked for the label).
+  # That is the same construct as T2 — a piece of evidence in a different
+  # chunk — not a reasoning test about field positions.
+  - turn_number: 3
+    session_id: s2
+    role: user
+    content: "Which export does VLV-331 belong to?"
+    probe:
+      query_kind: semantic
+    assertions:
+      - type: must_contain
+        value: "north-riser"
+      - type: must_not_contain
+        value: "MVB-2K9P-6634"
+
+  # ── T4: solvability control — the guide is reachable when named ───────
+  # LAST on purpose: its answer is the field order, which would decode any value
+  # probe asked after it. Running it last proves the corpus is reachable while
+  # contaminating nothing.
+  - turn_number: 4
+    session_id: s2
+    role: user
+    content: "What order are the fields in for the third-riser assembly export?"
+    probe:
+      query_kind: semantic
+    assertions:
+      - type: must_contain
+        value: "certified value"
+      - type: must_retrieve_chunk
+        value: "split_legend_01"

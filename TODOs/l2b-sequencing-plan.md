@@ -233,6 +233,174 @@ and the competition gate is therefore "the window must contain the answer *and* 
 superseded record", the mirror image of the bridge's "hop 2 must be absent". `pytest -q` = **669 passed**;
 `--list-scenarios` = **36**.
 
+### 2.6 Built: `document_split_evidence_01` (as executed, 2026-11-11)
+
+Third pre-L2b cell. Same reuse discipline: the 8 `bg_*` filler documents plus **one** decoy (`decoy_01`);
+the claim cluster is new (`VLV-*` valves, two headerless exports).
+
+| Item | Value |
+|---|---|
+| Corpus | 12 documents → **37 chunks**; 3 new (`split_legend_01`, `split_rows_01`, `split_rows_02`) |
+| The severance | both exports carry **no header row** (asserted: no chunk contains a field name); the field order exists only in the reading guide |
+| The trap | the two riser families are ordered **differently** — certified value at position 2 for the third riser, position 3 for the north riser — so decoding a record with the wrong family's order parses and reads wrongly |
+| Measured (BM25) | T2: record rank **1**, guide **outside the window** (> 5) → the row is reachable but undecidable in one hop. T4 (probe names the format): guide rank **3** → solvable in two hops |
+| Probes | T2/T3 value probes on two records of the same export, T4 the format probe (runs **after** them, so the order is not carried in the thread), T5 negative-only guard |
+| Scenario | `datasets/conversations/multi_thread/compositional_reasoning/document_split/test_document_split_evidence_01.yaml` |
+| Tests | `tests/test_document_split_evidence_01.py` — 28 offline invariants, all green |
+
+**One design deviation, learned from the two earlier cells.** Severance is enforced *structurally* (the
+extractor "omits the header"; the order lives in a separate guide) instead of relying on the splitter to cut
+a table between its header and its first row. With `chunk_overlap = 200` an element that sits on a boundary
+survives in **both** chunks, so a splitter-induced severance is unreliable and would drift whenever the prose
+changed — the invariant would be an accident of text length rather than a property of the corpus.
+
+**Ranks are asserted as bounds, not exact values**: every chunk that shares no term with the probe scores
+zero, so its position is a tie broken by document order. `pytest -q` = **702 passed** (700 at build time; the
+strict probe added one invariant — see 2.7); `--list-scenarios` = **37**.
+
+### 2.7 Follow-up: the value probe was measuring answer form (R2, 2026-11-11)
+
+The first two k=5 runs of this cell disagreed by 2/9 for no reason the cell cared about:
+
+| Run | T2 answer | Old verdict |
+|---|---|---|
+| `20261111_154640` | `TST-9F2M-6630` (the test pressure) alone | FAIL |
+| `20261111_155622` | `KVN-4C8R-1194 (with TST-9F2M-6630, dated 2026-01-22)` | PASS |
+
+Both had the guide **outside** the window, so both were guessing; the only difference was whether the guess
+was committed or enumerated. `must_contain` accepts the enumeration, so the pass encoded phrasing, not
+interpretation. Fix applied: **T2 now asks for the code only and guards the other field of the row**
+(`must_not_contain TST-9F2M-6630`), while **T3 keeps its natural phrasing** so a hedge stays visible in the
+transcripts. Rule count 9 → 10. Replay of all three transcripts under the new rules: `154640` **6/10**,
+`155622` **8/10**, `155646` **8/10** — T2 now fails in every one, always on the same rule.
+
+**Rejected: naming the corpus's own field in the probe (R1).** It looks like the fairer wording, but it
+dissolves the cell. Measured BM25 for this probe:
+
+| Probe wording | rows_01 | guide |
+|---|---:|---:|
+| `"limit"` + strip note | **1** | 10 |
+| `"certified value"` + strip note | 3 | **1** |
+
+Naming the field pulls the guide to rank 1, so the schema arrives with the record and there is nothing left to
+sever. The term of art therefore stays, and the fact that a model may object to it (the k=15 run did, then
+answered correctly) is recorded rather than designed away.
+
+**Live runs under the strict probe** (deepseek-v4.1-flash, `qwen3-embedding-0.6b`, 12 documents / 37 chunks):
+
+| Arm | Run | Score | T2 | T3 | T4 | T5 |
+|---|---|---|---:|---|---|---|
+| `top_k=5` | `20261111_161728` | **6/10** | FAIL (both rules) | FAIL | PASS | FAIL (`north-riser` absent) |
+| `top_k=15` | `20261111_162001` | **6/10** | FAIL (both rules) | FAIL | PASS | FAIL (over-disclosed `MVB-2K9P-6634`) |
+
+Both arms answer `TST-9F2M-6630` alone at T2 — the format constraint works (the answer is a single token) and
+the binding is wrong. At k=15 **both guide chunks were in T2's window** (ranks 10 and 13), so that arm is not a
+retrieval failure.
+
+**But it is not a clean mis-binding either**, and this is the open issue: "a valve's limit" also reads as a
+pressure limit, and the code it chose (`TST-*`) is the pressure. Every wording that removes that reading
+retrieves the guide, because the guide is the only document that distinguishes the two fields:
+
+| T2 wording | rows_01 | guide |
+|---|---:|---:|
+| `"limit"` (current) | 1 | 10 |
+| `"rating"` | 1 | **3** |
+| `"certified rating"` | 2 | **1** |
+| `"rating the team maintains"` | 4 | **1** |
+| `"value the certifying team keeps"` | 9 | **1** |
+
+So the severance depends on the probe being underspecified as much as on the corpus split.
+
+**Decision (2026-11-11): accept it, score the pair.** Rewording was measured to dissolve the cell, so instead T3
+became the decisive probe and T2 the diagnostic one:
+
+| Probe | Question | Role |
+|---|---|---|
+| T2 | "What limit does valve VLV-220 carry? Reply with the code only." | **diagnostic** — names a term of art the corpus never binds to an asset |
+| T3 | "And valve VLV-247? Reply with the code only." | **decisive** — same row shape, names nothing, so a wrong field cannot be excused |
+
+T3 also carries the strict treatment now (single token + guard on `TST-3M6Q-9058`); while it was loose, a hedge
+passed it and it certified nothing. Rules 10 → 11. Verdict classes are read from the pair: **bound** = T3 pass
+and T2 pass; **mis-bound** = T3 answered with the pressure token; **indeterminate** = T3 pass, T2 fail (refusal or
+noun reading — one binding on a two-way choice is not evidence).
+
+**Live runs under the pair** (deepseek-v4.1-flash, `qwen3-embedding-0.6b`, 12 documents / 37 chunks):
+
+| Arm | Run | Score | T2 | T3 (decisive) | T4 | T5 | Class |
+|---|---|---|---:|---|---|---|---|
+| `top_k=5` | `20261111_163559` | **8/11** | FAIL — refused | **PASS** (bare `KVN-8T2D-4417`) | PASS | FAIL (wrong family) | indeterminate |
+| `top_k=15` | `20261111_163657` | **9/11** | FAIL — refused | **PASS** | PASS | FAIL (wrong family) | indeterminate |
+
+The T2 refusals are the cleanest evidence the confound is real. At k=15 the guide chunks were at ranks **11 and
+14** of T2's window and the model replied:
+
+> "The valve records in the documentation contain only four fields — asset identifier, certified value, test
+> pressure, and verification date — and none of them is a limit or rating code."
+
+It listed the field order *correctly* and then declined, because "limit" is not one of the corpus's field names.
+So T2 was never measuring field position in this model; it measures whether the model will accept "limit" as a
+synonym. T3, which asks the same row for the same value with no term of art, passes in both arms — so the cell's
+verdict is **indeterminate**, not "bound": one correct pick out of two candidate codes is not evidence.
+
+T5 now fails on the *family* rather than on absence, and quotes the trap in the transcript: it decoded the
+north-riser row with the third-riser order "per the field order you described earlier" (T4's own answer, carried
+in the thread) and called the block third-riser. That is the `wrong_family` class firing as designed.
+
+**Correction (same day): the k=5 T3 passes above were contamination, not luck.** The conclusion "indeterminate —
+one correct pick out of two codes" was wrong. T2's answer names the row's fields ("asset identifier, certified
+value, test pressure, verification date" at k=15; "(identifier, KVN code, TST code, and verification date)" at
+k=5), and a shared session puts that answer in T3's prompt verbatim (`graph.py:250`), so T3 read the position out
+of its own conversation. Four variants at k=5, same corpus:
+
+| Variant | T3 answer | Verdict |
+|---|---|---|
+| T2 then T3, one thread (runs `163559`, `164916`) | `KVN-8T2D-4417` | PASS |
+| T3 with the T2 turn removed | `TST-3M6Q-9058` | FAIL |
+| T3 in its own session | `TST-3M6Q-9058` | FAIL (and T2's episode `ep_s2_t1` was the rank-1 memory, 0.7444) |
+| T3 asked before T2 | `TST-3M6Q-9058` | FAIL |
+
+Recorded as `failure_taxonomy.t2_leaks_the_field_order`; artefacts in
+`archive/2026-11-11_document_split_t2_leak_experiment/`.
+
+### 2.8 Implemented: one probe per scenario (iii), and the positional default it exposed
+
+The pair is now two cells over the same 12 documents:
+
+| Cell | Rules | Role |
+|---|---:|---|
+| `document_split_binding_01` | 6 | **decisive** — one value probe, asked first, on a *north-riser* record, then the format control |
+| `document_split_evidence_01` | 8 | **diagnostic** — the "limit" probe, the family probe, then the format control last |
+
+`bound = binding pass AND diagnostic pass`, two independent runs, so a coin flip passes both with p = 0.25; the
+conjunction moved *across runs*, which is what keeps (iii) from being weaker per arm (it is weaker per run — one
+50/50 — and that is the whole reason for the second run).
+
+**The split immediately falsified the cell's claim, and the fix was the probe's target, not the corpus.** The
+isolated single-probe cell scored **6/6** at k=5 with the guide out of the window (run `171155`). The model was not
+lucky: its default is "report the second field of the line", and in the third-riser export the second field *is*
+the certified value. Measured on both families:
+
+| Probe | Row | Answer | Guide in window | Verdict |
+|---|---|---|---|---|
+| VLV-247 (third riser) | `VLV-247 \| KVN-… \| TST-… \| date` | `KVN-8T2D-4417` | no | right, wrong reason |
+| VLV-320 (north riser), k=5 | `VLV-320 \| TRQ-… \| MVB-… \| date` | `TRQ-HJZS-1262` | no | position-2 = test pressure |
+| VLV-320 (north riser), k=15 | same | `TRQ-HJZS-1262` | **yes** (ranks 10, 12) | same answer with the schema present |
+
+So the decisive probe now asks about a north-riser record (certified value third), where the positional default is
+visibly wrong. Recorded as `failure_taxonomy.positional_default` in the binding cell and pinned by
+`test_the_probe_targets_the_family_where_position_two_is_wrong`.
+
+**Numbers under the pair** (deepseek-v4.1-flash, `qwen3-embedding-0.6b`, 12 documents / 37 chunks):
+
+| Arm | `document_split_binding_01` | `document_split_evidence_01` | Class |
+|---|---|---|---|
+| k=5 | **4/6** (`171723`) — T2 `TRQ-HJZS-1262` | **5/8** (`171805`) — T2 pressure code, family probe position-2 | **mis-bound** |
+| k=15 | **4/6** (`172039`) — same answer, guide in window | **6/8** (`171852`) — T2 lists both codes (guard fails) | **mis-bound** |
+
+Read: the agent binds by position, not by schema, and the k=15 arm shows it does so with the guide retrieved. That
+is a stable, attributable failure at both cutoffs — the thing the cell was built to measure.
+
+
 
 
 
