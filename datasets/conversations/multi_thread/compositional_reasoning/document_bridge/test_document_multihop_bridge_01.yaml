@@ -144,7 +144,7 @@ turns:
   - turn_number: 1
     session_id: s1
     role: user
-    content: "I have loaded the Viaduct facility documents into your document memory: the asset registry, the limit schedule, the maintenance records and the standing policies. I will ask you about them in a later session. Just confirm you have them."
+    content: "I have loaded the Viaduct facility documentation into your document memory. I will ask you about it in a later session. Just confirm you have it."
     assertions: []
 
   # ── s2: new thread. The composed probe: both hops, one question ────────

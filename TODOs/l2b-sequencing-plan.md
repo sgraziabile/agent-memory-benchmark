@@ -211,6 +211,29 @@ One deliberate edit outside the new files: `tests/test_assertion_hygiene.py` gai
 `in_context_bridge_01`, because a ceiling control necessarily contains its own answer (the ratchet already
 requires such exemptions to be justified by a `control_in_context` kind, which the twin declares).
 
+### 2.5 Built: `document_conflict_dilution_01` (as executed, 2026-11-11)
+
+Second of the three pre-L2b cells. Reuse honoured: the 8 claim-free `bg_*` filler documents plus **one**
+decoy (`decoy_01`); the claim cluster is new (`PMP-*`, pumps on the third riser).
+
+| Item | Value |
+|---|---|
+| Corpus | 14 documents → **39 chunks** (band 35–70); 5 new + 8 reused filler + 1 reused decoy |
+| New documents | `conflict_gold_01` (PMP-310 → `HLX-2C7V-9043`), `conflict_sibling_01/02/03` (PMP-322/335/348), `conflict_superseded_01` (PMP-310 → `SWG-1F9K-5520`, June 2025) |
+| Competition, measured (BM25, T2 probe) | window at `k=5` = gold(rank **1**), superseded(**2**), siblings(**3,4,5**) — the answer is surrounded by four distractors |
+| Skeleton | identical `##` sections; only the H1 role and the asset body differ once IDs/values/roles/dates are masked; Jaccard 0.90–0.93 vs gold |
+| Probes | T2 current value (conflict + staleness), T3 paired commitment for PMP-335 with a bleed guard, T4 history of the same asset, T5 negative-only guard |
+| No-hint rule | no user turn contains a precedence cue ("superseded", "previous", "latest", "current", "revision", …); the acknowledgement turn no longer enumerates the documents, so the model cannot learn the corpus map without retrieving. Enforced by `test_no_user_turn_signals_precedence` |
+| Scenario | `datasets/conversations/multi_thread/logical_consistency/document_conflict/test_document_conflict_dilution_01.yaml` |
+| Tests | `tests/test_document_conflict_dilution_01.py` — 27 offline invariants, all green |
+
+Two differences from the bridge cell, both deliberate: the **lexical baseline is expected to identify the
+gold document** here (each probe names its identifier, so reachability is not the variable — competition is),
+and the competition gate is therefore "the window must contain the answer *and* ≥2 siblings *and* the
+superseded record", the mirror image of the bridge's "hop 2 must be absent". `pytest -q` = **669 passed**;
+`--list-scenarios` = **36**.
+
+
 
 
 **Add the lexical-baseline test (V1) in the same pass.** If BM25 solves a cell, both agents saturate and the

@@ -70,6 +70,20 @@ DOC_BAND = (12, 16)
 #: identifier. The register must stay free of them - that is hop 2's lock.
 REGISTER_FORBIDDEN = ("west", "aisle", "cooling", "loop", "figure", "recorded")
 
+#: Cues that would do the composition for the model. A probe that said "the
+#: document where the value is held" or "the latest figure" would hand over the
+#: hop the cell is measuring, so they must not appear in any user turn.
+COMPOSITION_CUES = (
+    "held in",
+    "where the value",
+    "register",
+    "schedule",
+    "supersed",
+    "latest",
+    "current",
+    "previous",
+)
+
 _TOKEN = re.compile(r"[a-z0-9]+")
 
 
@@ -274,6 +288,22 @@ class TestAssertions:
             if not turn.assertions:
                 continue
             assert turn.probe is not None, f"T{turn.turn_number} has no probe block"
+
+    def test_no_user_turn_does_the_composition_for_the_model(self, scenario):
+        """The probe must not name the second document or the precedence rule.
+
+        Saying "the limit schedule" or "the latest figure" would hand over the hop
+        this cell measures — and would also make the acknowledgement turn a map of
+        the corpus, which an agentic arm could exploit without retrieving.
+        """
+        offenders = [
+            (turn.turn_number, turn.content, cue)
+            for turn in scenario.turns
+            if turn.role == "user"
+            for cue in COMPOSITION_CUES
+            if cue in turn.content.casefold()
+        ]
+        assert not offenders, offenders
 
 
 class TestLexicalGate:
