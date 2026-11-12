@@ -29,6 +29,9 @@ outputs/runs/*
 # Derived retrieval-recall report (rebuildable: scripts/retrieval_recall.py)
 outputs/retrieval_recall.csv
 
+# Derived difficulty report (rebuildable: scripts/difficulty_report.py --csv)
+outputs/difficulty_report.csv
+
 # Ingestion-embedding cache (content-addressed, rebuildable: --embed-cache)
 outputs/embed_cache/
 
