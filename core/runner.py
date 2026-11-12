@@ -99,7 +99,10 @@ from core.model_factory import get_model_pricing
 from core.metrics import (
     assertion_recall,
     declared_retrieval_assertions,
+    mean_calls_per_probe,
+    pins_per_call,
     recall_with_ci,
+    union_retrieved_episodes,
 )
 
 logger = logging.getLogger(__name__)
@@ -194,6 +197,14 @@ def _read_l2_telemetry(result: Any) -> dict[str, Any]:
 
         "retrieved_memories": list(result.get("retrieved_memories") or []),
         "appended_chunk_ids": list(result.get("appended_chunk_ids") or []),
+        # L2b agentic retrieval (TODOs/l2b-telemetry-contract-todo.md §2.3).
+        # Guarded exactly like the channels above: L0/L1/L2a never write them,
+        # so every pre-L2b record gains these four at [] / 0 / False and its
+        # scientific fields stay byte-identical.
+        "retrieval_calls": list(result.get("retrieval_calls") or []),
+        "retrieval_call_count": int(result.get("retrieval_call_count") or 0),
+        "retrieval_skipped": bool(result.get("retrieval_skipped") or False),
+        "tool_call_cap_hit": bool(result.get("tool_call_cap_hit") or False),
     }
 
 
@@ -1015,10 +1026,18 @@ class BenchmarkRunner:
             # Retrieval telemetry is handed over so retrieval assertions
             # (``must_retrieve_chunk`` / ``*_source``) are evaluated against
             # what the agent actually retrieved this turn (plan WS-D §Q4).
+            #
+            # L2b breaks the one-retrieval-per-turn assumption: the match set is
+            # the UNION of every call in the turn, so a second call can never
+            # shadow the first. With no calls recorded the helper falls back to
+            # ``retrieved_memories`` and L2a is untouched
+            # (TODOs/l2b-telemetry-contract-todo.md §2.4).
             assertion_details = self.evaluate_assertions(
                 ai_response,
                 turn.assertions,
-                retrieved_memories=l2_tel["retrieved_memories"],
+                retrieved_memories=union_retrieved_episodes(
+                    l2_tel["retrieved_memories"], l2_tel["retrieval_calls"]
+                ),
             )
             passed = sum(1 for a in assertion_details if a["passed"])
             failed = sum(1 for a in assertion_details if not a["passed"])
@@ -1092,6 +1111,35 @@ class BenchmarkRunner:
             retrieval_recall_ci_low,
             retrieval_recall_ci_high,
         ) = recall_with_ci(retrieval_passed, retrieval_total)
+
+        # ── L2b agentic-retrieval aggregation ──────────────────────────────
+        # (TODOs/l2b-telemetry-contract-todo.md §2.4.) Call counts follow the
+        # `pass_rate` policy — ok chat turns only — because the comparison
+        # across arms happens on scored turns and an errored turn's partial
+        # loop must not dilute a per-probe rate. The efficiency denominator is
+        # the call count itself: a run that satisfied every pin in one call and
+        # a run that needed three must not read the same.
+        graded_turns = [
+            tr
+            for tr in chat_ok_turns
+            if (tr.assertions_passed + tr.assertions_failed) > 0
+        ]
+        total_tool_calls = sum(tr.retrieval_call_count for tr in chat_ok_turns)
+        calls_per_probe = mean_calls_per_probe(
+            tr.retrieval_call_count for tr in graded_turns
+        )
+        retrieval_call_efficiency = pins_per_call(
+            retrieval_passed, total_tool_calls
+        )
+        tool_call_cap_hits = sum(
+            1 for tr in chat_ok_turns if tr.tool_call_cap_hit
+        )
+        retrieving_turns = [
+            tr for tr in chat_ok_turns if tr.retrieval_call_count > 0
+        ]
+        avg_calls_per_retrieval_turn = (
+            total_tool_calls / len(retrieving_turns) if retrieving_turns else 0.0
+        )
 
         # Aggregate token usage across successfully completed chat turns
         total_tokens = 0
@@ -1245,6 +1293,12 @@ class BenchmarkRunner:
             retrieval_recall=retrieval_recall,
             retrieval_recall_ci_low=retrieval_recall_ci_low,
             retrieval_recall_ci_high=retrieval_recall_ci_high,
+            # ── L2b agentic retrieval (0 / None on L0/L1/L2a) ─────────────
+            total_tool_calls=total_tool_calls,
+            avg_calls_per_retrieval_turn=avg_calls_per_retrieval_turn,
+            tool_call_cap_hits=tool_call_cap_hits,
+            calls_per_probe=calls_per_probe,
+            retrieval_call_efficiency=retrieval_call_efficiency,
             error_turns=error_count,
             error_rate=error_count / num_turns if num_turns > 0 else 0.0,
             total_latency_ms=total_latency,

@@ -53,6 +53,21 @@ class L2AgentState(TypedDict):
         embedding_cache_misses: Ingestion chunks re-embedded this turn.
         retrieved_memories: Top-k ``RetrievedEpisode`` dicts (provenance).
         appended_chunk_ids: Chunk IDs written to the backend this turn.
+
+    L2b agentic-retrieval channels (``TODOs/l2b-telemetry-contract-todo.md``
+    §2.1). They are also per-turn overwrite channels, and an L2b graph must
+    return the **complete** per-turn list in one state update — that is what
+    makes the overwrite semantics safe without a reducer:
+
+        retrieval_calls: One dict per tool call issued this turn
+            (``call_index``, ``query``, ``k``, ``episodes``). The runner unions
+            ``episodes`` across calls to build the retrieval-assertion match
+            set, so a second call can never shadow the first.
+        retrieval_call_count: ``len(retrieval_calls)``. ``0`` is a valid,
+            terminal state ("the model chose not to retrieve"), not an error.
+        retrieval_skipped: ``True`` when the agent decided not to call the tool.
+        tool_call_cap_hit: ``True`` when the bounded loop stopped on
+            ``max_tool_calls`` rather than on the model's own decision.
     """
 
     messages: Annotated[Sequence[BaseMessage], add_messages]
@@ -66,6 +81,11 @@ class L2AgentState(TypedDict):
     embedding_cache_misses: int
     retrieved_memories: list[dict[str, Any]]
     appended_chunk_ids: list[str]
+    # ── L2b agentic retrieval (absent on L0/L1/L2a) ────────────────────────
+    retrieval_calls: list[dict[str, Any]]
+    retrieval_call_count: int
+    retrieval_skipped: bool
+    tool_call_cap_hit: bool
 
 
 
@@ -394,6 +414,13 @@ class TurnResult(BaseModel):
     embedding_latency_ms: float = 0.0
     retrieved_memories: list[dict[str, Any]] = Field(default_factory=list)
     appended_chunk_ids: list[str] = Field(default_factory=list)
+    # ── L2b agentic retrieval (0/[]/False on L0/L1/L2a) ───────────────────
+    #: One dict per tool call issued this turn. ``retrieved_memories`` above
+    #: stays the *union* of every call, so a pre-L2b reader keeps working.
+    retrieval_calls: list[dict[str, Any]] = Field(default_factory=list)
+    retrieval_call_count: int = 0
+    retrieval_skipped: bool = False
+    tool_call_cap_hit: bool = False
     # ── Plan WS-D document ingestion (0/[] for chat turns and L0/L1) ──────
     ingested_documents: list[str] = Field(default_factory=list)
     ingested_chars: int = 0
@@ -550,6 +577,22 @@ class BenchmarkRunSummary(BaseModel):
     embedding_tokens: int = 0
     embedding_cache_hits: int = 0
     embedding_cache_misses: int = 0
+    # ── L2b agentic retrieval (``TODOs/l2b-telemetry-contract-todo.md`` §2.1) ──
+    #: Tool calls summed over ok chat turns. ``0`` for L0/L1/L2a, so every
+    #: pre-L2b ``results.json`` gains these three fields at zero and nothing
+    #: else changes.
+    total_tool_calls: int = 0
+    #: ``total_tool_calls / (ok chat turns that made ≥1 call)``. ``0.0`` when no
+    #: turn retrieved, which is the honest reading of a no-tool run.
+    avg_calls_per_retrieval_turn: float = 0.0
+    #: Ok chat turns whose bounded loop stopped on ``max_tool_calls``: the
+    #: answer was produced with a truncated search, a different condition from
+    #: "the model decided to stop".
+    tool_call_cap_hits: int = 0
+    #: Mean tool calls per graded turn (``None`` when no probe was graded).
+    calls_per_probe: float | None = None
+    #: Declared positive pins satisfied per tool call (``None`` with no calls).
+    retrieval_call_efficiency: float | None = None
     # ── Plan §4.3 aggregated latency metrics ───────────────────────────────
     total_retrieval_latency_ms: float = 0.0
     total_append_latency_ms: float = 0.0

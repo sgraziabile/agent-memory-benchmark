@@ -1,13 +1,36 @@
 # TODO — Contrato de telemetría de retrieval para **L2b** (agentic naive-RAG)
 
-> **Status:** NOT STARTED — **bloqueante**: ninguna corrida de L2b es interpretable
-> antes de que esto esté congelado e implementado.
+> **Status:** ✅ IMPLEMENTED (2026-11-12) — `core/schemas.py`, `core/runner.py`,
+> `core/metrics.py`, `agents/__init__.py`; tests in `tests/test_l2b_telemetry.py`
+> (22) + the updated `tests/test_harness_m3.py` exact-dict assertion.
+> `pytest -q` = **783 passed**. Recorded in
+> `TODOs/l2b-sequencing-plan.md` §9.
 > **Origen:** `TODOs/l2b-sequencing-plan.md` §1 (Phase 0) y §0 (por qué no "L2b first").
 > **Alcance:** `core/schemas.py`, `core/runner.py`, `core/metrics.py`,
 > `agents/__init__.py`, `tests/`. Sin cambios en el corpus, en los YAML ni en
 > `_format_memory_block`.
 > **Fuera de alcance:** store-level assertions (`must_store`), set-recall,
 > aserciones numéricas — son los pasos H2/M* de `DIFFICULTY_AUDIT.md`, no este.
+
+### As shipped (2026-11-12)
+
+| Pieza | Qué quedó |
+|---|---|
+| `L2AgentState` / `TurnResult` | `retrieval_calls`, `retrieval_call_count`, `retrieval_skipped`, `tool_call_cap_hit` |
+| `BenchmarkRunSummary` | `total_tool_calls`, `avg_calls_per_retrieval_turn`, `tool_call_cap_hits`, `calls_per_probe`, `retrieval_call_efficiency` |
+| `core/metrics.py` | `union_retrieved_episodes()` (unión por `chunk_id`, primera ocurrencia gana), `pins_per_call()`, `mean_calls_per_probe()` |
+| `core/runner.py` | lectura guardada (`[]`/`0`/`False`); `evaluate_assertions` recibe la **unión** de todas las llamadas; agregados por corrida |
+| `agents/__init__.py` | `LEVEL_ALIASES = {"2b": "level_2b_agentic_rag"}` resuelto **a través** del registro → `--level 2b` falla limpio hoy y funciona el día que el agente exista |
+
+Verificación de no-regresión (criterio §3): un `results.json` L2a pre-existente
+(`20261112_132030`) valida contra el esquema nuevo y gana **solo** los campos nuevos en
+cero — `pass_rate` 0.5714, `retrieval_recall` 0.6667 y `total_tokens` 5 576 intactos.
+
+### Decisión de grafo adoptada
+
+Un solo nodo (`agent_turn_node`) con el `for` acotado adentro, devolviendo las listas
+completas del turno en un único update (§2.2). Preserva la semántica de sobrescritura y
+evita el doble conteo por checkpointer que sí tendría un ciclo con reducer.
 
 ---
 

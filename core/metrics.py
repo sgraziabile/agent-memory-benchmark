@@ -133,3 +133,97 @@ def recall_with_ci(
         return (None, None, None)
     low, high = wilson_ci(passed, total)
     return (passed / total, low, high)
+
+
+# ── L2b agentic retrieval ───────────────────────────────────────────────────
+#
+# TODOs/l2b-telemetry-contract-todo.md §2.4. Three policy decisions:
+#
+# 1. **The match set is the union of every call in the turn.** L2b issues up to
+#    `max_tool_calls` retrievals before answering; scoring only the last one
+#    would let a wasted or mis-ordered call hide the evidence it did retrieve.
+#    The union is de-duplicated by `chunk_id` keeping the FIRST occurrence, so
+#    the same chunk arriving twice does not inflate anything.
+# 2. **Calls are counted, never collapsed.** De-duplicating the *calls* would
+#    hide wasted retrievals, which are exactly what an agentic loop can make
+#    worse than a one-shot. The match set is deduped; the call count is not.
+# 3. **Efficiency is `None` with no calls**, not `0.0`, so a no-tool run is
+#    excluded from cross-arm means instead of scoring zero efficiency.
+
+
+def union_retrieved_episodes(
+    retrieved_memories: Iterable[dict[str, Any]] | None,
+    retrieval_calls: Iterable[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    """Build the retrieval-assertion match set from every call in a turn.
+
+    Args:
+        retrieved_memories: The turn's flat episode list, as L2a reports it.
+        retrieval_calls: One dict per tool call (L2b). Each entry may carry an
+            ``episodes`` list of the same episode dicts. When absent (or empty)
+            the function falls back to ``retrieved_memories``, so L2a telemetry
+            keeps working unchanged.
+
+    Returns:
+        Episodes from every call, de-duplicated by ``chunk_id`` (first wins).
+        Entries without a ``chunk_id`` are kept as-is: dropping them would
+        silently weaken ``must_retrieve_source``, which matches ``source``.
+    """
+    calls = [call for call in (retrieval_calls or []) if isinstance(call, dict)]
+    if not calls:
+        return [ep for ep in (retrieved_memories or []) if isinstance(ep, dict)]
+
+    union: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for call in calls:
+        episodes = call.get("episodes")
+        if not isinstance(episodes, list):
+            # Tolerant fallback: a call that only recorded chunk ids still
+            # contributes to `must_retrieve_chunk` (not to `*_source`).
+            episodes = [
+                {"chunk_id": chunk_id}
+                for chunk_id in (call.get("chunk_ids") or [])
+                if isinstance(chunk_id, str)
+            ]
+        for episode in episodes:
+            if not isinstance(episode, dict):
+                continue
+            chunk_id = episode.get("chunk_id")
+            if isinstance(chunk_id, str) and chunk_id:
+                if chunk_id in seen:
+                    continue
+                seen.add(chunk_id)
+            union.append(episode)
+    return union
+
+
+def pins_per_call(passed: int, calls: int) -> float | None:
+    """Retrieval-call efficiency: positive pins satisfied per call made.
+
+    Args:
+        passed: Declared positive pins satisfied this run.
+        calls: Tool calls made this run.
+
+    Returns:
+        ``passed / calls``, or ``None`` when no call was made — a no-tool run
+        has undefined efficiency, not zero.
+    """
+    if calls <= 0:
+        return None
+    return passed / calls
+
+
+def mean_calls_per_probe(call_counts: Iterable[int]) -> float | None:
+    """Average tool calls per probe.
+
+    Args:
+        call_counts: One entry per graded probe (a turn declaring at least one
+            positive assertion), holding that turn's ``retrieval_call_count``.
+
+    Returns:
+        The arithmetic mean, or ``None`` when there are no probes.
+    """
+    counts = [int(count) for count in call_counts]
+    if not counts:
+        return None
+    return sum(counts) / len(counts)

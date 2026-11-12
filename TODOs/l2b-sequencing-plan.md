@@ -595,4 +595,180 @@ machinery that later supports `must_store`, packaging and provenance ablations. 
 building L2b first costs the same agent code plus a *second* pass over the telemetry, plus a corpus rewrite
 on top — which is why the contract-first slice is also the shortest path.
 
+---
+
+## 9. Status 2026-11-12 — Phase 0 shipped, plus the assertion fixes
+
+### 9.1 Phase 0 (the contract) — **DONE**
+
+`TODOs/l2b-telemetry-contract-todo.md` is implemented. What landed:
+
+| File | Change |
+|---|---|
+| `core/schemas.py` | `L2AgentState` + `TurnResult` gained `retrieval_calls`, `retrieval_call_count`, `retrieval_skipped`, `tool_call_cap_hit`. `BenchmarkRunSummary` gained `total_tool_calls`, `avg_calls_per_retrieval_turn`, `tool_call_cap_hits`, `calls_per_probe`, `retrieval_call_efficiency`. |
+| `core/metrics.py` | `union_retrieved_episodes()` (the match-set policy), `pins_per_call()`, `mean_calls_per_probe()`. |
+| `core/runner.py` | `_read_l2_telemetry` reads the four channels guarded (absent ⇒ `[]`/`0`/`False`); `evaluate_assertions` now receives the **union** of every call; the summary aggregates calls, cap hits and efficiency. |
+| `agents/__init__.py` | `LEVEL_ALIASES = {"2b": "level_2b_agentic_rag"}` resolved *through* `AGENT_REGISTRY`, so `--level 2b` fails cleanly today and works the moment the agent is registered. `_available_levels()` lists it as `2b`. |
+| `tests/test_l2b_telemetry.py` | 22 tests: guarded reads, union across first/last call, dedup-by-chunk_id, tolerant `chunk_ids` fallback, no-tool = `None` efficiency, alias resolution. |
+
+`pytest -q` = **783 passed**. The three policy decisions encoded (and tested) are union matching,
+counted-not-collapsed calls, and `None`-not-`0.0` efficiency.
+
+### 9.2 The three pre-L2b cells — assertion fixes
+
+Two pins were **rewritten** and one **added**; one cell was deliberately left alone.
+
+| Cell | Change | Why |
+|---|---|---|
+| `document_multihop_bridge_01` | T2 hops → `asset_registry_01_c0` / `calibration_register_02_c1` | the document-level pin was satisfied by a **145-char header chunk** with no figure (`calibration_register_02` splits to `[145, 1113, 759]`). Count unchanged (4), so no denominator arithmetic moved. |
+| `document_split_binding_01` | T2 also pins `split_legend_01` (2 → 3 declared) | the row cannot certify the probe; pinning only the row read **8/8 = 100 % recall while T2 failed 16/24**. |
+| `document_split_evidence_01` | **unchanged** | the absent guide *is* the construct (`failure_taxonomy.guide_unreachable`); the ratchet `test_the_guide_probe_runs_after_the_value_probes` forbids it. Locked by a new test so it cannot be re-pinned by accident. |
+
+**Measured effect (run `20261112_132030`, k=5):** pass 4/7 = 57.1 %, recall **2/3 = 66.7 %**, with the T2
+retrieval window **byte-identical** to the pre-edit run `20261111_192203`. The agent did not change; the
+metric did. `retrieval_recall.py --scenario-prefix document_split` now separates the arms on its own:
+
+```
+document_split_binding_01  k=5   3 runs  hit 6  pins 7   85.7%   (2 old 2-pin runs + 1 new 3-pin run)
+document_split_binding_01  k=15  2 runs  hit 4  pins 4  100.0%   <- the guide is in-window at k=15
+```
+
+### 9.3 Three corrections to this plan's own expectations
+
+1. **`document_split_binding_01` is not a 3-arm discriminator.** Its `failure_taxonomy.field_misbinding`
+   already records the guide at **ranks 10 and 12 at k=15**, and §9.2's report confirms 4/4 pins there.
+   Breadth substitutes for the second call. The pin buys **attribution** (`recall 1/2` ⇒ schema absent,
+   `2/2` + fail ⇒ misread), not a k15-proof bridge.
+2. **`document_conflict_dilution_01` is saturated** (18/18 assertions, 6/6 pins, gold at rank 1). It is a
+   *precision* cell, where L2b can only lose. Do not use it as the L2b evidence.
+3. **Therefore exactly one cell carries the agency claim: `document_multihop_bridge_01`** (hop 2 at rank
+   42/42, 0/15 retrieved slots in the pilot matrix). It is also the only one with a ceiling twin
+   (`in_context_bridge_01`).
+
+### 9.4 What remains
+
+| Phase | State | Blocker |
+|---|---|---|
+| 0 — contract | ✅ done | — |
+| 1 — 4 cells | ✅ all four in the tree | cells 2–3 are **not** L2b discriminators (§9.3) |
+| 1b — L0/L1 baselines | ⬜ not run | 18/19 multihilo cells have no measured amnesia baseline; cheapest fix after the contract |
+| 2 — L2b agent | ⬜ next | the contract is frozen, so runs made from here are comparable |
+| 3 — widen (D3, M9 generator, numeric/`must_store` assertions) | ⬜ **after** Phase 2 — see §10–11 | needs the agent's failure modes |
+
+---
+
+## 10. Phase 3 (detail) — the D3 real-document corpus arm
+
+`DIFFICULTY_AUDIT.md` §A5 and the multihilo difficulty report land on the same gap: **0 of 19 cells satisfy
+FEB-30's D3 requirement of facts injected into *real human* documents** (~90 % authentic foreign text). The
+60-document corpus is 3 159 sentences of which 212 are unique (**6.7 %**) — the inverse of what D3 asks. §2.3
+proposes LLM-drafted static prose, which fixes the ratio but not the criticism (*"the noise is still
+model-generated"*).
+
+### 10.1 What a real document buys for free
+
+| D3 needs | How it is faked today | What an authentic document gives |
+|---|---|---|
+| lexical near-duplicates | 5 hand-written skeletons (Jaccard 0.90–0.93) | **real tables**: 20–40 authentic rows of identical shape |
+| supersession with authority | invented precedence rules | **real structures**: USPTO certificates of correction, CFR "as amended at 55 FR …" |
+| human register | ~14 sentence templates | 100 % human by construction |
+
+**Corollary: never invent the noise — choose a document whose noise already works, and inject the fact
+where the real document already has competition (inside a table), not in a loose paragraph.**
+
+### 10.2 The four candidate cells
+
+| # | Cell | Real host | Injection | Inference required | Metric |
+|--:|---|---|---|---|---|
+| D3-1 | **real table** — cheapest, and adds table extraction, a mode untested today | 1 PD document with 20–40 homogeneous rows | **1 row** with the opaque token | the body names the row by *description* → resolve description→row→value among 40 real rows | `must_contain` + 3–4 `must_not_contain` on neighbouring rows + chunk pin |
+| D3-4 | **cross-domain bridge** — highest value: a *replication* of `document_multihop_bridge_01` in D3 | 2 PD documents from different domains with a real cross-reference | identifier in A, figure in B; **B shares no probe word** | 2-hop composition | 2 pins on the same probe |
+| D3-2 | **certificate of correction** — real supersession, zero fabricated authority | real patent + its real USPTO Certificate of Correction | the correctable constant + its correction line | must know the certificate supersedes | both chunks pinned + `must_contain` corrected + `must_not_contain` original |
+| D3-3 | **patent family** — real near-duplicates (parent + continuations share 80–95 %) | 3–4 same-family patents | the paragraph that *differs* | which member is in force / which figure applies | per-document pins + sibling guards |
+
+Build order: **D3-1 → D3-4 → D3-2 → D3-3**.
+
+### 10.3 Source families (all legally modifiable)
+
+| Family | Licence | Native text | Risk |
+|---|---|---|---|
+| USPTO patents (full-text HTML) | public domain | ✅ | family = long documents → volume `>D3` |
+| eCFR / Federal Register | US Government work (17 U.S.C. § 105) | ✅ XML/HTML | heavy cross-jargon between sections |
+| NIST SP 800 / NASA TM | US Government work | ⚠️ PDF extraction | **PDF is the main operational risk** |
+| Gutenberg | text is PD, the eBook carries terms | ✅ txt | strip the boilerplate |
+| RFC (IETF) | reproduce **unmodified** only | ✅ txt | **modifying may breach the licence → discard for injection** |
+
+**Recommendation: patents + eCFR**, both text-native and unambiguously modifiable. No PDFs in the first
+iteration: extraction will cost more than the cell.
+
+### 10.4 Injection protocol (verisimilitude is what makes it D3 or a fake)
+
+1. Freeze the source: URL, retrieval date, licence basis and `sha256` in `PROVENANCE.md`. Commit the
+   **diff** of the injection — a reviewer must be able to see what is authentic without reading the YAML.
+2. ≤10 % of the document's tokens, **one injected unit per document** (a row, a paragraph, a certificate line).
+3. Never at the start of a section or next to a heading (models use heading proximity as a cue).
+4. Never across a chunk boundary: the token must land in exactly one chunk.
+5. Imitate the register: hard-wrap width, quote/dash style, date and citation format of the host.
+6. **Tell detector:** every word of ≥6 letters in the injected text must also occur in the host's authentic
+   text, except the opaque token. A word that exists only in the injected paragraph gives the injection away.
+
+### 10.5 The D3 admission gate — six measurable criteria
+
+Without these, "real documents" is a vibe. A new cell must fail the build if it does not comply:
+
+| # | Criterion | Gate | How it is tested |
+|--:|---|---|---|
+| 1 | `foreign_text_ratio` | ≥ **0.85** authentic chars / total | `metadata.calibration` + assert |
+| 2 | unique-sentence ratio | ≥ **0.50** (the generator gives 0.067) | assert over the corpus |
+| 3 | **BM25 rank of the gold chunk for the composed probe** | > `k_max` used | offline, in the cell's test file |
+| 4 | answer token in exactly 1 chunk | — | mirror of the bridge's existing test |
+| 5 | **tell detector** (§10.4.6) | 0 exclusive words | assert |
+| 6 | sentence length inside the host's p5–p95 | register | assert |
+
+Criterion 3 is the one that saves a wasted run: it is §2.9's falsification applied *before* spending money —
+if a lexical baseline finds the gold at rank 1 with the probe, the cell is a lookup, not D3.
+
+### 10.6 The band conflict, and why the construct wins
+
+FEB-30's D3 asks for **4–5 documents / 600–1000 words**. One CFR section alone is 800–3000 words. Options:
+(A) excerpts, in-band but lose document integrity; (B) full documents, `>D3` volume but the 90 % claim is
+literal; (C) hybrid. **Recommendation: B for the replication cell (D3-4), A for the rest** — and do not
+sacrifice the construct for the band, since `document_dilution_01` is 354 words and is one of the best cells
+in the repo (§A4: word count alone is the wrong calibration variable).
+
+### 10.7 Anti-memorisation guard
+
+A risk real documents add that synthetic ones do not: the model may know the text. It becomes a free
+measurement — choose an injected fact that **contradicts** a real value in the document (which is exactly
+what a certificate of correction does), and add `must_not_contain: <real value>`. A model answering from
+memory then fails an explicit guard instead of scoring an unearned pass.
+
+---
+
+## 11. Sequencing decision — D3 after L2b (record)
+
+**Decision:** build L2b before the D3 corpus, with three cheap exceptions done up front.
+
+Why after: (i) the telemetry contract is upstream of every run, D3 included; (ii) D3's hop count, `k` and
+noise density depend on L2b failure modes you do not have yet — a gold at rank 42 is *unsolvable* if the
+agent cannot reformulate; (iii) §0 already sequences contract → discriminating cells → agent → *widen*;
+(iv) adding scenarios later invalidates nothing, since `pass_rate` is per-scenario and the contract is frozen.
+
+Why the anti-ceiling argument does not apply here: it does, but only to the D16 corpus cells. Measured today,
+the pre-L2b cells are **not** saturated (bridge 8/10, binding 4/7), so two informative cells exist. The
+cheapest insurance against a wasted sweep is the `L2a-15` arm, not a new corpus.
+
+The three exceptions taken now (all cost no model budget): **decide the tool's provenance interface**
+(content-only vs content+provenance — D3-2 forces it, and it changes the tool signature); **write the
+admission gate of §10.5 as a spec**; **source and pin 4–5 PD documents** (`sha256` + URL + licence), which is
+the long-lead item and can be done while sweeps are in flight.
+
+**Falsification trigger for moving to D3** (same shape as §2.9):
+
+- If the 3-arm sweep separates `L2a-15` from `L2b-3×5` on the bridge → agency is proven with today's cells,
+  and D3 becomes a **robustness claim** ("the finding survives real noise"), defensible but optional.
+- If it does **not** separate → do not go to D3 yet: the defect is in the agent or in the telemetry, and a
+  harder corpus would only hide it behind a wall of noise.
+
+
+
 
