@@ -213,6 +213,35 @@ turns:
         value: "TRQ-HJZS-1262"
       - type: must_retrieve_chunk
         value: "split_rows_02"
+      # Second hop, and it belongs on THIS probe: T2's answer is not in the row —
+      # the row is undecidable until the guide says which of its two codes is the
+      # certified value — which is what the header above already declares
+      # ("needs split_rows_02 AND split_legend_01"). Pinning only the row made
+      # `retrieval_recall` read 8/8 = 100 % while the probe failed 16/24, so the
+      # missing retrieval was unmetered and the failure unattributable.
+      #
+      # What the pin buys is the split this cell's own failure_taxonomy describes
+      # in prose, now measured:
+      #   recall 1/2            -> the schema never arrived. The answer is then
+      #                            either a refusal (`guide_unreachable`) or a
+      #                            confident positional default
+      #                            (`positional_default`, which is what run
+      #                            20261112_132030 produced: TRQ-HJZS-1262).
+      #   recall 2/2 + T2 fails -> field_misbinding (it arrived and was misread)
+      # The pin is expected to FAIL at k=5 by design — the guide ranks outside the
+      # window there (`test_the_binding_probe_reaches_the_record_but_not_the_guide`)
+      # and inside it at k=15 (ranks 10 and 12, per field_misbinding), so both
+      # arms of the measurement exist. It is attribution, not a k=15-proof bridge:
+      # breadth can still substitute for a second call here;
+      # `document_multihop_bridge_01` is the cell that stays unsolved at any k.
+      #
+      # AS-RUN NOTE: the four runs produced before 2026-11-12 recorded this turn
+      # with 2 pins, and `run_stats` prefers the run's own total over today's
+      # YAML, so their `retrieval_recall` keeps the OLD denominator (as-run) and
+      # does NOT raise the drift flag. They are not comparable to runs made after
+      # this edit: this cell needs a re-run.
+      - type: must_retrieve_chunk
+        value: "split_legend_01"
       # H5 precision pin: a filler must not be pulled in alongside the row, or
       # context blending stays a text guard instead of a metric.
       - type: must_not_retrieve_chunk

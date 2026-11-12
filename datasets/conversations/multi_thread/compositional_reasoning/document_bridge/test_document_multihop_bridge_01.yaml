@@ -157,11 +157,17 @@ turns:
     assertions:
       - type: must_contain
         value: "QMV-T3R8-4402"
-      # Both halves must reach the prompt — that is the whole claim.
+      # Both halves must reach the prompt — that is the whole claim. The pins are
+      # CHUNK-level on purpose: at 1200/200 the registry splits 3 ways and the
+      # register splits 3 ways ([145, 1113, 759] chars), and in each the evidence
+      # sits in exactly one chunk. `calibration_register_02_c0` is a 145-char
+      # header with no figure at all, so a document-level pin reports "hop 2
+      # arrived" from a chunk that cannot answer the probe (observed in run
+      # 20261112_102439, where c0 was retrieved at T4 by an unrelated query).
       - type: must_retrieve_chunk
-        value: "asset_registry_01"
+        value: "asset_registry_01_c0"
       - type: must_retrieve_chunk
-        value: "calibration_register_02"
+        value: "calibration_register_02_c1"
       # Precision: an unrelated runbook must not pollute the window.
       - type: must_not_retrieve_chunk
         value: "bg_06"

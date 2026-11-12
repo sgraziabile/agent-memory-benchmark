@@ -255,6 +255,23 @@ class TestAssertions:
             "the guard is only fair while the probe asks for a single token"
         )
 
+    def test_the_binding_probe_pins_the_second_hop(self, scenario):
+        """The row alone cannot certify the probe: the guide is half the answer.
+
+        A row carries two opaque codes and nothing that says which is the
+        certified value — only `split_legend_01` does. While the pin covered just
+        the row, `retrieval_recall` read 8/8 = 100 % with 16/24 assertions: the
+        missing retrieval was unmetered, so the failure was unattributable and an
+        agent that found the second chunk could not be told apart from one that
+        never looked for it.
+        """
+        pins = sorted(
+            r.value
+            for r in _turn(scenario, 2).assertions
+            if r.type == "must_retrieve_chunk"
+        )
+        assert pins == [LEGEND, ROWS_2], pins
+
     def test_the_binding_probe_names_no_term_of_art(self, scenario):
         content = _turn(scenario, 2).content.casefold()
         named = [word for word in TERMS_OF_ART if word in content]

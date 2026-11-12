@@ -343,6 +343,25 @@ class TestAssertions:
             "the single-token constraint is what makes the guard fair"
         )
 
+    def test_the_diagnostic_probe_does_not_pin_the_guide(self, scenario):
+        """The severed half is the construct: T2 must NOT expect the guide.
+
+        `document_split_evidence_01` measures what the agent does when the record
+        arrives and the schema does not — `failure_taxonomy.guide_unreachable` is
+        the answer to "why did T2 fail". Pinning `split_legend_01` here would
+        assert the opposite of the cell's own design and would also break the
+        turn-order invariant that keeps the field order out of the thread when
+        the rows are read. The second hop is pinned in
+        `document_split_binding_01`, where both arms of the measurement exist.
+        """
+        pins = [
+            r.value
+            for r in _turn(scenario, 2).assertions
+            if r.type == "must_retrieve_chunk"
+        ]
+        assert pins == [ROWS_1], pins
+        assert LEGEND not in pins
+
     def test_the_decisive_probe_lives_in_its_own_scenario(self, scenario):
         """This cell must hold exactly ONE value probe, and it must come first.
 

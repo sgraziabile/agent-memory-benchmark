@@ -232,11 +232,47 @@ class TestCorpusInvariants:
 
 class TestAssertions:
     def test_composed_probe_pins_both_hops(self, scenario):
+        """Both hops, pinned at CHUNK level.
+
+        A document-level pin is satisfied by any chunk of the document, and
+        `calibration_register_02` splits into [145, 1113, 759] chars where only
+        c1 carries the figure — c0 is a header. Pinning the document therefore
+        certifies "hop 2 arrived" from a chunk that cannot answer the probe.
+        """
         turn = _turn(scenario, 2)
         pins = {r.value for r in turn.assertions if r.type == "must_retrieve_chunk"}
-        assert pins == {"asset_registry_01", "calibration_register_02"}
+        assert pins == {"asset_registry_01_c0", "calibration_register_02_c1"}
         positives = {r.value for r in turn.assertions if r.type == "must_contain"}
         assert positives == {ANSWER}
+
+    def test_each_pin_names_the_chunk_that_carries_its_evidence(self, scenario):
+        """The hop pins must track the corpus, not a hand-maintained id.
+
+        Recomputed from the chunker: the chunk containing the description and
+        the chunk containing the answer *are* what T2 needs in the prompt. If an
+        edit to the corpus moves the table into a different chunk, the pin value
+        has to move with it or this test fails.
+        """
+        chunks = _corpus(scenario)
+        expected = set()
+        for doc_id, token, casefold in (
+            ("asset_registry_01", DESCRIPTION, True),
+            ("calibration_register_02", ANSWER, False),
+        ):
+            hits = [
+                index
+                for doc, index, text in chunks
+                if doc == doc_id and token in (text.casefold() if casefold else text)
+            ]
+            assert len(hits) == 1, f"{token!r} is not in exactly one chunk: {hits}"
+            expected.add(f"{doc_id}_c{hits[0]}")
+
+        pins = {
+            r.value
+            for r in _turn(scenario, 2).assertions
+            if r.type == "must_retrieve_chunk"
+        }
+        assert pins == expected
 
     def test_composed_probe_carries_a_precision_pin(self, scenario):
         turn = _turn(scenario, 2)
