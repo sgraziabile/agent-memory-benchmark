@@ -151,7 +151,10 @@ class TestOverheadBaseline:
         rule = rules[0]
         assert rule.type == "must_contain"
         assert rule.value == OVERHEAD_ANSWERS[turn_number]
-        assert rule.case_sensitive is False
+        # Assertion-hygiene H2: the one-letter chemical symbols are graded
+        # case-sensitively, so "O" cannot pass on "on"/"to"/"no" and "Au"
+        # cannot pass on "because".
+        assert rule.case_sensitive is (turn_number in {1, 7})
 
     @pytest.mark.parametrize("turn_number", list(OVERHEAD_ANSWERS))
     def test_output_is_format_constrained(self, stage4, turn_number):

@@ -42,6 +42,15 @@ description: >
   enrolled, which must still be yes.
 category: belief_revision
 metadata:
+  kind: "revision"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "fail"
+    level_4: "pass"
   difficulty: hard
   stage: "5.4"
   sessions: ["s1", "s2", "s3"]
@@ -183,18 +192,37 @@ turns:
   - turn_number: 12
     session_id: s3
     role: user
+    probe:
+      query_kind: lookup
     content: "I need a definite answer for the diagram. Based on everything you know, is billing-api hosted in eu-central today? Reply with exactly one of these labels and nothing else: YES_EU_CENTRAL, NO_EU_CENTRAL, CANNOT_DETERMINE."
     assertions:
       - type: must_contain
         value: "NO_EU_CENTRAL"
+        case_sensitive: false
+      # M6 guard: the probe prints the whole menu, so the two rejected labels
+      # must be ruled out or "print the menu and hope" would pass.
+      - type: must_not_contain
+        value: "YES_EU_CENTRAL"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "CANNOT_DETERMINE"
         case_sensitive: false
 
   # RULE CONTROL (attribution: R must survive the contraction)
   - turn_number: 13
     session_id: s3
     role: user
+    probe:
+      query_kind: semantic
     content: "Different question: if we deploy a brand-new service to eu-central next week, will it be enrolled in the Bastion audit? Reply with exactly one of these labels and nothing else: YES_BASTION, NO_BASTION, CANNOT_DETERMINE."
     assertions:
       - type: must_contain
         value: "YES_BASTION"
+        case_sensitive: false
+      # M6 guard: rule control for attribution, graded with the same menu guard.
+      - type: must_not_contain
+        value: "NO_BASTION"
+        case_sensitive: false
+      - type: must_not_contain
+        value: "CANNOT_DETERMINE"
         case_sensitive: false

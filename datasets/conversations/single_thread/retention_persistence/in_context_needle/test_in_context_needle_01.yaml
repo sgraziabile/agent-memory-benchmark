@@ -6,6 +6,15 @@ description: >
   same prompt, without distractor turns.
 category: retention_persistence
 metadata:
+  kind: "control_in_context"
+  quality_eligible: false
+  controls: "In-context twin of needle_haystack_01: isolates attention over a provided context from persistence."
+  expected:
+    level_0: "control"
+    level_1: "control"
+    level_2: "control"
+    level_3: "control"
+    level_4: "control"
   difficulty: basic
   expected_level_0_behavior: "Should succeed (100% pass rate) because the query and context share the same prompt."
   target_research_question: "P1"
@@ -13,6 +22,8 @@ metadata:
 turns:
   - turn_number: 1
     role: user
+    probe:
+      query_kind: lookup
     content: >
       I am going to brief you on our active projects. Read carefully:
       Project Alpha: Led by James Park, budget $1.2M. Focus: renewable energy.

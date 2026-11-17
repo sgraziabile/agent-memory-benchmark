@@ -14,6 +14,15 @@ description: >
   fact extraction from dense informational context.
 category: needle_haystack
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "pass"
+    level_2: "n/a"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: moderate
   needle_location: "project_3_of_5"
   expected_level_0_behavior: "Should succeed within single context window; tests attention, not persistence"
@@ -45,6 +54,8 @@ turns:
 
   - turn_number: 2
     role: user
+    probe:
+      query_kind: semantic
     content: "How many active projects do we have and what are their names?"
     assertions:
       - type: must_contain
@@ -65,6 +76,8 @@ turns:
 
   - turn_number: 3
     role: user
+    probe:
+      query_kind: lookup
     content: "What is the security clearance code for Project Gamma?"
     assertions:
       - type: must_contain
@@ -73,6 +86,8 @@ turns:
 
   - turn_number: 4
     role: user
+    probe:
+      query_kind: semantic
     content: "Which project has the highest budget, and which has the lowest?"
     assertions:
       - type: must_contain
@@ -84,6 +99,8 @@ turns:
 
   - turn_number: 5
     role: user
+    probe:
+      query_kind: semantic
     content: "Who leads the project focused on quantum-resistant cryptography, and what is its launch date?"
     assertions:
       - type: must_contain

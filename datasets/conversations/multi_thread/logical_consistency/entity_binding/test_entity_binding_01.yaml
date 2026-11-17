@@ -100,6 +100,15 @@ description: >
   s4 runs a single free-form observational probe in a clean thread.
 category: entity_binding
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "pass"
+    level_4: "n/a"
   difficulty: hard
   stage: "4.4"
   sessions: ["s1", "s2", "s3", "s4"]
@@ -260,6 +269,8 @@ turns:
   - turn_number: 9
     session_id: s3
     role: user
+    probe:
+      query_kind: lookup
     content: "For the firewall rule table, reply with ONLY the 4-digit admin console port number for server srv-alpha (for example: 9000), nothing else."
     assertions:
       - type: must_contain
@@ -283,6 +294,8 @@ turns:
   - turn_number: 10
     session_id: s3
     role: user
+    probe:
+      query_kind: lookup
     content: "Next row: reply with ONLY the 4-digit admin console port number for server srv-beta (for example: 9000), nothing else."
     assertions:
       - type: must_contain
@@ -306,6 +319,8 @@ turns:
   - turn_number: 11
     session_id: s3
     role: user
+    probe:
+      query_kind: lookup
     content: "For the maintenance-window table, reply with ONLY the full weekday name of the scheduled maintenance window for server srv-gamma (for example: Monday), nothing else."
     assertions:
       - type: must_contain
@@ -329,6 +344,8 @@ turns:
   - turn_number: 12
     session_id: s3
     role: user
+    probe:
+      query_kind: lookup
     content: "Next row: reply with ONLY the full weekday name of the scheduled maintenance window for server srv-delta (for example: Monday), nothing else."
     assertions:
       - type: must_contain

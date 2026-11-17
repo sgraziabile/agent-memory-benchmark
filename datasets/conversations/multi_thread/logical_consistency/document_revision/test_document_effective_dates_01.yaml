@@ -73,6 +73,15 @@ description: >
   from a wrong-revision choice.
 category: document_revision
 metadata:
+  kind: "revision"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: hard
   stage: "prevalence/effective-dates"
   target_research_question: "P2"
@@ -354,8 +363,13 @@ turns:
 - turn_number: 1
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: 'As of 2026-08-01, reply with ONLY the PUMP-88 calibration code currently in effect, nothing else.'
   assertions:
+  - type: must_not_retrieve_chunk
+    value: "corpus_007"
+    case_sensitive: false
   - type: must_contain
     value: P88-ALPHA-1000
     case_sensitive: false
@@ -371,6 +385,8 @@ turns:
 - turn_number: 2
   session_id: s2
   role: user
+  probe:
+    query_kind: lookup
   content: 'As of 2026-10-15, reply with ONLY the PUMP-88 calibration code currently in effect, nothing else.'
   assertions:
   - type: must_contain
@@ -388,6 +404,8 @@ turns:
 - turn_number: 3
   session_id: s3
   role: user
+  probe:
+    query_kind: lookup
   content: 'As of 2027-03-01, reply with ONLY the PUMP-88 calibration code currently in effect, nothing else.'
   assertions:
   - type: must_contain
@@ -405,6 +423,8 @@ turns:
 - turn_number: 4
   session_id: s3
   role: user
+  probe:
+    query_kind: lookup
   content: What is the provisioning code for the rack row RACK-923?
   assertions:
   - type: must_contain

@@ -1,0 +1,150 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "document_multihop_bridge_01_deepseek-v4.1-flash_baseline_react_af5adf6b",
+    "scenario_id": "document_multihop_bridge_01",
+    "model_id": "deepseek-v4.1-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "memory_backend_config": {
+      "backend": "vector",
+      "embedding_model_id": "qwen3-embedding-0.6b",
+      "top_k": 15,
+      "chunk_size": 1200,
+      "chunk_overlap": 200,
+      "embed_batch_size": 8,
+      "embed_cache": ".cache/emb"
+    },
+    "documents": [
+      {
+        "doc_id": "asset_registry_01",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\asset_registry_01.md",
+        "sha256": "cdb791893bed193d0decb0791f5bc94675547cad07079919a4a898308755c5e8",
+        "char_count": 3022,
+        "estimated_tokens": 755
+      },
+      {
+        "doc_id": "calibration_register_02",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\calibration_register_02.md",
+        "sha256": "cbc8b3a0a0b659b61deb14260a05ce85bdf67e324e5e8dc4a0388e6991eb2017",
+        "char_count": 2012,
+        "estimated_tokens": 503
+      },
+      {
+        "doc_id": "decoy_01",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_01.md",
+        "sha256": "205665522b727cd279a2584183cfb734f861ab9974ca5a948060ee52975938b6",
+        "char_count": 2404,
+        "estimated_tokens": 601
+      },
+      {
+        "doc_id": "decoy_02",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_02.md",
+        "sha256": "c1d28b2072f6420fc764b5e6617c5a49276c68a3d1d54a0ad0a66687dbb90f82",
+        "char_count": 2678,
+        "estimated_tokens": 669
+      },
+      {
+        "doc_id": "decoy_03",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_03.md",
+        "sha256": "faa6756dd28feb8e6439385c7a85261edd656cfd14ae91ab17c5745f2c3bbce3",
+        "char_count": 2355,
+        "estimated_tokens": 588
+      },
+      {
+        "doc_id": "decoy_04",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_04.md",
+        "sha256": "9b05ae2f83728ed03889b43563dffd5b0649a584763cde12fc9d5b0aa49d61d2",
+        "char_count": 2190,
+        "estimated_tokens": 547
+      },
+      {
+        "doc_id": "bg_01",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_01.md",
+        "sha256": "8a24fae2768abdc29810d45dc4faab1f4de47684bdb16049c7845d306900f16a",
+        "char_count": 2948,
+        "estimated_tokens": 737
+      },
+      {
+        "doc_id": "bg_02",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_02.md",
+        "sha256": "2b4f547776a53cd1aaa6291860e48a4233794c4ce5155836f2fa4991152c5920",
+        "char_count": 2771,
+        "estimated_tokens": 692
+      },
+      {
+        "doc_id": "bg_03",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_03.md",
+        "sha256": "d4a3d549f0fb74ecba9b9521416d1003f2ca816f7f5425a1be83969acf2268cc",
+        "char_count": 2341,
+        "estimated_tokens": 585
+      },
+      {
+        "doc_id": "bg_04",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_04.md",
+        "sha256": "7bc7f184a045244cfbbb28ed22fc9061c78983fab664eb5bf06f3cd2b958c95f",
+        "char_count": 2452,
+        "estimated_tokens": 613
+      },
+      {
+        "doc_id": "bg_05",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_05.md",
+        "sha256": "1a893fdbe94ae2284bed5d85df475e9fd681681d5bc6cbc4f85ed5e734aab440",
+        "char_count": 2615,
+        "estimated_tokens": 653
+      },
+      {
+        "doc_id": "bg_06",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_06.md",
+        "sha256": "7db1c372754bef75a399ad8952ceaeaf16d14ae6f5d91f3f3c9c2096cba2ee04",
+        "char_count": 2589,
+        "estimated_tokens": 647
+      },
+      {
+        "doc_id": "bg_07",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_07.md",
+        "sha256": "b68c78a16c11969ab766fa3dd1dced57383894ffd452219729d5ad6bd9d1a081",
+        "char_count": 2332,
+        "estimated_tokens": 583
+      },
+      {
+        "doc_id": "bg_08",
+        "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_08.md",
+        "sha256": "d2e2ee5a4a4fc4617975ece2456ccf6d3b521256be8a4a2123f1fac32f32511e",
+        "char_count": 2567,
+        "estimated_tokens": 641
+      }
+    ],
+    "document_ingestion": {
+      "documents_ingested": 14,
+      "ingested_chars": 35276,
+      "ingested_chunks": 42,
+      "ingestion_latency_ms": 4.025200003525242,
+      "ingestion_embedding_tokens": 0,
+      "ingestion_cache_hits": 42,
+      "ingestion_cache_misses": 0
+    }
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024,
+    "cache": {
+      "hits": 42,
+      "misses": 6
+    }
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "by_source": {
+    "chat": 6,
+    "document": 42
+  },
+  "document_chunks": 42,
+  "document_chars": 35914,
+  "total_chunks": 48,
+  "total_chars": 39554,
+  "total_estimated_tokens": 9872,
+  "snapshot_timestamp": "2026-11-11T16:52:07.704393+00:00"
+}

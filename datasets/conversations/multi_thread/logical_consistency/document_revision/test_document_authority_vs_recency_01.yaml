@@ -118,6 +118,15 @@ description: >
   the casual claim must NOT override the document, and the approved ticket MUST.
 category: document_revision
 metadata:
+  kind: "revision"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "partial"
+    level_2: "partial"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: hard
   stage: "prevalence/authority-vs-recency"
   target_research_question: "P2"
@@ -399,6 +408,8 @@ turns:
 - turn_number: 2
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the calibration code for cooling loop LOOP-420?
   assertions:
   - type: must_contain
@@ -415,6 +426,8 @@ turns:
 - turn_number: 4
   session_id: s1
   role: user
+  probe:
+    query_kind: semantic
   content: Reply with ONLY the calibration code you would put in the change ticket, nothing else.
   assertions:
   - type: must_contain
@@ -427,8 +440,13 @@ turns:
 - turn_number: 5
   session_id: s2
   role: user
+  probe:
+    query_kind: semantic
   content: New session. Reply with ONLY the calibration code you would put in the change ticket according to our system of record, nothing else.
   assertions:
+  - type: must_not_retrieve_chunk
+    value: "corpus_045"
+    case_sensitive: false
   - type: must_contain
     value: YKX-HMD0-7872
     case_sensitive: false
@@ -450,6 +468,8 @@ turns:
 - turn_number: 7
   session_id: s3
   role: user
+  probe:
+    query_kind: lookup
   content: New session. What is the current calibration code for cooling loop LOOP-420?
   assertions:
   - type: must_contain
@@ -461,6 +481,8 @@ turns:
 - turn_number: 8
   session_id: s3
   role: user
+  probe:
+    query_kind: lookup
   content: What is the provisioning code for the rack row RACK-923?
   assertions:
   - type: must_contain

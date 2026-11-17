@@ -53,6 +53,21 @@ class L2AgentState(TypedDict):
         embedding_cache_misses: Ingestion chunks re-embedded this turn.
         retrieved_memories: Top-k ``RetrievedEpisode`` dicts (provenance).
         appended_chunk_ids: Chunk IDs written to the backend this turn.
+
+    L2b agentic-retrieval channels (``TODOs/l2b-telemetry-contract-todo.md``
+    §2.1). They are also per-turn overwrite channels, and an L2b graph must
+    return the **complete** per-turn list in one state update — that is what
+    makes the overwrite semantics safe without a reducer:
+
+        retrieval_calls: One dict per tool call issued this turn
+            (``call_index``, ``query``, ``k``, ``episodes``). The runner unions
+            ``episodes`` across calls to build the retrieval-assertion match
+            set, so a second call can never shadow the first.
+        retrieval_call_count: ``len(retrieval_calls)``. ``0`` is a valid,
+            terminal state ("the model chose not to retrieve"), not an error.
+        retrieval_skipped: ``True`` when the agent decided not to call the tool.
+        tool_call_cap_hit: ``True`` when the bounded loop stopped on
+            ``max_tool_calls`` rather than on the model's own decision.
     """
 
     messages: Annotated[Sequence[BaseMessage], add_messages]
@@ -66,6 +81,11 @@ class L2AgentState(TypedDict):
     embedding_cache_misses: int
     retrieved_memories: list[dict[str, Any]]
     appended_chunk_ids: list[str]
+    # ── L2b agentic retrieval (absent on L0/L1/L2a) ────────────────────────
+    retrieval_calls: list[dict[str, Any]]
+    retrieval_call_count: int
+    retrieval_skipped: bool
+    tool_call_cap_hit: bool
 
 
 
@@ -153,6 +173,30 @@ class DocumentSpec(BaseModel):
         return self
 
 
+class ProbeSpec(BaseModel):
+    """Machine-readable classification of a graded probe (hygiene check H8).
+
+    The L2b sequencing experiment must separate *"the agent reformulated the
+    query well"* from *"the probe handed it the key"*. Without a declared
+    query kind the two are indistinguishable in the results.
+
+    Attributes:
+        query_kind: ``lookup`` when the probe supplies the opaque identifier
+            needed to find the answer (code, serial, server name, room
+            number, forced label); ``semantic`` when it describes the
+            entity/need without that key (paraphrase, derivation, pronoun);
+            ``guard`` for a seed/confirmation turn whose only rules are
+            leakage guards — no probe is asked, so neither label fits.
+
+    Example::
+
+        probe:
+          query_kind: semantic
+    """
+
+    query_kind: Literal["lookup", "semantic", "guard"]
+
+
 class ConversationTurn(BaseModel):
     """One turn in a benchmark conversation scenario.
 
@@ -175,6 +219,9 @@ class ConversationTurn(BaseModel):
               ``source="document"`` — the chat model is never invoked.
               Resolved relative to the scenario YAML file, falling back to
               ``datasets/documents/``. Empty on ``user`` turns.
+        probe: Machine-readable probe classification (assertion-hygiene pass
+              H8, TODOs/assertion-hygiene-pass.md §1). ``None`` on
+              ungraded turns.
     """
 
     turn_number: int
@@ -183,6 +230,7 @@ class ConversationTurn(BaseModel):
     assertions: list[AssertionRule] = Field(default_factory=list)
     session_id: str = "default"
     attachments: list[str] = Field(default_factory=list)
+    probe: ProbeSpec | None = None
 
     @model_validator(mode="after")
     def _attachments_only_on_system_events(self) -> "ConversationTurn":
@@ -199,6 +247,31 @@ class ConversationTurn(BaseModel):
                 "role='system_event' turns. Declare documents under the "
                 "scenario's top-level 'documents:' key for preloads."
             )
+        return self
+
+    @model_validator(mode="after")
+    def _guard_probe_is_guard_only(self) -> "ConversationTurn":
+        """``query_kind: guard`` labels a leakage guard, not a probe.
+
+        A guard turn (a seed/confirmation turn whose only rules are
+        ``must_not_contain`` guards) does not ask for anything, so neither
+        ``lookup`` nor ``semantic`` is an honest label. Accepting ``guard``
+        only when no positive rule exists keeps the escape hatch from being
+        used to skip H8 on a real probe.
+        """
+        if self.probe is not None and self.probe.query_kind == "guard":
+            positive = [
+                rule
+                for rule in self.assertions
+                if rule.type
+                in {"must_contain", "must_retrieve_chunk", "must_retrieve_source"}
+            ]
+            if positive:
+                raise ValueError(
+                    f"Turn {self.turn_number}: probe.query_kind='guard' is "
+                    "only valid on turns whose assertions are all negative "
+                    f"(found {[rule.type for rule in positive]})."
+                )
         return self
 
 
@@ -341,6 +414,13 @@ class TurnResult(BaseModel):
     embedding_latency_ms: float = 0.0
     retrieved_memories: list[dict[str, Any]] = Field(default_factory=list)
     appended_chunk_ids: list[str] = Field(default_factory=list)
+    # ── L2b agentic retrieval (0/[]/False on L0/L1/L2a) ───────────────────
+    #: One dict per tool call issued this turn. ``retrieved_memories`` above
+    #: stays the *union* of every call, so a pre-L2b reader keeps working.
+    retrieval_calls: list[dict[str, Any]] = Field(default_factory=list)
+    retrieval_call_count: int = 0
+    retrieval_skipped: bool = False
+    tool_call_cap_hit: bool = False
     # ── Plan WS-D document ingestion (0/[] for chat turns and L0/L1) ──────
     ingested_documents: list[str] = Field(default_factory=list)
     ingested_chars: int = 0
@@ -365,6 +445,23 @@ class BenchmarkRunSummary(BaseModel):
         failed_assertions: Count of failed assertions.
         pass_rate: Fraction of assertions passed (0.0–1.0), computed over
                    successfully completed turns only.
+        retrieval_assertions_total: Positive retrieval pins declared by the
+                   scenario (``must_retrieve_chunk`` on ``user`` turns).
+                   Denominator of ``retrieval_recall``; ``0`` for scenarios
+                   without retrieval pins (L0/L1 text-only cases included).
+        retrieval_assertions_evaluated: Pins actually scored (``ok`` turns
+                   only). ``total - evaluated`` is the number of probes lost
+                   to infrastructure errors, each of which counts as a miss.
+        retrieval_assertions_passed: Pins satisfied by the turn's
+                   ``retrieved_memories`` telemetry.
+        retrieval_recall: ``retrieval_assertions_passed /
+                   retrieval_assertions_total``, or ``None`` when nothing was
+                   declared. Rule-level and document-level: each pin/turn is
+                   one unit and a sibling sub-chunk of the gold document
+                   satisfies it (see ``core.metrics`` for the three policies
+                   and ``scripts/lr_report.py`` for chunk-level ``Recall@k``).
+        retrieval_recall_ci_low: Lower bound of the Wilson 95% interval.
+        retrieval_recall_ci_high: Upper bound of the Wilson 95% interval.
         error_turns: Number of turns that failed at the infrastructure level
                      and were excluded from all metrics.
         error_rate: Fraction of turns that errored (0.0–1.0).
@@ -428,6 +525,25 @@ class BenchmarkRunSummary(BaseModel):
     passed_assertions: int = 0
     failed_assertions: int = 0
     pass_rate: float = 0.0
+    # ── Retrieval recall (positive retrieval pins; SPEC §5.8) ──────────────
+    #: Pins *declared* by the scenario (`must_retrieve_chunk` on `user` turns).
+    #: This is the denominator: an errored probe stays in it and counts as a
+    #: miss, so an infrastructure failure can never improve the metric.
+    retrieval_assertions_total: int = 0
+    #: Pins actually scored (turns with ``status == "ok"`` only). Exported so
+    #: the ``total - evaluated`` gap — probes lost to infrastructure errors —
+    #: is visible next to the rate instead of silently shrinking it.
+    retrieval_assertions_evaluated: int = 0
+    retrieval_assertions_passed: int = 0
+    #: ``passed / total`` (0.0–1.0), or ``None`` when the scenario declares no
+    #: positive retrieval pin (text-only scenarios are not "0 % recall").
+    #: Rule-level unit: one pin on one turn = one unit, so the same gold
+    #: document pinned on three turns counts three times. Document-level
+    #: (``chunk_id`` substring) — not the chunk-level ``Recall@k`` of
+    #: ``scripts/lr_report.py``.
+    retrieval_recall: float | None = None
+    retrieval_recall_ci_low: float | None = None
+    retrieval_recall_ci_high: float | None = None
     error_turns: int = 0
     error_rate: float = 0.0
     total_latency_ms: float = 0.0
@@ -461,6 +577,22 @@ class BenchmarkRunSummary(BaseModel):
     embedding_tokens: int = 0
     embedding_cache_hits: int = 0
     embedding_cache_misses: int = 0
+    # ── L2b agentic retrieval (``TODOs/l2b-telemetry-contract-todo.md`` §2.1) ──
+    #: Tool calls summed over ok chat turns. ``0`` for L0/L1/L2a, so every
+    #: pre-L2b ``results.json`` gains these three fields at zero and nothing
+    #: else changes.
+    total_tool_calls: int = 0
+    #: ``total_tool_calls / (ok chat turns that made ≥1 call)``. ``0.0`` when no
+    #: turn retrieved, which is the honest reading of a no-tool run.
+    avg_calls_per_retrieval_turn: float = 0.0
+    #: Ok chat turns whose bounded loop stopped on ``max_tool_calls``: the
+    #: answer was produced with a truncated search, a different condition from
+    #: "the model decided to stop".
+    tool_call_cap_hits: int = 0
+    #: Mean tool calls per graded turn (``None`` when no probe was graded).
+    calls_per_probe: float | None = None
+    #: Declared positive pins satisfied per tool call (``None`` with no calls).
+    retrieval_call_efficiency: float | None = None
     # ── Plan §4.3 aggregated latency metrics ───────────────────────────────
     total_retrieval_latency_ms: float = 0.0
     total_append_latency_ms: float = 0.0

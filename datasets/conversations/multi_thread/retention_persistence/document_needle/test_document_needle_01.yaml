@@ -40,6 +40,15 @@ description: >
   to use them cross-thread.
 category: document_needle
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "pass"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: moderate
   stage: "WS-D"
   defects_fixed: ["X5", "X8"]
@@ -87,6 +96,8 @@ turns:
   - turn_number: 3
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "I'm back in a new working session. According to our access policy, what is the break-glass emergency account identifier?"
     assertions:
       - type: must_contain
@@ -98,6 +109,8 @@ turns:
   - turn_number: 4
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Which role is allowed to release that break-glass credential, and at which facility is it sealed?"
     assertions:
       - type: must_contain
@@ -113,8 +126,13 @@ turns:
   - turn_number: 5
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Unrelated: how do I rotate a TLS certificate without downtime?"
     assertions:
+      - type: must_not_retrieve_chunk
+        value: "policy_v1"
+        case_sensitive: false
       - type: must_not_contain
         value: "iris-breakglass-77"
         case_sensitive: false

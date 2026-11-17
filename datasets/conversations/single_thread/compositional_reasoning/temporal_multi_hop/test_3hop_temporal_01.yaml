@@ -21,6 +21,15 @@ description: >
   all three hops plus the rule.
 category: temporal_multi_hop
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "pass"
+    level_2: "n/a"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: hard
   hops: 3
   rules: 1
@@ -77,6 +86,8 @@ turns:
 
   - turn_number: 9
     role: user
+    probe:
+      query_kind: semantic
     content: "Elena asked me where to ship her new laptop. Based on everything I've told you, which city does she work from these days? Answer with the city name only."
     assertions:
       - type: must_contain

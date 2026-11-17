@@ -20,6 +20,15 @@ description: >
   memory); L2 must retrieve from the s1 episodes.
 category: cross_thread
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "pass"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: moderate
   sessions: ["s1", "s2"]
   seeded_facts: 4
@@ -88,6 +97,8 @@ turns:
   - turn_number: 9
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Hi, I'm back for a new working session. Remind me: what's the name of the migration project I'm leading?"
     assertions:
       - type: must_contain
@@ -97,6 +108,8 @@ turns:
   - turn_number: 10
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "I need to file a request with the infra team. What's the change ticket number for the Kestrel staging cluster?"
     assertions:
       - type: must_contain
@@ -106,6 +119,8 @@ turns:
   - turn_number: 11
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "Who's our contact person at the hardware vendor, and which city does she work from?"
     assertions:
       - type: must_contain
@@ -118,6 +133,8 @@ turns:
   - turn_number: 12
     session_id: s2
     role: user
+    probe:
+      query_kind: semantic
     content: "And which city is the data center we're moving our workloads into?"
     assertions:
       - type: must_contain

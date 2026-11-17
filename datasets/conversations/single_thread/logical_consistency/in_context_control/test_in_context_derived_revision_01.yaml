@@ -24,6 +24,15 @@ description: >
   (Level-3) is present verbatim in the prompt.
 category: in_context_control
 metadata:
+  kind: "control_in_context"
+  quality_eligible: false
+  controls: "In-context twin of derived_belief_revision_01: separates revision reasoning from memory retrieval."
+  expected:
+    level_0: "control"
+    level_1: "n/a"
+    level_2: "n/a"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: moderate
   stage: "5.1c"
   paired_with: "derived_belief_revision_01"
@@ -41,6 +50,8 @@ metadata:
 turns:
   - turn_number: 1
     role: user
+    probe:
+      query_kind: lookup
     content: |
       Here is the log of what I told you over our earlier sessions, in chronological order. Read it carefully:
 

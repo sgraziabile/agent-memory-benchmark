@@ -178,3 +178,79 @@ del turno (`retrieved_memories`), lo que vuelve **causal** un fallo de
 En L0/L1 no hay recuperación: las reglas positivas fallan y las negativas
 pasan de forma determinista. Los detalles exportados incluyen
 `matched_chunks` con los IDs que satisfacieron la regla.
+
+### 5.8 Métrica de recall de recuperación
+
+`retrieval_recall` responde *"¿qué fracción de los pines de recuperación
+declarados se satisfizo?"*:
+
+```
+retrieval_recall = pines must_retrieve_chunk satisfechos / pines declarados
+```
+
+Tres decisiones de política definen el número, y el arnés las aplica de forma
+idéntica en la ejecución (`core/metrics.py`) y en el reporte posterior
+(`scripts/retrieval_recall.py`):
+
+| # | Decisión | Razón |
+|---|---|---|
+| **D1** | **Denominador declarado**: se cuentan los pines del YAML del escenario (`turns[*].assertions` con `role: user`), no las aserciones evaluadas. Un turno con `status: error` **permanece** en el denominador y cuenta como *miss*. | Los turnos con error nunca llegan a `evaluate_assertions`; con denominador evaluado un turno en blanco o truncado *mejora* el recall (artefacto F7 en `notes/2026-11-06_l2_authority_vs_recency.md`). |
+| **D2** | **Unidad = una regla en un turno**. | Seis escenarios fijan el mismo documento oro en varios turnos a propósito (`doc_addendum_1` ×3 en `document_addendum_revision_01`); deduplicar por documento eliminaría turnos en lugar de medirlos. |
+| **D3** | **Solo `must_retrieve_chunk`**: `must_not_retrieve_*` (guardas de precisión) y `must_retrieve_source` (canal, no ítem oro) quedan fuera del numerador y del denominador. | Incluir guardas negativas permitiría que un agente amnésico obtenga 100 % sin recuperar nada. |
+
+**Alcance del número.** `must_retrieve_chunk` es un *substring* del `chunk_id`,
+así que un sub-chunk hermano del documento oro satisface el pin: el resultado es
+recall **a nivel documento**. El `Recall@k` **a nivel chunk** (el chunk
+recuperado debe contener el token de respuesta) es otra métrica, calculada por
+`scripts/lr_report.py`. No son intercambiables.
+
+**Exportación.** Cada `BenchmarkRunSummary` incluye:
+
+| Campo | Significado |
+|---|---|
+| `retrieval_assertions_total` | pines declarados (denominador) |
+| `retrieval_assertions_evaluated` | pines efectivamente evaluados; `total − evaluated` son pines perdidos por error de infraestructura |
+| `retrieval_assertions_passed` | pines satisfechos |
+| `retrieval_recall` | `passed / total`, o `null` si el escenario no declara pines |
+| `retrieval_recall_ci_low` / `_high` | intervalo de Wilson 95 % |
+
+Los contadores viajan en `results.json`, `summary.csv`, en la columna
+`Retrieval Recall` de `summary.md` (que solo aparece si algún run declara pines)
+y en la salida de consola. L0/L1 con pines puntúan `0.0` sobre el denominador
+declarado (no recuperan nada), nunca `null`.
+
+Para runs históricos anteriores a estos campos:
+
+```bash
+python scripts/retrieval_recall.py --scenario-prefix document_ --verbose
+python scripts/retrieval_recall.py --csv outputs/retrieval_recall.csv
+```
+
+El script recupera el denominador declarado desde los YAML cuando el
+`results.json` no lo trae (columna `denom`: `run` / `yaml` / `evaluated`) y, con
+`--verbose`, lista cada pin perdido (directorio del run, turno y `value`).
+
+Un `!` junto al recall marca los runs cuyo escenario **creció** después de
+ejecutarse (el YAML declara hoy más pines de los que el run evaluó, sin turnos
+con error): el denominador de la ejecución no es recuperable del registro, la
+cifra reportada es una **cota inferior** y no debe compararse con runs de la
+versión actual del escenario. La columna `denominator_drift_runs` del CSV
+cuenta cuántos runs del grupo están en esa situación.
+
+**Runs anteriores a la métrica.** Los seis campos solo los escribe el runner al
+exportar, así que los `results.json` previos no los tienen. El backfill los
+añade en sitio, sin tocar ninguna otra clave:
+
+```bash
+python scripts/backfill_retrieval_recall.py --dry-run   # solo reporta
+python scripts/backfill_retrieval_recall.py             # escribe los campos
+```
+
+Por cada directorio de run: inserta los seis campos en cada resumen de
+`results.json` (después de `pass_rate`), reescribe `summary.csv` con el mismo
+conjunto y orden de columnas que `_export_results`, guarda los originales como
+`*.bak` (una sola vez, nunca se sobrescriben) y escribe
+`retrieval_recall_backfill.json` con la fuente y los `run_id` con deriva de
+denominador. `summary.md` es una vista previa y no se toca: se regenera en la
+próxima ejecución real. Directorios sin pines quedan intactos; el proceso es
+idempotente.

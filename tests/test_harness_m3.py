@@ -176,6 +176,13 @@ class TestReadL2Telemetry:
             "embedding_cache_misses": 0,
             "retrieved_memories": [],
             "appended_chunk_ids": [],
+            # L2b agentic retrieval (TODOs/l2b-telemetry-contract-todo.md §2.3):
+            # L0/L1/L2a never write these, so a pre-L2b record gains exactly
+            # these four at [] / 0 / False and nothing else moves.
+            "retrieval_calls": [],
+            "retrieval_call_count": 0,
+            "retrieval_skipped": False,
+            "tool_call_cap_hit": False,
         }
 
 

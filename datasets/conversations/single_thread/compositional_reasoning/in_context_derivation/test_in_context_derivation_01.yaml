@@ -20,6 +20,15 @@ description: >
   means a memory failure; fail on both means a reasoning failure.
 category: in_context_derivation
 metadata:
+  kind: "control_in_context"
+  quality_eligible: false
+  controls: "In-context twin of cross_thread_derived_01: separates derivation ability from cross-thread retrieval."
+  expected:
+    level_0: "control"
+    level_1: "n/a"
+    level_2: "n/a"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: hard
   paired_with: "cross_thread_derived_01"
   derivation: "2024-01-20 + 100 calendar days = 2024-04-29 (crosses Feb 29, 2024)"
@@ -29,6 +38,8 @@ metadata:
 turns:
   - turn_number: 1
     role: user
+    probe:
+      query_kind: semantic
     content: >
       Here is my vendor log for this quarter. Read it carefully:
 

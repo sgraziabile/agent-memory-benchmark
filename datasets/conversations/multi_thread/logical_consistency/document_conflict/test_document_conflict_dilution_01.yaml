@@ -1,0 +1,219 @@
+﻿
+# ─────────────────────────────────────────────────────────────────
+# test_document_conflict_dilution_01.yaml — Conflict & dilution
+# ─────────────────────────────────────────────────────────────────
+# Five near-identical documents compete for the same top_k window and
+# only one of them is the answer to each question.
+#
+#   T2  current limit for PMP-310   -> conflict_gold_01
+#   T3  current limit for PMP-335   -> conflict_sibling_02  (paired
+#                                      commitment: a model that always
+#                                      answers the salient value fails
+#                                      one side of the pair)
+#   T4  the value PMP-310 carried
+#       before the 2026 revision    -> conflict_superseded_01
+#   T5  over-disclosure guard       -> negative-only
+#
+# The four live pump records are written from ONE sentence skeleton
+# (verified in tests/), so they compete lexically and in embedding
+# space; the superseded record restates the same claim in the past
+# tense, which is the stale-value trap.
+#
+# NOTE ON THE LEXICAL BASELINE: unlike the bridge cell, a keyword
+# engine *can* identify the right document here, because each probe
+# names its asset identifier. That is by design — the measured
+# variable is discrimination among near-duplicates and staleness,
+# not reachability. Do not read this cell as a compositional test.
+# ─────────────────────────────────────────────────────────────────
+
+id: document_conflict_dilution_01
+name: "Document Conflict & Dilution (Sibling Values and Supersession)"
+description: >
+  Four pumps on the same riser carry four different limits, described in four documents
+  written from the same skeleton, and a fifth document states an older limit for the duty
+  pump. The agent must return the current limit for whichever pump it is asked about,
+  keep the two pump-to-limit bindings apart across consecutive probes, and reproduce the
+  superseded value only when it is asked for the history. Every failure mode is visible:
+  the wrong sibling's value, the stale value presented as current, or the right value
+  attributed to the wrong asset.
+category: document_conflict
+metadata:
+  difficulty: hard
+  stage: "6.6"
+  kind: "revision"
+  amnesia_passes: false
+  quality_eligible: true
+  chunk_size: 1200
+  chunk_overlap: 200
+  default_top_k: 5
+  sessions: ["s1", "s2"]
+  documents_count: 14
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "partial"
+    level_4: "partial"
+  corpus_difficulty:
+    measured_variable: "discrimination among near-duplicate claims, and current-vs-superseded precedence"
+    lexical_baseline_identifies_the_gold_doc: true
+    lexical_baseline_note: >
+      The probe names the asset identifier, so BM25 ranks the gold document first by
+      construction. That is intended: reachability is not what this cell measures.
+    gold_and_siblings_share_one_skeleton: true
+    competing_docs_at_k5: "gold + three siblings + the superseded record are all plausible neighbours of the same query"
+    # Measured with BM25 (k1=1.5, b=0.75) over the 39 chunks, probe = T2 text.
+    measured_k5_window: [conflict_gold_01, conflict_superseded_01, conflict_sibling_01, conflict_sibling_02, conflict_sibling_03]
+    measured_gold_rank: 1
+    measured_superseded_rank: 2
+    measured_sibling_ranks: [3, 4, 5]
+  calibration:
+    gold_doc: conflict_gold_01
+    sibling_docs: [conflict_sibling_01, conflict_sibling_02, conflict_sibling_03]
+    superseded_doc: conflict_superseded_01
+    reused_filler: [bg_01, bg_02, bg_03, bg_04, bg_05, bg_06, bg_07, bg_08]
+    reused_decoy: decoy_01
+    documents: 14
+    chunks_measured: 38
+    expected_arms:
+      L2a_k5: "partial"
+      L2a_k15: "partial"
+      L2b_3x5: "partial"
+  target_claims:
+    - id: C1
+      subject: PMP-310
+      predicate: limit
+      value: HLX-2C7V-9043
+      stated_in: conflict_gold_01
+      state: current
+    - id: C2
+      subject: PMP-335
+      predicate: limit
+      value: RKV-9T4B-6602
+      stated_in: conflict_sibling_02
+      state: current
+    - id: C3
+      subject: PMP-310
+      predicate: limit
+      value: SWG-1F9K-5520
+      stated_in: conflict_superseded_01
+      state: superseded
+  failure_taxonomy:
+    stale_value_as_current: "T2 fails must_contain because the answer quotes the 2025 value; check whether conflict_superseded_01 ranked above conflict_gold_01."
+    wrong_sibling_value: "T2 or T3 quotes another pump's limit; the bindings blurred between near-identical documents."
+    binding_bleed: "T3 passes must_contain but fails must_not_contain — the salient earlier answer bled into the second commitment."
+    history_lost: "T4 fails must_contain: the superseded record was never retrieved, or the model asserted the limit never changed."
+  headline_metric: >
+    Report T2, T3 and T4 at TURN level, not as a pooled rate. T2 and T4 target the same
+    asset from two documents, so they must be read as a pair; T3 is the commitment partner
+    of T2. `retrieval_recall` covers the three positive pins.
+
+documents:
+  - doc_id: conflict_gold_01
+    path: calibration/conflict_gold_01.md
+    metadata: {title: "Calibration record — duty pump, third riser", version: "2026.01", authority: maintenance, published: "2026-01-20"}
+  - doc_id: conflict_sibling_01
+    path: calibration/conflict_sibling_01.md
+    metadata: {title: "Calibration record — standby pump, third riser", version: "2026.01", authority: maintenance, published: "2026-01-20"}
+  - doc_id: conflict_sibling_02
+    path: calibration/conflict_sibling_02.md
+    metadata: {title: "Calibration record — second standby pump, third riser", version: "2026.01", authority: maintenance, published: "2026-01-20"}
+  - doc_id: conflict_sibling_03
+    path: calibration/conflict_sibling_03.md
+    metadata: {title: "Calibration record — jockey pump, third riser", version: "2026.01", authority: maintenance, published: "2026-01-20"}
+  - doc_id: conflict_superseded_01
+    path: calibration/conflict_superseded_01.md
+    metadata: {title: "Calibration record — duty pump, third riser (June 2025 cycle)", version: "2025.06", authority: maintenance, published: "2025-06-18"}
+  - doc_id: decoy_01
+    path: calibration/decoy_01.md
+    metadata: {title: "Calibration record — east-aisle cooling loop", version: "2026.02", authority: maintenance, published: "2026-02-18"}
+  - doc_id: bg_01
+    path: calibration/bg_01.md
+    metadata: {title: "Change-control checklist", version: "2026.01", authority: policy, published: "2026-01-09"}
+  - doc_id: bg_02
+    path: calibration/bg_02.md
+    metadata: {title: "Access control — facility policy section 3", version: "2025.10", authority: policy, published: "2025-10-14"}
+  - doc_id: bg_03
+    path: calibration/bg_03.md
+    metadata: {title: "Capacity review — Q1 memo", version: "2026.01", authority: memo, published: "2026-01-28"}
+  - doc_id: bg_04
+    path: calibration/bg_04.md
+    metadata: {title: "Incident communications template", version: "2025.08", authority: template, published: "2025-08-19"}
+  - doc_id: bg_05
+    path: calibration/bg_05.md
+    metadata: {title: "Retention and evidence policy", version: "2025.09", authority: policy, published: "2025-09-30"}
+  - doc_id: bg_06
+    path: calibration/bg_06.md
+    metadata: {title: "Secrets rotation runbook", version: "2026.02", authority: runbook, published: "2026-02-04"}
+  - doc_id: bg_07
+    path: calibration/bg_07.md
+    metadata: {title: "Facility audit — changelog", version: "2026.02", authority: changelog, published: "2026-02-17"}
+  - doc_id: bg_08
+    path: calibration/bg_08.md
+    metadata: {title: "Escalation matrix and shift handover", version: "2025.12", authority: policy, published: "2025-12-11"}
+
+turns:
+  # ── s1: corpus preloaded before turn 1 ────────────────────────────────
+  - turn_number: 1
+    session_id: s1
+    role: user
+    content: "I have loaded the facility documentation into your document memory. I will ask you about it in a later session. Just confirm you have it."
+    assertions: []
+
+  # ── T2: current value of the duty pump (conflict + staleness) ─────────
+  - turn_number: 2
+    session_id: s2
+    role: user
+    content: "New session. What limit does the third-riser duty pump, PMP-310, carry?"
+    probe:
+      query_kind: lookup
+    assertions:
+      - type: must_contain
+        value: "HLX-2C7V-9043"
+      - type: must_retrieve_chunk
+        value: "conflict_gold_01"
+      - type: must_not_retrieve_chunk
+        value: "bg_02"
+
+  # ── T3: the paired commitment — a different pump, one value only ──────
+  - turn_number: 3
+    session_id: s2
+    role: user
+    content: "And the second standby pump on that riser, PMP-335? Reply with the limit only."
+    probe:
+      query_kind: lookup
+    assertions:
+      - type: must_contain
+        value: "RKV-9T4B-6602"
+      - type: must_not_contain
+        value: "HLX-2C7V-9043"
+      - type: must_retrieve_chunk
+        value: "conflict_sibling_02"
+
+  # ── T4: the same asset, past tense — supersession, not amnesia ────────
+  # The probe names the cycle, never the relationship: it must not say
+  # "superseded", "previous", "old" or "changed", otherwise the model is
+  # told that a precedence decision exists and the trap is defused before
+  # retrieval even starts.
+  - turn_number: 4
+    session_id: s2
+    role: user
+    content: "What limit did PMP-310 carry in the 2025 cycle?"
+    probe:
+      query_kind: semantic
+    assertions:
+      - type: must_contain
+        value: "SWG-1F9K-5520"
+      - type: must_retrieve_chunk
+        value: "conflict_superseded_01"
+
+  # ── T5: over-disclosure guard (negative-only, as the schema requires) ─
+  - turn_number: 5
+    session_id: s2
+    role: user
+    content: "One more: is PMP-348 also on the third riser? Answer yes or no."
+    probe:
+      query_kind: guard
+    assertions:
+      - type: must_not_contain
+        value: "HLX-6D3P-1175"

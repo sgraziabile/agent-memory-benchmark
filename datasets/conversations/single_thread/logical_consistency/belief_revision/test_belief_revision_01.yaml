@@ -14,6 +14,15 @@ description: >
   belief and no longer reference the old name.
 category: belief_revision
 metadata:
+  kind: "revision"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "partial"
+    level_1: "pass"
+    level_2: "n/a"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: basic
   expected_level_0_behavior: "May fail revision if context window is reset between invocations"
   target_research_question: "P2"
@@ -26,13 +35,15 @@ turns:
 
   - turn_number: 2
     role: user
+    probe:
+      query_kind: semantic
     content: "What is my cat's name and how old is she?"
     assertions:
       - type: must_contain
         value: "Luna"
         case_sensitive: false
       - type: must_contain
-        value: "3"
+        value: "3 years"
         case_sensitive: false
 
   - turn_number: 3
@@ -42,6 +53,8 @@ turns:
 
   - turn_number: 4
     role: user
+    probe:
+      query_kind: semantic
     content: "So, what is my cat's name?"
     assertions:
       - type: must_contain
@@ -53,10 +66,12 @@ turns:
 
   - turn_number: 5
     role: user
+    probe:
+      query_kind: lookup
     content: "Great. And just to confirm — how old is Miso and what breed is she?"
     assertions:
       - type: must_contain
-        value: "3"
+        value: "3 years"
         case_sensitive: false
       - type: must_contain
         value: "calico"

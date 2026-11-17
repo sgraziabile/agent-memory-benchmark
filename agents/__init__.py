@@ -20,6 +20,7 @@ from agents.level_2_episodic_rag.graph import Level2EpisodicRAGAgent
 __all__ = [
     "AGENT_REGISTRY",
     "BaseBenchmarkAgent",
+    "LEVEL_ALIASES",
     "Level0ReactiveAgent",
     "Level1WorkingMemoryAgent",
     "Level2EpisodicRAGAgent",
@@ -33,12 +34,28 @@ AGENT_REGISTRY: dict[str, type[BaseBenchmarkAgent]] = {
     "level_2_episodic_rag": Level2EpisodicRAGAgent,
 }
 
+#: CLI shorthands that are not a bare number, so the ``token.isdigit()``
+#: fallback below cannot build their prefix. ``--level 2b`` → ``level_2`` plus
+#: the literal ``b``, which is what the L2b agentic level is named for
+#: (``TODOs/l2b-telemetry-contract-todo.md`` §2.5).
+#:
+#: The alias is resolved *through* :data:`AGENT_REGISTRY`, so ``--level 2b``
+#: raises the normal "not implemented or unknown" error until the L2b agent is
+#: registered, and starts working the moment it is — no second edit needed.
+LEVEL_ALIASES: dict[str, str] = {
+    "2b": "level_2b_agentic_rag",
+}
+
 
 def _available_levels() -> str:
-    """One-liner listing registered levels, e.g. ``0 (level_0_reactive), 1 (...)``."""
+    """One-liner listing registered levels, e.g. ``0 (level_0_reactive), 1 (...)``.
+
+    The suffix is optional so an agentic level (``level_2b_agentic_rag``) is
+    listed as ``2b`` rather than falling back to its full key.
+    """
     entries = []
     for key in sorted(AGENT_REGISTRY):
-        match = re.match(r"^level_(\d+)_", key)
+        match = re.match(r"^level_(\d+[a-z]?)_", key)
         short = match.group(1) if match else key
         entries.append(f"{short} ({key})")
     return ", ".join(entries)
@@ -52,6 +69,8 @@ def resolve_level_ids(level_arg: str) -> list[str]:
       - bare number        → ``0`` / ``1`` → the unique ``level_<n>_*`` key
       - registry prefix    → ``level_0`` → ``level_0_reactive``
       - full registry key  → ``level_0_reactive``
+      - alias              → ``2b`` → ``level_2b_agentic_rag`` (see
+        :data:`LEVEL_ALIASES`; only while that agent is registered)
 
     Order is preserved and duplicates are dropped, so ``--level 1,0`` runs
     Level 1 first. Numbers with no registered implementation yet (e.g. ``2``
@@ -75,6 +94,11 @@ def resolve_level_ids(level_arg: str) -> list[str]:
     for token in tokens:
         if token in AGENT_REGISTRY:
             candidates = [token]
+        elif token.casefold() in LEVEL_ALIASES:
+            # Non-numeric shorthand (``2b``): resolve through the registry so an
+            # unregistered target reports "not implemented" like any other.
+            target = LEVEL_ALIASES[token.casefold()]
+            candidates = [target] if target in AGENT_REGISTRY else []
         else:
             prefix = f"level_{token}" if token.isdigit() else token
             pattern = re.compile(rf"^{re.escape(prefix)}(?:_|$)")

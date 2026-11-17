@@ -117,6 +117,20 @@ It recomputes **chunk-level** Recall@k, MRR, Δcos and coverage from
 `retrieved_memories`, because the scenario assertion only pins the document
 prefix (`must_retrieve_chunk: corpus_0NN` also accepts sibling sub-chunks).
 
+Committed scenarios additionally report the **assertion-level** recall that the
+runner exports per run (`retrieval_recall` = passed / declared
+`must_retrieve_chunk` pins, with a Wilson 95% interval) and that any run —
+including archived ones — can be re-derived for with:
+
+```bash
+python scripts/retrieval_recall.py --scenario-prefix document_ --verbose
+```
+
+The two numbers are not interchangeable: the assertion-level ratio is
+document-level (a sibling chunk satisfies the pin), the script above is
+chunk-level (the retrieved chunk must contain the answer token). See SPEC §5.8
+for the denominator policy (declared pins, errored probes count as misses).
+
 ### Ingestion cost: batched embedding requests
 
 Chunks are written through `InMemoryStore.batch()` windows, so one provider call

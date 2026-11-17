@@ -16,6 +16,15 @@ description: >
   composition of the distributed premises.
 category: temporal_multi_hop
 metadata:
+  kind: "recall"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "pass"
+    level_2: "n/a"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: moderate
   hops: 2
   distractor_turns: 1
@@ -30,6 +39,8 @@ turns:
 
   - turn_number: 2
     role: user
+    probe:
+      query_kind: lookup
     content: "Quick question before we continue: what is the boiling point of water at sea level in Celsius?"
     assertions:
       - type: must_contain
@@ -43,6 +54,8 @@ turns:
 
   - turn_number: 4
     role: user
+    probe:
+      query_kind: semantic
     content: "Based on what we discussed, in which city does Elena live?"
     assertions:
       - type: must_contain

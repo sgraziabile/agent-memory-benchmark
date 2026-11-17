@@ -28,7 +28,6 @@ import argparse
 import csv
 import glob
 import json
-import math
 import os
 import sys
 from collections import defaultdict
@@ -39,21 +38,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:  # allow `python scripts/lr_report.py`
     sys.path.insert(0, str(REPO_ROOT))
 
-Z_95 = 1.959963984540054
+# Interval lives in ``core.metrics`` so the runner's per-run retrieval recall
+# and this script's Recall@k share one definition (and one test).
+from core.metrics import Z_95, wilson_ci  # noqa: E402,F401  (re-exported)
 
 
 # ── Pure metric helpers (unit-tested) ───────────────────────────────────────
-
-
-def wilson_ci(successes: int, n: int, z: float = Z_95) -> tuple[float, float]:
-    """Wilson score interval for a binomial proportion (no scipy needed)."""
-    if n <= 0:
-        return (0.0, 0.0)
-    p = successes / n
-    denom = 1.0 + z * z / n
-    centre = (p + z * z / (2.0 * n)) / denom
-    half = (z * math.sqrt(p * (1.0 - p) / n + z * z / (4.0 * n * n))) / denom
-    return (max(0.0, centre - half), min(1.0, centre + half))
 
 
 def _rank_of(episodes: Iterable[dict[str, Any]], predicate) -> int | None:

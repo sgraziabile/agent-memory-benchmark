@@ -16,6 +16,15 @@ description: >
   for the final updated room and day in the same prompt.
 category: in_context_control
 metadata:
+  kind: "control_in_context"
+  quality_eligible: false
+  controls: "In-context ceiling control: the full context is inside the probe, so a failure is a reasoning failure, not a memory failure."
+  expected:
+    level_0: "control"
+    level_1: "control"
+    level_2: "control"
+    level_3: "control"
+    level_4: "control"
   difficulty: basic
   expected_level_0_behavior: "Should succeed (100% pass rate) because all context is present in a single turn"
   target_research_question: "P2"
@@ -23,6 +32,8 @@ metadata:
 turns:
   - turn_number: 1
     role: user
+    probe:
+      query_kind: semantic
     content: >
       Please read this schedule note carefully:
       "Team briefing was originally planned for Tuesday at 10:00 in Room 304.

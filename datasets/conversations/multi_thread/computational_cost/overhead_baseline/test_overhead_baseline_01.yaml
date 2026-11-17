@@ -33,6 +33,15 @@ description: >
   infrastructure overhead (P3).
 category: overhead_baseline
 metadata:
+  kind: "control_p3"
+  quality_eligible: false
+  controls: "P3 computational-cost baseline: prompt-token growth, retrieval/append latency and per-turn cost; accuracy is not its claim."
+  expected:
+    level_0: "control"
+    level_1: "control"
+    level_2: "control"
+    level_3: "control"
+    level_4: "control"
   difficulty: basic
   stage: "4.1"
   sessions: ["s1", "s2"]
@@ -55,15 +64,19 @@ turns:
   - turn_number: 1
     session_id: s1
     role: user
+    probe:
+      query_kind: lookup
     content: "Baseline check one: what is the chemical symbol for gold on the periodic table? Reply with the two-letter symbol only, nothing else."
     assertions:
       - type: must_contain
         value: "Au"
-        case_sensitive: false
+        case_sensitive: true
 
   - turn_number: 2
     session_id: s1
     role: user
+    probe:
+      query_kind: lookup
     content: "Baseline check two: how many sides does a standard hexagon have? Reply with the digits only, nothing else."
     assertions:
       - type: must_contain
@@ -73,6 +86,8 @@ turns:
   - turn_number: 3
     session_id: s1
     role: user
+    probe:
+      query_kind: lookup
     content: "Baseline check three: what is the capital city of Japan? Reply with the city name only, nothing else."
     assertions:
       - type: must_contain
@@ -82,6 +97,8 @@ turns:
   - turn_number: 4
     session_id: s1
     role: user
+    probe:
+      query_kind: lookup
     content: "Baseline check four: at what temperature in degrees Celsius does pure water freeze at standard atmospheric pressure? Reply with the number only, nothing else."
     assertions:
       - type: must_contain
@@ -91,6 +108,8 @@ turns:
   - turn_number: 5
     session_id: s1
     role: user
+    probe:
+      query_kind: lookup
     content: "Baseline check five: which planet in our solar system is closest to the Sun? Reply with the planet name only, nothing else."
     assertions:
       - type: must_contain
@@ -101,6 +120,8 @@ turns:
   - turn_number: 6
     session_id: s2
     role: user
+    probe:
+      query_kind: lookup
     content: "Baseline check six: how many continents are there on Earth in the standard seven-continent model? Reply with the digits only, nothing else."
     assertions:
       - type: must_contain
@@ -110,15 +131,19 @@ turns:
   - turn_number: 7
     session_id: s2
     role: user
+    probe:
+      query_kind: lookup
     content: "Baseline check seven: what is the chemical symbol for oxygen on the periodic table? Reply with the one-letter symbol only, nothing else."
     assertions:
       - type: must_contain
         value: "O"
-        case_sensitive: false
+        case_sensitive: true
 
   - turn_number: 8
     session_id: s2
     role: user
+    probe:
+      query_kind: lookup
     content: "Baseline check eight: what is the capital city of France? Reply with the city name only, nothing else."
     assertions:
       - type: must_contain
@@ -128,6 +153,8 @@ turns:
   - turn_number: 9
     session_id: s2
     role: user
+    probe:
+      query_kind: lookup
     content: "Baseline check nine: how many hours are there in one standard Earth day? Reply with the digits only, nothing else."
     assertions:
       - type: must_contain
@@ -137,6 +164,8 @@ turns:
   - turn_number: 10
     session_id: s2
     role: user
+    probe:
+      query_kind: lookup
     content: "Baseline check ten: what is the positive square root of 81? Reply with the digits only, nothing else."
     assertions:
       - type: must_contain

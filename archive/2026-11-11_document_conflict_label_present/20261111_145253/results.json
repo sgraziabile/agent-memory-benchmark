@@ -1,0 +1,951 @@
+[
+  {
+    "run_id": "document_conflict_dilution_01_deepseek-v4.1-flash_baseline_react_3401ddcb",
+    "scenario_id": "document_conflict_dilution_01",
+    "model_id": "deepseek-v4.1-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 5,
+    "total_assertions": 9,
+    "passed_assertions": 9,
+    "failed_assertions": 0,
+    "pass_rate": 1.0,
+    "retrieval_assertions_total": 3,
+    "retrieval_assertions_evaluated": 3,
+    "retrieval_assertions_passed": 3,
+    "retrieval_recall": 1.0,
+    "retrieval_recall_ci_low": 0.4385029682449546,
+    "retrieval_recall_ci_high": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 48655.07439999055,
+    "avg_latency_per_turn_ms": 9731.01487999811,
+    "total_tokens": 6977,
+    "prompt_tokens": 6799,
+    "completion_tokens": 178,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I have loaded the facility documentation into your document memory. I will ask you about it in a later session. Just confirm you have it.",
+        "agent_response": "Confirmed — I have the facility documentation loaded, including the change-control checklist, the note-writing and postmortem guidance, the standing notes on walking rounds, and the facility audit changelog. I'll be ready to answer questions about it in a later session.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 11874.892899999395,
+        "token_usage": {
+          "input_tokens": 1051,
+          "output_tokens": 54,
+          "total_tokens": 1105,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 1051,
+        "completion_tokens": 54,
+        "total_tokens": 1105,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 54,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0001051,
+        "output_cost_usd": 3.24e-05,
+        "total_cost_usd": 0.0001375,
+        "retrieved_context_chars": 4417,
+        "retrieved_context_tokens": 1104,
+        "embedding_tokens": 140,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 351.7799000037485,
+        "append_latency_ms": 2702.648999998928,
+        "embedding_latency_ms": 3051.646799998707,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_bg_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Change-control checklist — platform facilities\n\nApplies to every change raised against the facility estate, including work carried out by vendors under\na framework agreement. The checklist is filled in by the change raiser and countersigned by the shift\nsupervisor before the ticket leaves draft.\n\n## Before the change\n\n- [ ] A change record exists with a single named owner, a start and end window, and a rollback step written\n      by someone other than the person who will execute it.\n- [ ] The rollback step names the exact state to restore and the person who verifies it afterwards.\n- [ ] Any safety interlock that must be bypassed is listed, together with the mitigation that replaces it\n      while the bypass is active.\n- [ ] The affected room and rack are named. \"Facilities\" is not an acceptable location.\n- [ ] A second engineer has read the plan and signed it. For changes that touch power distribution the\n      reviewer must be from the electrical team.\n\n## During the change",
+            "score": 0.46930086555271017,
+            "rank": 1,
+            "char_count": 991,
+            "estimated_tokens": 247,
+            "metadata": {
+              "title": "Change-control checklist",
+              "version": "2026.01",
+              "authority": "policy",
+              "published": "2026-01-09",
+              "doc_id": "bg_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_01.md",
+              "sha256": "8a24fae2768abdc29810d45dc4faab1f4de47684bdb16049c7845d306900f16a",
+              "parent_chunk_id": "doc_bg_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_bg_04_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## Structure of a note\n\nThe first paragraph says what customers can observe, in their terms. The second says what is being done and\nby whom. The third, when known, says when the next update will follow. Anything else — hypotheses, internal\ntooling names, the names of engineers — is left out of the customer-facing note and recorded in the internal\ntimeline instead.\n\nInternal notes carry more detail. They name the working theory, the person testing it, and the two or three\ndiagnostics already excluded. An internal note that lists every alarm without saying which ones were ruled\nout costs the next responder the same investigation twice.\n\n## Postmortem\n\nA postmortem is written for every S1 and for any S2 that repeated within the quarter. It is blameless in the\nnarrow sense that it names systems and decisions rather than individuals, and it ends with no more than\nthree actions, each with an owner and a date. Postmortems with ten actions are treated as having none: the\nreview samples whether the actions were completed, and a list nobody finishes scores worse than a short one\nthat closes.\n\n## Escalation touchpoints",
+            "score": 0.41134805918460204,
+            "rank": 2,
+            "char_count": 1125,
+            "estimated_tokens": 281,
+            "metadata": {
+              "title": "Incident communications template",
+              "version": "2025.08",
+              "authority": "template",
+              "published": "2025-08-19",
+              "doc_id": "bg_04",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_04.md",
+              "sha256": "7bc7f184a045244cfbbb28ed22fc9061c78983fab664eb5bf06f3cd2b958c95f",
+              "parent_chunk_id": "doc_bg_04",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_bg_08_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Handovers are written, not spoken. A spoken handover reaches the next shift and nobody else; a written one\nreaches the engineer who is called at three in the morning two weeks later and needs to know why a circuit\nwas left isolated.\n\n## Standing notes\n\nThe plant rooms are visited on a walking round twice per shift. Round times are recorded, because a round\nthat is consistently recorded at the same minute is a round that is being signed off from the office. The\nsecurity lead samples the timestamps monthly and has, on two occasions, asked for the round to be repeated\nunder observation.\n\nRooms under construction are excluded from the round only while the contractor's permit is open, and the\nexclusion ends automatically when the permit expires. An exclusion that outlives its permit is treated as a\nfinding in the next audit.\n\n## Out of hours",
+            "score": 0.41101649946986,
+            "rank": 3,
+            "char_count": 848,
+            "estimated_tokens": 212,
+            "metadata": {
+              "title": "Escalation matrix and shift handover",
+              "version": "2025.12",
+              "authority": "policy",
+              "published": "2025-12-11",
+              "doc_id": "bg_08",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_08.md",
+              "sha256": "d2e2ee5a4a4fc4617975ece2456ccf6d3b521256be8a4a2123f1fac32f32511e",
+              "parent_chunk_id": "doc_bg_08",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_decoy_01_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## Note on scope\n\nThis record covers the loop as an asset. It does not cover the pumps, which have their own records, and it\ndoes not cover the air-handling units served by the loop, whose inspection results are recorded separately\nbecause they are inspected on a different cadence.",
+            "score": 0.3877481632550718,
+            "rank": 4,
+            "char_count": 282,
+            "estimated_tokens": 70,
+            "metadata": {
+              "title": "Calibration record — east-aisle cooling loop",
+              "version": "2026.02",
+              "authority": "maintenance",
+              "published": "2026-02-18",
+              "doc_id": "decoy_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_01.md",
+              "sha256": "205665522b727cd279a2584183cfb734f861ab9974ca5a948060ee52975938b6",
+              "parent_chunk_id": "doc_decoy_01",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_bg_07_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Facility audit — changelog\n\nChanges to the facility walkthrough audit, newest first. Each entry records what changed and the release\nof the audit pack that first carried it.\n\n## 2026-02-17 — pack 2026.02\n\nThe walkthrough audit is now run every six weeks. The previous semi-annual cadence was set when the\nestate held two halls; with seven halls in scope a semi-annual pass meant that a hall could go five months\nbetween physical inspections, which the review group judged too long to be useful.\n\nNothing else in the audit changed. The checklist, the evidence requirements and the sign-off chain are\nidentical to pack 2025.09.\n\n## 2025-09-04 — pack 2025.09\n\nThe audit pack gained a photographic evidence requirement for cable management. Written descriptions of\ncable routing had proven impossible to check against the previous pack, because two engineers describing the\nsame tray produced descriptions that could not be compared.\n\nThe pack also dropped the separate thermostat verification sheet. Its three checks were folded into the\nenvironmental section, where they were already being recorded twice.\n\n## 2025-03-11 — pack 2025.03",
+            "score": 0.38279464174449923,
+            "rank": 5,
+            "char_count": 1135,
+            "estimated_tokens": 283,
+            "metadata": {
+              "title": "Facility audit — changelog",
+              "version": "2026.02",
+              "authority": "changelog",
+              "published": "2026-02-17",
+              "doc_id": "bg_07",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_07.md",
+              "sha256": "8040d6d6fda15ba56c606a322d7b9b3d391dfc7330487eb992623404fa09421f",
+              "parent_chunk_id": "doc_bg_07",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 2,
+        "user_input": "New session. What limit does the third-riser duty pump, PMP-310, carry?",
+        "agent_response": "The recorded limit for PMP-310, the third-riser duty pump, is **HLX-2C7V-9043**, re-measured and confirmed during the January 2026 cycle.\n\nNote that an older value, SWG-1F9K-5520, appears in the June 2025 cycle record — that record is marked superseded, so it's no longer current (though it may still show up in closed 2025 maintenance tickets).",
+        "assertions_passed": 3,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "HLX-2C7V-9043",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "conflict_gold_01",
+            "passed": true,
+            "matched_chunks": [
+              "doc_conflict_gold_01_c0"
+            ]
+          },
+          {
+            "rule_type": "must_not_retrieve_chunk",
+            "value": "bg_02",
+            "passed": true,
+            "matched_chunks": []
+          }
+        ],
+        "latency_ms": 12098.963199998252,
+        "token_usage": {
+          "input_tokens": 1321,
+          "output_tokens": 100,
+          "total_tokens": 1421,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1321,
+        "completion_tokens": 100,
+        "total_tokens": 1421,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 100,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0001321,
+        "output_cost_usd": 6e-05,
+        "total_cost_usd": 0.0001921,
+        "retrieved_context_chars": 5174,
+        "retrieved_context_tokens": 1293,
+        "embedding_tokens": 125,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 646.3068000011845,
+        "append_latency_ms": 3121.0666999977548,
+        "embedding_latency_ms": 3764.641699999629,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_conflict_gold_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — duty pump, third riser\n\n## Asset\n\nThe duty pump on the third riser is asset PMP-310. It carries the base load for the riser and runs\ncontinuously between the spring and autumn changeover; the standby pumps only start when it is isolated.\nThe riser is fed from the north header and returns through the shared manifold, which is why the\nthird-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-310 is HLX-2C7V-9043. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.7778581335733998,
+            "rank": 1,
+            "char_count": 1030,
+            "estimated_tokens": 257,
+            "metadata": {
+              "title": "Calibration record — duty pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_gold_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_gold_01.md",
+              "sha256": "cd1b617d0c0b370a61747a0ba85668b7c8cbec15026e66609d69bac991f8917e",
+              "parent_chunk_id": "doc_conflict_gold_01",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_superseded_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — duty pump, third riser (June 2025 cycle)\n\n## Status\n\nSuperseded. This record was written for the June 2025 cycle and has been replaced by the January 2026\ncycle for the same asset. It is retained rather than deleted because maintenance tickets raised during\n2025 still cite it, and a reader who finds the old value in a closed ticket needs to know that it was\ncurrent at the time and is not current now.\n\n## Asset\n\nThe duty pump on the third riser is asset PMP-310. It carries the base load for the riser and runs\ncontinuously between the spring and autumn changeover; the standby pumps only start when it is isolated.\n\n## Recorded limit — June 2025 cycle\n\nThe recorded limit for PMP-310 was SWG-1F9K-5520. It was read at the June 2025 changeover with the other\npumps on the riser isolated, and it stood as the recorded value until the January 2026 cycle replaced it.\n\n## Why the value moved",
+            "score": 0.7751015548141689,
+            "rank": 2,
+            "char_count": 914,
+            "estimated_tokens": 228,
+            "metadata": {
+              "title": "Calibration record — duty pump, third riser (June 2025 cycle)",
+              "version": "2025.06",
+              "authority": "maintenance",
+              "published": "2025-06-18",
+              "doc_id": "conflict_superseded_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_superseded_01.md",
+              "sha256": "24d5b442fff8caecc8c634c96c2a39d71207a76898adc3ae571fb9eb68d37293",
+              "parent_chunk_id": "doc_conflict_superseded_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_sibling_03_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — jockey pump, third riser\n\n## Asset\n\nThe jockey pump on the third riser is asset PMP-348. It maintains riser pressure when neither the duty pump\nnor the standby pumps are running, and it starts on pressure loss rather than on schedule; the standby pumps\nonly start when it is isolated. The riser is fed from the north header and returns through the shared manifold,\nwhich is why the third-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-348 is HLX-6D3P-1175. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.7113425613138619,
+            "rank": 3,
+            "char_count": 1077,
+            "estimated_tokens": 269,
+            "metadata": {
+              "title": "Calibration record — jockey pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_03",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_03.md",
+              "sha256": "5ac2dff075846ded7d0ae0ba7ff87b57e8ea93726ab4b5bb09aa5eb56e2c51e6",
+              "parent_chunk_id": "doc_conflict_sibling_03",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_sibling_02_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — second standby pump, third riser\n\n## Asset\n\nThe second standby pump on the third riser is asset PMP-335. It is the second unit called when the duty\npump is isolated, and it is the only pump on the riser with a manual start; the standby pumps only start\nwhen it is isolated. The riser is fed from the north header and returns through the shared manifold, which is\nwhy the third-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-335 is RKV-9T4B-6602. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.6995686217074767,
+            "rank": 4,
+            "char_count": 1066,
+            "estimated_tokens": 266,
+            "metadata": {
+              "title": "Calibration record — second standby pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_02.md",
+              "sha256": "a85247e84917ff53e0e3f23edda01b873593b28896c4e205d7c7b8dc1b4dcba9",
+              "parent_chunk_id": "doc_conflict_sibling_02",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_sibling_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — standby pump, third riser\n\n## Asset\n\nThe standby pump on the third riser is asset PMP-322. It starts when the duty pump is isolated for service\nand runs through the changeover if the duty pump is unavailable; the standby pumps only start when it is\nisolated. The riser is fed from the north header and returns through the shared manifold, which is why the\nthird-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-322 is SWG-5N1R-3388. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.6975227060997683,
+            "rank": 5,
+            "char_count": 1051,
+            "estimated_tokens": 262,
+            "metadata": {
+              "title": "Calibration record — standby pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_01.md",
+              "sha256": "495dd56a258d1785531a4194735dd3501a0210c40cc8c662fae8dd9db578d6c7",
+              "parent_chunk_id": "doc_conflict_sibling_01",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 3,
+        "user_input": "And the second standby pump on that riser, PMP-335? Reply with the limit only.",
+        "agent_response": "RKV-9T4B-6602",
+        "assertions_passed": 3,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "RKV-9T4B-6602",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "HLX-2C7V-9043",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "conflict_sibling_02",
+            "passed": true,
+            "matched_chunks": [
+              "doc_conflict_sibling_02_c0"
+            ]
+          }
+        ],
+        "latency_ms": 8147.301500001049,
+        "token_usage": {
+          "input_tokens": 1445,
+          "output_tokens": 11,
+          "total_tokens": 1456,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1445,
+        "completion_tokens": 11,
+        "total_tokens": 1456,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0001445,
+        "output_cost_usd": 6.6e-06,
+        "total_cost_usd": 0.0001511,
+        "retrieved_context_chars": 5174,
+        "retrieved_context_tokens": 1293,
+        "embedding_tokens": 46,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 233.81309999967925,
+        "append_latency_ms": 2406.716299999971,
+        "embedding_latency_ms": 2636.9588000015938,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_conflict_sibling_02_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — second standby pump, third riser\n\n## Asset\n\nThe second standby pump on the third riser is asset PMP-335. It is the second unit called when the duty\npump is isolated, and it is the only pump on the riser with a manual start; the standby pumps only start\nwhen it is isolated. The riser is fed from the north header and returns through the shared manifold, which is\nwhy the third-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-335 is RKV-9T4B-6602. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.8303790270065982,
+            "rank": 1,
+            "char_count": 1066,
+            "estimated_tokens": 266,
+            "metadata": {
+              "title": "Calibration record — second standby pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_02.md",
+              "sha256": "a85247e84917ff53e0e3f23edda01b873593b28896c4e205d7c7b8dc1b4dcba9",
+              "parent_chunk_id": "doc_conflict_sibling_02",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_sibling_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — standby pump, third riser\n\n## Asset\n\nThe standby pump on the third riser is asset PMP-322. It starts when the duty pump is isolated for service\nand runs through the changeover if the duty pump is unavailable; the standby pumps only start when it is\nisolated. The riser is fed from the north header and returns through the shared manifold, which is why the\nthird-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-322 is SWG-5N1R-3388. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.7974751243191869,
+            "rank": 2,
+            "char_count": 1051,
+            "estimated_tokens": 262,
+            "metadata": {
+              "title": "Calibration record — standby pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_01.md",
+              "sha256": "495dd56a258d1785531a4194735dd3501a0210c40cc8c662fae8dd9db578d6c7",
+              "parent_chunk_id": "doc_conflict_sibling_01",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_gold_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — duty pump, third riser\n\n## Asset\n\nThe duty pump on the third riser is asset PMP-310. It carries the base load for the riser and runs\ncontinuously between the spring and autumn changeover; the standby pumps only start when it is isolated.\nThe riser is fed from the north header and returns through the shared manifold, which is why the\nthird-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-310 is HLX-2C7V-9043. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.7647137638877473,
+            "rank": 3,
+            "char_count": 1030,
+            "estimated_tokens": 257,
+            "metadata": {
+              "title": "Calibration record — duty pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_gold_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_gold_01.md",
+              "sha256": "cd1b617d0c0b370a61747a0ba85668b7c8cbec15026e66609d69bac991f8917e",
+              "parent_chunk_id": "doc_conflict_gold_01",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_superseded_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — duty pump, third riser (June 2025 cycle)\n\n## Status\n\nSuperseded. This record was written for the June 2025 cycle and has been replaced by the January 2026\ncycle for the same asset. It is retained rather than deleted because maintenance tickets raised during\n2025 still cite it, and a reader who finds the old value in a closed ticket needs to know that it was\ncurrent at the time and is not current now.\n\n## Asset\n\nThe duty pump on the third riser is asset PMP-310. It carries the base load for the riser and runs\ncontinuously between the spring and autumn changeover; the standby pumps only start when it is isolated.\n\n## Recorded limit — June 2025 cycle\n\nThe recorded limit for PMP-310 was SWG-1F9K-5520. It was read at the June 2025 changeover with the other\npumps on the riser isolated, and it stood as the recorded value until the January 2026 cycle replaced it.\n\n## Why the value moved",
+            "score": 0.763328126104161,
+            "rank": 4,
+            "char_count": 914,
+            "estimated_tokens": 228,
+            "metadata": {
+              "title": "Calibration record — duty pump, third riser (June 2025 cycle)",
+              "version": "2025.06",
+              "authority": "maintenance",
+              "published": "2025-06-18",
+              "doc_id": "conflict_superseded_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_superseded_01.md",
+              "sha256": "24d5b442fff8caecc8c634c96c2a39d71207a76898adc3ae571fb9eb68d37293",
+              "parent_chunk_id": "doc_conflict_superseded_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_sibling_03_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — jockey pump, third riser\n\n## Asset\n\nThe jockey pump on the third riser is asset PMP-348. It maintains riser pressure when neither the duty pump\nnor the standby pumps are running, and it starts on pressure loss rather than on schedule; the standby pumps\nonly start when it is isolated. The riser is fed from the north header and returns through the shared manifold,\nwhich is why the third-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-348 is HLX-6D3P-1175. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.7631011797446641,
+            "rank": 5,
+            "char_count": 1077,
+            "estimated_tokens": 269,
+            "metadata": {
+              "title": "Calibration record — jockey pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_03",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_03.md",
+              "sha256": "5ac2dff075846ded7d0ae0ba7ff87b57e8ea93726ab4b5bb09aa5eb56e2c51e6",
+              "parent_chunk_id": "doc_conflict_sibling_03",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 4,
+        "user_input": "What limit did PMP-310 carry in the 2025 cycle?",
+        "agent_response": "SWG-1F9K-5520",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "SWG-1F9K-5520",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "conflict_superseded_01",
+            "passed": true,
+            "matched_chunks": [
+              "doc_conflict_superseded_01_c0"
+            ]
+          }
+        ],
+        "latency_ms": 8359.212299998035,
+        "token_usage": {
+          "input_tokens": 1474,
+          "output_tokens": 11,
+          "total_tokens": 1485,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1474,
+        "completion_tokens": 11,
+        "total_tokens": 1485,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 11,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0001474,
+        "output_cost_usd": 6.6e-06,
+        "total_cost_usd": 0.000154,
+        "retrieved_context_chars": 5174,
+        "retrieved_context_tokens": 1293,
+        "embedding_tokens": 30,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 208.66360000218265,
+        "append_latency_ms": 2340.1325000013458,
+        "embedding_latency_ms": 2546.8561000016052,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_conflict_superseded_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — duty pump, third riser (June 2025 cycle)\n\n## Status\n\nSuperseded. This record was written for the June 2025 cycle and has been replaced by the January 2026\ncycle for the same asset. It is retained rather than deleted because maintenance tickets raised during\n2025 still cite it, and a reader who finds the old value in a closed ticket needs to know that it was\ncurrent at the time and is not current now.\n\n## Asset\n\nThe duty pump on the third riser is asset PMP-310. It carries the base load for the riser and runs\ncontinuously between the spring and autumn changeover; the standby pumps only start when it is isolated.\n\n## Recorded limit — June 2025 cycle\n\nThe recorded limit for PMP-310 was SWG-1F9K-5520. It was read at the June 2025 changeover with the other\npumps on the riser isolated, and it stood as the recorded value until the January 2026 cycle replaced it.\n\n## Why the value moved",
+            "score": 0.6334828257496162,
+            "rank": 1,
+            "char_count": 914,
+            "estimated_tokens": 228,
+            "metadata": {
+              "title": "Calibration record — duty pump, third riser (June 2025 cycle)",
+              "version": "2025.06",
+              "authority": "maintenance",
+              "published": "2025-06-18",
+              "doc_id": "conflict_superseded_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_superseded_01.md",
+              "sha256": "24d5b442fff8caecc8c634c96c2a39d71207a76898adc3ae571fb9eb68d37293",
+              "parent_chunk_id": "doc_conflict_superseded_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_gold_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — duty pump, third riser\n\n## Asset\n\nThe duty pump on the third riser is asset PMP-310. It carries the base load for the riser and runs\ncontinuously between the spring and autumn changeover; the standby pumps only start when it is isolated.\nThe riser is fed from the north header and returns through the shared manifold, which is why the\nthird-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-310 is HLX-2C7V-9043. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.5486714316579988,
+            "rank": 2,
+            "char_count": 1030,
+            "estimated_tokens": 257,
+            "metadata": {
+              "title": "Calibration record — duty pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_gold_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_gold_01.md",
+              "sha256": "cd1b617d0c0b370a61747a0ba85668b7c8cbec15026e66609d69bac991f8917e",
+              "parent_chunk_id": "doc_conflict_gold_01",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_sibling_02_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — second standby pump, third riser\n\n## Asset\n\nThe second standby pump on the third riser is asset PMP-335. It is the second unit called when the duty\npump is isolated, and it is the only pump on the riser with a manual start; the standby pumps only start\nwhen it is isolated. The riser is fed from the north header and returns through the shared manifold, which is\nwhy the third-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-335 is RKV-9T4B-6602. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.5080886670632158,
+            "rank": 3,
+            "char_count": 1066,
+            "estimated_tokens": 266,
+            "metadata": {
+              "title": "Calibration record — second standby pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_02.md",
+              "sha256": "a85247e84917ff53e0e3f23edda01b873593b28896c4e205d7c7b8dc1b4dcba9",
+              "parent_chunk_id": "doc_conflict_sibling_02",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_sibling_03_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — jockey pump, third riser\n\n## Asset\n\nThe jockey pump on the third riser is asset PMP-348. It maintains riser pressure when neither the duty pump\nnor the standby pumps are running, and it starts on pressure loss rather than on schedule; the standby pumps\nonly start when it is isolated. The riser is fed from the north header and returns through the shared manifold,\nwhich is why the third-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-348 is HLX-6D3P-1175. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.5054302848725087,
+            "rank": 4,
+            "char_count": 1077,
+            "estimated_tokens": 269,
+            "metadata": {
+              "title": "Calibration record — jockey pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_03",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_03.md",
+              "sha256": "5ac2dff075846ded7d0ae0ba7ff87b57e8ea93726ab4b5bb09aa5eb56e2c51e6",
+              "parent_chunk_id": "doc_conflict_sibling_03",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_sibling_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — standby pump, third riser\n\n## Asset\n\nThe standby pump on the third riser is asset PMP-322. It starts when the duty pump is isolated for service\nand runs through the changeover if the duty pump is unavailable; the standby pumps only start when it is\nisolated. The riser is fed from the north header and returns through the shared manifold, which is why the\nthird-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-322 is SWG-5N1R-3388. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.4932152992508689,
+            "rank": 5,
+            "char_count": 1051,
+            "estimated_tokens": 262,
+            "metadata": {
+              "title": "Calibration record — standby pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_01.md",
+              "sha256": "495dd56a258d1785531a4194735dd3501a0210c40cc8c662fae8dd9db578d6c7",
+              "parent_chunk_id": "doc_conflict_sibling_01",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t3"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 5,
+        "user_input": "One more: is PMP-348 also on the third riser? Answer yes or no.",
+        "agent_response": "Yes",
+        "assertions_passed": 1,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_not_contain",
+            "value": "HLX-6D3P-1175",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 8174.7044999938225,
+        "token_usage": {
+          "input_tokens": 1508,
+          "output_tokens": 2,
+          "total_tokens": 1510,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1508,
+        "completion_tokens": 2,
+        "total_tokens": 1510,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 2,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0001508,
+        "output_cost_usd": 1.2e-06,
+        "total_cost_usd": 0.000152,
+        "retrieved_context_chars": 5174,
+        "retrieved_context_tokens": 1293,
+        "embedding_tokens": 36,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 266.50599999993574,
+        "append_latency_ms": 2325.3912000000128,
+        "embedding_latency_ms": 2589.920999998867,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_conflict_sibling_03_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — jockey pump, third riser\n\n## Asset\n\nThe jockey pump on the third riser is asset PMP-348. It maintains riser pressure when neither the duty pump\nnor the standby pumps are running, and it starts on pressure loss rather than on schedule; the standby pumps\nonly start when it is isolated. The riser is fed from the north header and returns through the shared manifold,\nwhich is why the third-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-348 is HLX-6D3P-1175. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.5739903996071563,
+            "rank": 1,
+            "char_count": 1077,
+            "estimated_tokens": 269,
+            "metadata": {
+              "title": "Calibration record — jockey pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_03",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_03.md",
+              "sha256": "5ac2dff075846ded7d0ae0ba7ff87b57e8ea93726ab4b5bb09aa5eb56e2c51e6",
+              "parent_chunk_id": "doc_conflict_sibling_03",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_gold_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — duty pump, third riser\n\n## Asset\n\nThe duty pump on the third riser is asset PMP-310. It carries the base load for the riser and runs\ncontinuously between the spring and autumn changeover; the standby pumps only start when it is isolated.\nThe riser is fed from the north header and returns through the shared manifold, which is why the\nthird-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-310 is HLX-2C7V-9043. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.5480476022178301,
+            "rank": 2,
+            "char_count": 1030,
+            "estimated_tokens": 257,
+            "metadata": {
+              "title": "Calibration record — duty pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_gold_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_gold_01.md",
+              "sha256": "cd1b617d0c0b370a61747a0ba85668b7c8cbec15026e66609d69bac991f8917e",
+              "parent_chunk_id": "doc_conflict_gold_01",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_superseded_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — duty pump, third riser (June 2025 cycle)\n\n## Status\n\nSuperseded. This record was written for the June 2025 cycle and has been replaced by the January 2026\ncycle for the same asset. It is retained rather than deleted because maintenance tickets raised during\n2025 still cite it, and a reader who finds the old value in a closed ticket needs to know that it was\ncurrent at the time and is not current now.\n\n## Asset\n\nThe duty pump on the third riser is asset PMP-310. It carries the base load for the riser and runs\ncontinuously between the spring and autumn changeover; the standby pumps only start when it is isolated.\n\n## Recorded limit — June 2025 cycle\n\nThe recorded limit for PMP-310 was SWG-1F9K-5520. It was read at the June 2025 changeover with the other\npumps on the riser isolated, and it stood as the recorded value until the January 2026 cycle replaced it.\n\n## Why the value moved",
+            "score": 0.535049847553242,
+            "rank": 3,
+            "char_count": 914,
+            "estimated_tokens": 228,
+            "metadata": {
+              "title": "Calibration record — duty pump, third riser (June 2025 cycle)",
+              "version": "2025.06",
+              "authority": "maintenance",
+              "published": "2025-06-18",
+              "doc_id": "conflict_superseded_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_superseded_01.md",
+              "sha256": "24d5b442fff8caecc8c634c96c2a39d71207a76898adc3ae571fb9eb68d37293",
+              "parent_chunk_id": "doc_conflict_superseded_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_sibling_02_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — second standby pump, third riser\n\n## Asset\n\nThe second standby pump on the third riser is asset PMP-335. It is the second unit called when the duty\npump is isolated, and it is the only pump on the riser with a manual start; the standby pumps only start\nwhen it is isolated. The riser is fed from the north header and returns through the shared manifold, which is\nwhy the third-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-335 is RKV-9T4B-6602. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.5335795506401617,
+            "rank": 4,
+            "char_count": 1066,
+            "estimated_tokens": 266,
+            "metadata": {
+              "title": "Calibration record — second standby pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_02.md",
+              "sha256": "a85247e84917ff53e0e3f23edda01b873593b28896c4e205d7c7b8dc1b4dcba9",
+              "parent_chunk_id": "doc_conflict_sibling_02",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_conflict_sibling_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — standby pump, third riser\n\n## Asset\n\nThe standby pump on the third riser is asset PMP-322. It starts when the duty pump is isolated for service\nand runs through the changeover if the duty pump is unavailable; the standby pumps only start when it is\nisolated. The riser is fed from the north header and returns through the shared manifold, which is why the\nthird-riser pumps are serviced as a set rather than one at a time.\n\n## Recorded limit\n\nThe recorded limit for PMP-322 is SWG-5N1R-3388. It was re-measured during the January 2026 cycle and\nconfirmed at that value; the cycle itself is described in the pack index and is not repeated here.\n\n## Method\n\nThe limit is read at steady flow with the other pumps on the riser isolated, using the calibrated gauge on\nthe riser outlet rather than the gauge on the pump body. Two readings are taken ten minutes apart and both\nmust fall inside the stated tolerance before the value is entered in the schedule; a single reading is\nrecorded as provisional and replaced at the next cycle.",
+            "score": 0.5176645755511468,
+            "rank": 5,
+            "char_count": 1051,
+            "estimated_tokens": 262,
+            "metadata": {
+              "title": "Calibration record — standby pump, third riser",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-20",
+              "doc_id": "conflict_sibling_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\conflict_sibling_01.md",
+              "sha256": "495dd56a258d1785531a4194735dd3501a0210c40cc8c662fae8dd9db578d6c7",
+              "parent_chunk_id": "doc_conflict_sibling_01",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t4"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      }
+    ],
+    "timestamp": "2026-11-11T17:52:53.449886+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": 1200,
+    "chunk_overlap": 200,
+    "memory_snapshot_path": "memory/document_conflict_dilution_01_deepseek-v4.1-flash_baseline_react_3401ddcb",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 178,
+    "cached_prompt_tokens": 0,
+    "input_cost_usd": 0.0006799,
+    "output_cost_usd": 0.00010680000000000001,
+    "total_cost_usd": 0.0007867,
+    "input_cost_per_mtok": 0.1,
+    "output_cost_per_mtok": 0.6,
+    "retrieved_context_tokens": 6276,
+    "embedding_tokens": 3071,
+    "embedding_cache_hits": 28,
+    "embedding_cache_misses": 16,
+    "total_retrieval_latency_ms": 1707.0694000067306,
+    "total_append_latency_ms": 12895.955699998012,
+    "total_embedding_latency_ms": 46527.729599998565,
+    "ingestion_latency_ms": 31939.80549999833,
+    "documents_ingested": 14,
+    "ingested_chars": 33788,
+    "ingested_chunks": 39,
+    "corpus_chunks": 44,
+    "corpus_chars": 35365
+  }
+]

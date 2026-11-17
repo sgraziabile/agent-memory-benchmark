@@ -32,6 +32,15 @@ description: >
   a control entity whose answer must remain Level-3.
 category: belief_revision
 metadata:
+  kind: "revision"
+  amnesia_passes: false
+  quality_eligible: true
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "partial"
+    level_4: "pass"
   difficulty: hard
   stage: "5.1"
   sessions: ["s1", "s2", "s3"]
@@ -165,6 +174,8 @@ turns:
   - turn_number: 12
     session_id: s3
     role: user
+    probe:
+      query_kind: lookup
     content: "I need a single answer for the change ticket. Which authorization level is required today to reboot srv-alpha? Reply with the level only, in the form Level-N."
     assertions:
       - type: must_contain
@@ -178,6 +189,8 @@ turns:
   - turn_number: 13
     session_id: s3
     role: user
+    probe:
+      query_kind: lookup
     content: "Different server: which authorization level is required today to reboot srv-beta? Reply with the level only, in the form Level-N."
     assertions:
       - type: must_contain

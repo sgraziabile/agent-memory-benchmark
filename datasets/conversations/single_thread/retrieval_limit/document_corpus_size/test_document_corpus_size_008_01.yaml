@@ -14,6 +14,17 @@ name: 'L-R Corpus-Size Curve: 8 Documents (8 Probes)'
 description: 'L-R corpus-size curve point: 8 generated documents (~48 KB) with 8 opaque needles. Every probe names an entity that occurs once in the corpus and requests an answer token that occurs once in that entity''s document — a correct answer is impossible to infer and therefore proves the gold chunk reached the prompt. All probes share one session, so current-session chat is excluded from retrieval and the candidate pool is documents only.'
 category: document_corpus_size
 metadata:
+  kind: "scaling"
+  amnesia_passes: false
+  quality_eligible: true
+  corpus_difficulty:
+    lexical_baseline_hit_at_5: 1.0
+  expected:
+    level_0: "fail"
+    level_1: "fail"
+    level_2: "partial"
+    level_3: "n/a"
+    level_4: "n/a"
   difficulty: moderate
   stage: L-R
   target_research_question: P1
@@ -114,6 +125,8 @@ turns:
 - turn_number: 1
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the calibration code for the cooling loop LOOP-530?
   assertions:
   - type: must_contain
@@ -123,8 +136,13 @@ turns:
 - turn_number: 2
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the provisioning code for the rack row RACK-390?
   assertions:
+  - type: must_not_retrieve_chunk
+    value: "corpus_004"
+    case_sensitive: false
   - type: must_contain
     value: RDF-S7T7-1366
   - type: must_retrieve_chunk
@@ -132,6 +150,8 @@ turns:
 - turn_number: 3
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the decommissioning code for the object store bucket BSTORE-690?
   assertions:
   - type: must_contain
@@ -141,6 +161,8 @@ turns:
 - turn_number: 4
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the failover code for the scheduler pool POOL-482?
   assertions:
   - type: must_contain
@@ -150,6 +172,8 @@ turns:
 - turn_number: 5
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the escrow code for the certificate ring RING-481?
   assertions:
   - type: must_contain
@@ -159,6 +183,8 @@ turns:
 - turn_number: 6
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the attestation code for the backup vault VAULT-642?
   assertions:
   - type: must_contain
@@ -168,6 +194,8 @@ turns:
 - turn_number: 7
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the calibration code for the cooling loop LOOP-389?
   assertions:
   - type: must_contain
@@ -177,6 +205,8 @@ turns:
 - turn_number: 8
   session_id: s1
   role: user
+  probe:
+    query_kind: lookup
   content: What is the provisioning code for the rack row RACK-857?
   assertions:
   - type: must_contain

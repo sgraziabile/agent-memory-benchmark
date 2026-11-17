@@ -96,6 +96,14 @@ from core.schemas import (
     TurnResult,
 )
 from core.model_factory import get_model_pricing
+from core.metrics import (
+    assertion_recall,
+    declared_retrieval_assertions,
+    mean_calls_per_probe,
+    pins_per_call,
+    recall_with_ci,
+    union_retrieved_episodes,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -189,6 +197,14 @@ def _read_l2_telemetry(result: Any) -> dict[str, Any]:
 
         "retrieved_memories": list(result.get("retrieved_memories") or []),
         "appended_chunk_ids": list(result.get("appended_chunk_ids") or []),
+        # L2b agentic retrieval (TODOs/l2b-telemetry-contract-todo.md §2.3).
+        # Guarded exactly like the channels above: L0/L1/L2a never write them,
+        # so every pre-L2b record gains these four at [] / 0 / False and its
+        # scientific fields stay byte-identical.
+        "retrieval_calls": list(result.get("retrieval_calls") or []),
+        "retrieval_call_count": int(result.get("retrieval_call_count") or 0),
+        "retrieval_skipped": bool(result.get("retrieval_skipped") or False),
+        "tool_call_cap_hit": bool(result.get("tool_call_cap_hit") or False),
     }
 
 
@@ -1010,10 +1026,18 @@ class BenchmarkRunner:
             # Retrieval telemetry is handed over so retrieval assertions
             # (``must_retrieve_chunk`` / ``*_source``) are evaluated against
             # what the agent actually retrieved this turn (plan WS-D §Q4).
+            #
+            # L2b breaks the one-retrieval-per-turn assumption: the match set is
+            # the UNION of every call in the turn, so a second call can never
+            # shadow the first. With no calls recorded the helper falls back to
+            # ``retrieved_memories`` and L2a is untouched
+            # (TODOs/l2b-telemetry-contract-todo.md §2.4).
             assertion_details = self.evaluate_assertions(
                 ai_response,
                 turn.assertions,
-                retrieved_memories=l2_tel["retrieved_memories"],
+                retrieved_memories=union_retrieved_episodes(
+                    l2_tel["retrieved_memories"], l2_tel["retrieval_calls"]
+                ),
             )
             passed = sum(1 for a in assertion_details if a["passed"])
             failed = sum(1 for a in assertion_details if not a["passed"])
@@ -1067,6 +1091,55 @@ class BenchmarkRunner:
         total_passed = sum(tr.assertions_passed for tr in chat_ok_turns)
         total_failed = sum(tr.assertions_failed for tr in chat_ok_turns)
         total_latency = sum(tr.latency_ms for tr in chat_ok_turns)
+
+        # ── Retrieval recall (SPEC §5.8) ───────────────────────────────────
+        # Positive retrieval pins only (``must_retrieve_chunk``): negative
+        # rules are precision guards and ``must_retrieve_source`` pins a
+        # channel, not a gold item. The denominator is the DECLARED count
+        # from the scenario YAML, not the evaluated one, so a probe lost to an
+        # infrastructure error counts as a miss instead of vanishing (the
+        # "pass_rate = 1.0 over 9 of 11 assertions" artefact, notes/ F7).
+        retrieval_total = declared_retrieval_assertions(scenario.turns)
+        retrieval_evaluated = 0
+        retrieval_passed = 0
+        for tr in chat_ok_turns:
+            turn_passed, turn_total = assertion_recall(tr.assertion_details)
+            retrieval_passed += turn_passed
+            retrieval_evaluated += turn_total
+        (
+            retrieval_recall,
+            retrieval_recall_ci_low,
+            retrieval_recall_ci_high,
+        ) = recall_with_ci(retrieval_passed, retrieval_total)
+
+        # ── L2b agentic-retrieval aggregation ──────────────────────────────
+        # (TODOs/l2b-telemetry-contract-todo.md §2.4.) Call counts follow the
+        # `pass_rate` policy — ok chat turns only — because the comparison
+        # across arms happens on scored turns and an errored turn's partial
+        # loop must not dilute a per-probe rate. The efficiency denominator is
+        # the call count itself: a run that satisfied every pin in one call and
+        # a run that needed three must not read the same.
+        graded_turns = [
+            tr
+            for tr in chat_ok_turns
+            if (tr.assertions_passed + tr.assertions_failed) > 0
+        ]
+        total_tool_calls = sum(tr.retrieval_call_count for tr in chat_ok_turns)
+        calls_per_probe = mean_calls_per_probe(
+            tr.retrieval_call_count for tr in graded_turns
+        )
+        retrieval_call_efficiency = pins_per_call(
+            retrieval_passed, total_tool_calls
+        )
+        tool_call_cap_hits = sum(
+            1 for tr in chat_ok_turns if tr.tool_call_cap_hit
+        )
+        retrieving_turns = [
+            tr for tr in chat_ok_turns if tr.retrieval_call_count > 0
+        ]
+        avg_calls_per_retrieval_turn = (
+            total_tool_calls / len(retrieving_turns) if retrieving_turns else 0.0
+        )
 
         # Aggregate token usage across successfully completed chat turns
         total_tokens = 0
@@ -1213,6 +1286,19 @@ class BenchmarkRunner:
             passed_assertions=total_passed,
             failed_assertions=total_failed,
             pass_rate=total_passed / total_assertions if total_assertions > 0 else 0.0,
+            # ── Retrieval recall (SPEC §5.8) ───────────────────────────
+            retrieval_assertions_total=retrieval_total,
+            retrieval_assertions_evaluated=retrieval_evaluated,
+            retrieval_assertions_passed=retrieval_passed,
+            retrieval_recall=retrieval_recall,
+            retrieval_recall_ci_low=retrieval_recall_ci_low,
+            retrieval_recall_ci_high=retrieval_recall_ci_high,
+            # ── L2b agentic retrieval (0 / None on L0/L1/L2a) ─────────────
+            total_tool_calls=total_tool_calls,
+            avg_calls_per_retrieval_turn=avg_calls_per_retrieval_turn,
+            tool_call_cap_hits=tool_call_cap_hits,
+            calls_per_probe=calls_per_probe,
+            retrieval_call_efficiency=retrieval_call_efficiency,
             error_turns=error_count,
             error_rate=error_count / num_turns if num_turns > 0 else 0.0,
             total_latency_ms=total_latency,
@@ -1488,6 +1574,14 @@ class BenchmarkRunner:
             "passed_assertions",
             "failed_assertions",
             "pass_rate",
+            # ── Retrieval recall (SPEC §5.8): declared denominator + rule-level
+            # unit, so an errored probe still counts in `retrieval_assertions_total`.
+            "retrieval_assertions_total",
+            "retrieval_assertions_evaluated",
+            "retrieval_assertions_passed",
+            "retrieval_recall",
+            "retrieval_recall_ci_low",
+            "retrieval_recall_ci_high",
             "error_turns",
             "error_rate",
             "total_latency_ms",
@@ -1516,7 +1610,13 @@ class BenchmarkRunner:
 
         # ── Markdown Table (immediate human-friendly preview) ─────────
         md_path = run_dir / "summary.md"
+        # Retrieval recall only makes sense when at least one run declares
+        # positive retrieval pins; text-only batches keep the legacy table.
+        # Appended last so the existing alignment rules still apply.
+        show_recall = any(s.retrieval_assertions_total > 0 for s in results)
         headers = ["Scenario", "Model", "Prompt", "Level", "Turns", "Pass Rate", "Avg Latency", "Total Tokens", "Cost (USD)", "Errors"]
+        if show_recall:
+            headers.append("Retrieval Recall")
         table_rows = []
         for summary in results:
             pass_pct = f"{summary.pass_rate * 100:.1f}%"
@@ -1527,7 +1627,7 @@ class BenchmarkRunner:
                 or summary.output_cost_per_mtok is not None
             )
             cost = f"${summary.total_cost_usd:.6f}" if priced else "N/A"
-            table_rows.append([
+            row = [
                 f"`{summary.scenario_id}`",
                 f"`{summary.model_id}`",
                 f"`{summary.prompt_id}`",
@@ -1538,7 +1638,25 @@ class BenchmarkRunner:
                 tokens,
                 cost,
                 str(summary.error_turns),
-            ])
+            ]
+            if show_recall:
+                if summary.retrieval_recall is None:
+                    row.append("N/A")
+                else:
+                    cell = (
+                        f"{summary.retrieval_assertions_passed}/"
+                        f"{summary.retrieval_assertions_total} "
+                        f"({summary.retrieval_recall * 100:.1f}%)"
+                    )
+                    # Probes lost to infrastructure errors stay in the
+                    # denominator (they count as misses) - flag the gap.
+                    if (
+                        summary.retrieval_assertions_evaluated
+                        < summary.retrieval_assertions_total
+                    ):
+                        cell += "*"
+                    row.append(cell)
+            table_rows.append(row)
 
         col_widths = [len(h) for h in headers]
         for row in table_rows:
@@ -1570,6 +1688,15 @@ class BenchmarkRunner:
                     else:
                         row_cells.append(cell.ljust(col_widths[i]))
                 fh.write("| " + " | ".join(row_cells) + " |\n")
+            if show_recall:
+                fh.write(
+                    "\n`Retrieval Recall` = passed / declared `must_retrieve_chunk` "
+                    "pins (rule-level; a sibling sub-chunk of the gold document "
+                    "satisfies a pin). `*` marks a run where at least one declared "
+                    "probe was never evaluated (infrastructure error) and counts "
+                    "as a miss. Chunk-level `Recall@k` is a different metric: "
+                    "`scripts/lr_report.py`.\n"
+                )
 
         logger.info("Exported Markdown: %s", md_path)
         logger.info("Results directory: %s", run_dir)
