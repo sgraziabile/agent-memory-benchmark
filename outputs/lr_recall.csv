@@ -1,0 +1,6 @@
+scenario,corpus_docs,chunk_size,top_k,model_id,probes,runs,chunk_recall_at_k,ci95_low,ci95_high,doc_hit_rate,mrr,mean_delta_cos,p_correct_given_chunk_hit,coverage_ratio,ingest_s,error_turns
+document_corpus_size_008_01,8,600,5,minimax-m3,72,9,1.0000,0.9493,1.0000,1.0000,0.9375,0.031403,1.0000,0.040650,91.2,0
+document_corpus_size_008_01,8,1200,1,glm-5.3-flash,8,1,0.8750,0.5291,0.9776,0.8750,0.8750,0.589850,1.0000,0.017544,99.5,0
+document_corpus_size_060_01,60,1200,1,glm-5.3-flash,8,1,0.6250,0.3057,0.8632,0.6250,0.6250,0.594199,1.0000,0.002604,779.5,0
+document_corpus_size_060_01,60,1200,2,glm-5.3-flash,8,1,1.0000,0.6756,1.0000,1.0000,0.8125,0.155766,1.0000,0.005208,527.1,0
+document_corpus_size_060_01,60,1200,5,glm-5.3-flash,8,1,1.0000,0.6756,1.0000,1.0000,0.8125,0.031322,1.0000,0.013021,768.7,0

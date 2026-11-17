@@ -170,9 +170,21 @@ class TestReadL2Telemetry:
             "append_latency_ms": 0.0,
             "embedding_latency_ms": 0.0,
             "embedding_tokens": 0,
+            # Ingestion-cache counters also default to 0 (TODOs/
+            # embedding-cache-todo.md §3) — absent channels mean "no cache".
+            "embedding_cache_hits": 0,
+            "embedding_cache_misses": 0,
             "retrieved_memories": [],
             "appended_chunk_ids": [],
+            # L2b agentic retrieval (TODOs/l2b-telemetry-contract-todo.md §2.3):
+            # L0/L1/L2a never write these, so a pre-L2b record gains exactly
+            # these four at [] / 0 / False and nothing else moves.
+            "retrieval_calls": [],
+            "retrieval_call_count": 0,
+            "retrieval_skipped": False,
+            "tool_call_cap_hit": False,
         }
+
 
     def test_non_dict_result_zeroed(self):
         tel = _read_l2_telemetry(None)

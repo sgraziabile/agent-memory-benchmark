@@ -74,7 +74,11 @@ L2 may be declared complete only when **all** of the following hold:
 - [ ] **C6.** **Atomic revision is measured** (duplication / staleness-by-majority) (WS-B2).
 - [ ] **C7.** The **two-step probe contamination** is removed or the graded turn re-attributed to L1 (1.14).
 - [ ] **C8.** Every scenario either exercises the store or is explicitly labelled **in-context control** (1.2).
-- [ ] **C9.** `consolidated_summary.md` excludes (or annotates) `error_turns > 0` runs (1.18).
+- [x] ~~**C9.** `consolidated_summary.md` excludes (or annotates) `error_turns > 0` runs (1.18).~~
+  **Superseded (2026-11-10):** `scripts/reorganize_outputs.py` was deleted.
+  `outputs/consolidated_summary.{md,csv}` and `outputs/by_theme/` are now frozen
+  historical artifacts and are no longer regenerated, so the fix must be applied
+  to `outputs/runs/*/results.json` directly (the row-level caveat in 1.18 stands).
 - [ ] **C10.** `chunk_size`/`chunk_overlap` are recorded in `results.json`/`summary.csv` (1.12).
 - [ ] **C11.** L2's implemented scope (**chat-only, vector-only**) is stated in `README.md` / `SPEC.md` (1.11, 1.16, 1.17).
 

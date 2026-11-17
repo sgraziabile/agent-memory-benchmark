@@ -29,7 +29,10 @@ import yaml
 from langchain_core.embeddings import Embeddings
 from langchain_core.language_models import BaseChatModel
 
+from core.embedding_cache import wrap_with_cache
+
 logger = logging.getLogger(__name__)
+
 
 # ── Default paths ────────────────────────────────────────────────────────────
 
@@ -65,6 +68,27 @@ NANOGPT_API_KEY_ENV = "NANOGPT_API_KEY"
 OLLAMA_BASE_URL_ENV = "OLLAMA_BASE_URL"
 OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434"
 
+# ── Registry metadata keys ───────────────────────────────────────────────────
+# Every other YAML key is forwarded to the provider constructor as a kwarg
+# (``timeout``, ``max_retries``, ``max_tokens``, ``reasoning_effort``, ...).
+# These five are harness metadata instead:
+#   provider/model_name — select the client class and upstream model;
+#   tier/description    — human-facing labels;
+#   pricing             — USD unit prices read by ``get_model_pricing``.
+# Forwarding ``pricing`` (a dict) would push it into ``model_kwargs`` and
+# then into the request body, where providers reject unknown parameters.
+_REGISTRY_METADATA_KEYS = frozenset(
+    {"provider", "model_name", "tier", "description", "pricing"}
+)
+
+#: Reserved kwarg name used to carry the ingestion-embedding cache directory
+#: through :func:`create_embeddings` and its ``lru_cache`` key. It is popped in
+#: :func:`_build_embeddings` before any provider constructor sees it, so the
+#: directory is part of the client's cache identity (an opted-in run never
+#: shares a client with an uncached one) without ever reaching Ollama/OpenAI.
+EMBED_CACHE_KWARG = "cache_dir"
+
+
 
 # ── YAML registry loader ────────────────────────────────────────────────────
 
@@ -99,6 +123,71 @@ def load_model_registry(
         )
 
     return raw["models"]
+
+
+def get_model_pricing(
+    model_id: str,
+    config_path: Path | str = _DEFAULT_MODELS_CONFIG,
+) -> tuple[float | None, float | None]:
+    """Resolve a registry model's USD unit prices.
+
+    Prices live under the entry's ``pricing:`` block and are expressed in
+    USD per **million** tokens — the unit the NanoGPT catalog publishes:
+
+    .. code-block:: yaml
+
+        pricing:
+          input_per_mtok: 0.10
+          output_per_mtok: 0.60
+
+    Args:
+        model_id: Registry key (e.g. ``"glm-5.3-flash"``). Inline
+            ``provider:model_name`` strings are not in the registry and
+            therefore carry no pricing.
+        config_path: Path to ``models.yaml``.
+
+    Returns:
+        ``(input_per_mtok, output_per_mtok)``. Both are ``None`` when the
+        model is not in the registry or declares no valid pricing block, so
+        callers can report "cost unavailable" instead of a wrong number.
+    """
+    entry = load_model_registry(config_path).get(model_id)
+    if entry is None:
+        return (None, None)
+
+    pricing = entry.get("pricing")
+    if not isinstance(pricing, dict):
+        return (None, None)
+
+    def _as_price(key: str) -> float | None:
+        value = pricing.get(key)
+        # ``bool`` is an ``int`` subclass — reject it explicitly so a YAML
+        # typo (``true``) cannot masquerade as a price.
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            logger.warning(
+                "Model %s: pricing.%s=%r is not a number — cost reporting "
+                "disabled for this entry",
+                model_id,
+                key,
+                value,
+            )
+            return None
+        if value < 0:
+            logger.warning(
+                "Model %s: pricing.%s=%r is negative — cost reporting "
+                "disabled for this entry",
+                model_id,
+                key,
+                value,
+            )
+            return None
+        return float(value)
+
+    input_price = _as_price("input_per_mtok")
+    output_price = _as_price("output_per_mtok")
+    if input_price is None or output_price is None:
+        return (None, None)
+    return (input_price, output_price)
 
 
 # ── Provider class resolver ──────────────────────────────────────────────────
@@ -195,7 +284,7 @@ def _build_model(
 
         # Extract optional configuration parameters from YAML (e.g. timeout, max_retries)
         for k, v in entry.items():
-            if k not in ("provider", "model_name", "tier", "description"):
+            if k not in _REGISTRY_METADATA_KEYS:
                 model_kwargs[k] = v
 
     # Explicit kwargs override YAML settings
@@ -447,7 +536,8 @@ def _build_embeddings(
     model_name = entry["model_name"]
 
     # Fail fast on missing/invalid 'dims' BEFORE building the API client.
-    get_embedding_dims(embedding_id, config_path)
+    dims = get_embedding_dims(embedding_id, config_path)
+
 
     logger.info(
         "Resolving embedding model: id=%s, provider=%s, model=%s",
@@ -466,6 +556,13 @@ def _build_embeddings(
 
     # Explicit kwargs override YAML settings
     embed_kwargs.update(dict(kwargs_key))
+
+    # Reserved harness kwarg: the ingestion-embedding cache directory. It is
+    # POPPED here — before every provider branch below and before the
+    # constructor call — so it can never reach OllamaEmbeddings/OpenAI
+    # (which would ship it in the request body or reject the client outright).
+    cache_dir = embed_kwargs.pop(EMBED_CACHE_KWARG, None)
+
 
     # ── NanoGPT: OpenAI-compatible gateway (same policy as chat models) ──
     if provider == "nanogpt":
@@ -524,7 +621,24 @@ def _build_embeddings(
     # ── Instantiate the embedding client ─────────────────────────────
     embeddings_class = _resolve_embeddings_class(provider)
 
-    return embeddings_class(model=model_name, **embed_kwargs)
+    client = embeddings_class(model=model_name, **embed_kwargs)
+
+    if not cache_dir:
+        return client
+
+    # Opt-in (TODO C1): cache *ingestion* vectors only. ``embed_query`` passes
+    # straight through to ``client`` so the measured retrieval latency still
+    # reflects a live embedder call.
+    return wrap_with_cache(
+        client,
+        cache_dir=cache_dir,
+        embedding_id=embedding_id,
+        # Keys are scoped by the resolved upstream model, so re-pointing the
+        # registry alias at a different model invalidates instead of mis-serving.
+        model_id=f"{provider}/{model_name}",
+        dims=dims,
+    )
+
 
 
 @lru_cache(maxsize=64)
@@ -554,6 +668,8 @@ def clear_embeddings_cache() -> None:
 def create_embeddings(
     embedding_id: str,
     config_path: Path | str = _DEFAULT_MODELS_CONFIG,
+    *,
+    cache_dir: Path | str | None = None,
     **kwargs: Any,
 ) -> Embeddings:
     """Create (or retrieve a cached) embedding model by registry ID.
@@ -570,6 +686,13 @@ def create_embeddings(
     Args:
         embedding_id: Registry key (e.g. ``"qwen3-embedding-8b"``).
         config_path: Path to ``models.yaml`` for registry lookups.
+        cache_dir: Opt-in directory for the on-disk **ingestion-embedding**
+            cache (``<cache_dir>/<embedding_id>.sqlite``). When set, the
+            client is wrapped in a
+            :class:`~core.embedding_cache.CachedEmbeddings` so repeated chunk
+            embeddings cost no provider calls; ``embed_query`` stays live.
+            ``None`` (default) means no cache — the historical behaviour,
+            byte-identical.
         **kwargs: Additional constructor overrides (must be hashable to
             benefit from caching).
 
@@ -582,10 +705,17 @@ def create_embeddings(
         ImportError: If the required provider package is not installed.
     """
     config_path_str = str(Path(config_path))
-    kwargs_key = tuple(sorted(kwargs.items()))
+    merged = dict(kwargs)
+    if cache_dir is not None:
+        # Carried inside the kwargs tuple so it becomes part of the lru_cache
+        # key (a cached client must never be reused for an uncached run); it is
+        # popped again in ``_build_embeddings`` before the provider constructor.
+        merged[EMBED_CACHE_KWARG] = str(Path(cache_dir))
+    kwargs_key = tuple(sorted(merged.items()))
     try:
         return _create_embeddings_cached(embedding_id, config_path_str, kwargs_key)
     except TypeError:
         # Unhashable kwargs cannot form a cache key — construct directly.
         # (If construction itself raised TypeError, this re-raises it.)
         return _build_embeddings(embedding_id, config_path_str, kwargs_key)
+

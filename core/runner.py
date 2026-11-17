@@ -95,6 +95,15 @@ from core.schemas import (
     DocumentSpec,
     TurnResult,
 )
+from core.model_factory import get_model_pricing
+from core.metrics import (
+    assertion_recall,
+    declared_retrieval_assertions,
+    mean_calls_per_probe,
+    pins_per_call,
+    recall_with_ci,
+    union_retrieved_episodes,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +141,37 @@ def _slice_token_usage(token_usage: dict[str, Any]) -> dict[str, int]:
     }
 
 
+def _compute_cost_usd(
+    prompt_tokens: int,
+    completion_tokens: int,
+    input_per_mtok: float | None,
+    output_per_mtok: float | None,
+) -> dict[str, float]:
+    """Price a turn's billed tokens in USD using registry unit prices.
+
+    Unit prices are USD per **million** tokens (the NanoGPT catalog's unit),
+    declared per model under ``pricing:`` in ``configs/models.yaml``.
+
+    When either price is ``None`` (model absent from the registry, inline
+    ``provider:model_name`` ids, or disconnected test doubles) all three
+    buckets are 0.0 — callers must treat 0.0 *and* ``None`` unit prices as
+    "cost unavailable" rather than reading it as a free run.
+
+    Rounding to 10 decimals keeps per-turn figures from accumulating binary
+    float noise into the run total (a turn can cost < $0.00001).
+    """
+    if input_per_mtok is None or output_per_mtok is None:
+        return {"input_cost_usd": 0.0, "output_cost_usd": 0.0, "total_cost_usd": 0.0}
+
+    input_cost = round(prompt_tokens / 1_000_000 * input_per_mtok, 10)
+    output_cost = round(completion_tokens / 1_000_000 * output_per_mtok, 10)
+    return {
+        "input_cost_usd": input_cost,
+        "output_cost_usd": output_cost,
+        "total_cost_usd": round(input_cost + output_cost, 10),
+    }
+
+
 def _read_l2_telemetry(result: Any) -> dict[str, Any]:
     """Read plan §4.2 L2 telemetry channels from a graph invoke result.
 
@@ -149,8 +189,22 @@ def _read_l2_telemetry(result: Any) -> dict[str, Any]:
         "append_latency_ms": float(result.get("append_latency_ms") or 0.0),
         "embedding_latency_ms": float(result.get("embedding_latency_ms") or 0.0),
         "embedding_tokens": int(result.get("embedding_tokens") or 0),
+        # Ingestion-cache counters (TODOs/embedding-cache-todo.md §3): 0 for
+        # every run without ``--embed-cache``, and for L0/L1 graphs that never
+        # write these channels at all.
+        "embedding_cache_hits": int(result.get("embedding_cache_hits") or 0),
+        "embedding_cache_misses": int(result.get("embedding_cache_misses") or 0),
+
         "retrieved_memories": list(result.get("retrieved_memories") or []),
         "appended_chunk_ids": list(result.get("appended_chunk_ids") or []),
+        # L2b agentic retrieval (TODOs/l2b-telemetry-contract-todo.md §2.3).
+        # Guarded exactly like the channels above: L0/L1/L2a never write them,
+        # so every pre-L2b record gains these four at [] / 0 / False and its
+        # scientific fields stay byte-identical.
+        "retrieval_calls": list(result.get("retrieval_calls") or []),
+        "retrieval_call_count": int(result.get("retrieval_call_count") or 0),
+        "retrieval_skipped": bool(result.get("retrieval_skipped") or False),
+        "tool_call_cap_hit": bool(result.get("tool_call_cap_hit") or False),
     }
 
 
@@ -541,7 +595,10 @@ class BenchmarkRunner:
             append_latency_ms=telemetry.append_latency_ms,
             embedding_latency_ms=telemetry.embedding_latency_ms,
             embedding_tokens=telemetry.embedding_tokens,
+            embedding_cache_hits=telemetry.embedding_cache_hits,
+            embedding_cache_misses=telemetry.embedding_cache_misses,
         )
+
 
     # ── Single Run Execution ─────────────────────────────────────────────
 
@@ -633,6 +690,15 @@ class BenchmarkRunner:
         # explicit identity dict (backend, embedding_model_id, top_k, ...).
         backend_cfg = memory_backend_config or {}
 
+        # ── Registry pricing (USD per million tokens) ──────────────────────
+        # Resolved ONCE per run so every turn is priced from the same snapshot:
+        # a live catalog price change mid-sweep cannot silently make turns of
+        # one run inconsistent. ``(None, None)`` = no pricing declared (inline
+        # ``provider:model_name`` ids, test doubles) → cost stays unreported.
+        input_cost_per_mtok, output_cost_per_mtok = get_model_pricing(
+            model_id, self.config_dir / "models.yaml"
+        )
+
         config = {
             "configurable": {
                 "model_id": model_id,
@@ -667,6 +733,9 @@ class BenchmarkRunner:
         preloaded_append_latency_ms = 0.0
         preloaded_embedding_latency_ms = 0.0
         preloaded_embedding_tokens = 0
+        preloaded_cache_hits = 0
+        preloaded_cache_misses = 0
+
         document_manifests: list[dict[str, Any]] = []
 
         if scenario.documents and not documents_enabled:
@@ -705,7 +774,10 @@ class BenchmarkRunner:
                 preloaded_append_latency_ms = outcome.append_latency_ms
                 preloaded_embedding_latency_ms = outcome.embedding_latency_ms
                 preloaded_embedding_tokens = outcome.embedding_tokens
+                preloaded_cache_hits = outcome.embedding_cache_hits
+                preloaded_cache_misses = outcome.embedding_cache_misses
                 document_manifests.extend(outcome.manifests)
+
 
         for turn in scenario.turns:
             if turn.role == "system_event":
@@ -748,6 +820,9 @@ class BenchmarkRunner:
                         append_latency_ms=outcome.append_latency_ms,
                         embedding_latency_ms=outcome.embedding_latency_ms,
                         embedding_tokens=outcome.embedding_tokens,
+                        embedding_cache_hits=outcome.embedding_cache_hits,
+                        embedding_cache_misses=outcome.embedding_cache_misses,
+
                         ingested_documents=outcome.document_ids,
                         ingested_chars=outcome.char_count,
                         ingested_chunk_ids=outcome.chunk_ids,
@@ -790,6 +865,9 @@ class BenchmarkRunner:
             # telemetry (the exception path never reaches the assignment).
             l2_tel = _read_l2_telemetry({})
             sliced_usage = _slice_token_usage({})
+            turn_cost = _compute_cost_usd(
+                0, 0, input_cost_per_mtok, output_cost_per_mtok
+            )
             try:
                 result = agent_graph.invoke(
                     {"messages": [user_msg]},
@@ -828,6 +906,14 @@ class BenchmarkRunner:
                 # Plan §4.2 slicing: bucket raw usage into accounting channels
                 # (prompt/completion/total/reasoning/visible/cached).
                 sliced_usage = _slice_token_usage(token_usage)
+
+                # Price the turn from the registry snapshot resolved above.
+                turn_cost = _compute_cost_usd(
+                    sliced_usage["prompt_tokens"],
+                    sliced_usage["completion_tokens"],
+                    input_cost_per_mtok,
+                    output_cost_per_mtok,
+                )
 
             except Exception as exc:
                 t_end = time.perf_counter()
@@ -887,6 +973,7 @@ class BenchmarkRunner:
                         role=turn.role,
                         **sliced_usage,
                         **l2_tel,
+                        **turn_cost,
                     )
                 )
                 continue
@@ -930,6 +1017,7 @@ class BenchmarkRunner:
                         role=turn.role,
                         **sliced_usage,
                         **l2_tel,
+                        **turn_cost,
                     )
                 )
                 continue
@@ -938,10 +1026,18 @@ class BenchmarkRunner:
             # Retrieval telemetry is handed over so retrieval assertions
             # (``must_retrieve_chunk`` / ``*_source``) are evaluated against
             # what the agent actually retrieved this turn (plan WS-D §Q4).
+            #
+            # L2b breaks the one-retrieval-per-turn assumption: the match set is
+            # the UNION of every call in the turn, so a second call can never
+            # shadow the first. With no calls recorded the helper falls back to
+            # ``retrieved_memories`` and L2a is untouched
+            # (TODOs/l2b-telemetry-contract-todo.md §2.4).
             assertion_details = self.evaluate_assertions(
                 ai_response,
                 turn.assertions,
-                retrieved_memories=l2_tel["retrieved_memories"],
+                retrieved_memories=union_retrieved_episodes(
+                    l2_tel["retrieved_memories"], l2_tel["retrieval_calls"]
+                ),
             )
             passed = sum(1 for a in assertion_details if a["passed"])
             failed = sum(1 for a in assertion_details if not a["passed"])
@@ -960,6 +1056,7 @@ class BenchmarkRunner:
                 role=turn.role,
                 **sliced_usage,
                 **l2_tel,
+                **turn_cost,
             )
             turn_results.append(turn_result)
 
@@ -995,6 +1092,55 @@ class BenchmarkRunner:
         total_failed = sum(tr.assertions_failed for tr in chat_ok_turns)
         total_latency = sum(tr.latency_ms for tr in chat_ok_turns)
 
+        # ── Retrieval recall (SPEC §5.8) ───────────────────────────────────
+        # Positive retrieval pins only (``must_retrieve_chunk``): negative
+        # rules are precision guards and ``must_retrieve_source`` pins a
+        # channel, not a gold item. The denominator is the DECLARED count
+        # from the scenario YAML, not the evaluated one, so a probe lost to an
+        # infrastructure error counts as a miss instead of vanishing (the
+        # "pass_rate = 1.0 over 9 of 11 assertions" artefact, notes/ F7).
+        retrieval_total = declared_retrieval_assertions(scenario.turns)
+        retrieval_evaluated = 0
+        retrieval_passed = 0
+        for tr in chat_ok_turns:
+            turn_passed, turn_total = assertion_recall(tr.assertion_details)
+            retrieval_passed += turn_passed
+            retrieval_evaluated += turn_total
+        (
+            retrieval_recall,
+            retrieval_recall_ci_low,
+            retrieval_recall_ci_high,
+        ) = recall_with_ci(retrieval_passed, retrieval_total)
+
+        # ── L2b agentic-retrieval aggregation ──────────────────────────────
+        # (TODOs/l2b-telemetry-contract-todo.md §2.4.) Call counts follow the
+        # `pass_rate` policy — ok chat turns only — because the comparison
+        # across arms happens on scored turns and an errored turn's partial
+        # loop must not dilute a per-probe rate. The efficiency denominator is
+        # the call count itself: a run that satisfied every pin in one call and
+        # a run that needed three must not read the same.
+        graded_turns = [
+            tr
+            for tr in chat_ok_turns
+            if (tr.assertions_passed + tr.assertions_failed) > 0
+        ]
+        total_tool_calls = sum(tr.retrieval_call_count for tr in chat_ok_turns)
+        calls_per_probe = mean_calls_per_probe(
+            tr.retrieval_call_count for tr in graded_turns
+        )
+        retrieval_call_efficiency = pins_per_call(
+            retrieval_passed, total_tool_calls
+        )
+        tool_call_cap_hits = sum(
+            1 for tr in chat_ok_turns if tr.tool_call_cap_hit
+        )
+        retrieving_turns = [
+            tr for tr in chat_ok_turns if tr.retrieval_call_count > 0
+        ]
+        avg_calls_per_retrieval_turn = (
+            total_tool_calls / len(retrieving_turns) if retrieving_turns else 0.0
+        )
+
         # Aggregate token usage across successfully completed chat turns
         total_tokens = 0
         prompt_tokens = 0
@@ -1019,12 +1165,28 @@ class BenchmarkRunner:
         reasoning_tokens = sum(tr.reasoning_tokens for tr in ok_turns)
         visible_output_tokens = sum(tr.visible_output_tokens for tr in ok_turns)
         cached_prompt_tokens = sum(tr.cached_prompt_tokens for tr in ok_turns)
+        # USD cost uses the SAME ok-chat-turn policy as the token metrics:
+        # an errored turn's partial billing must not contaminate figures.
+        input_cost_usd = sum(tr.input_cost_usd for tr in chat_ok_turns)
+        output_cost_usd = sum(tr.output_cost_usd for tr in chat_ok_turns)
+        total_cost_usd = sum(tr.total_cost_usd for tr in chat_ok_turns)
         retrieved_context_tokens = sum(
             tr.retrieved_context_tokens for tr in turn_results
         )
         embedding_tokens_total = (
             sum(tr.embedding_tokens for tr in turn_results) + preloaded_embedding_tokens
         )
+        # Ingestion-cache outcome, aggregated exactly like ``embedding_tokens``
+        # (all turns + the scenario preload) so a warm run can never be read as
+        # a faster embedder: the tokens and the hit counts travel together.
+        embedding_cache_hits_total = (
+            sum(tr.embedding_cache_hits for tr in turn_results) + preloaded_cache_hits
+        )
+        embedding_cache_misses_total = (
+            sum(tr.embedding_cache_misses for tr in turn_results)
+            + preloaded_cache_misses
+        )
+
         total_retrieval_latency = sum(tr.retrieval_latency_ms for tr in turn_results)
         total_append_latency = sum(tr.append_latency_ms for tr in turn_results)
         total_embedding_latency = (
@@ -1085,6 +1247,10 @@ class BenchmarkRunner:
                         "model_id": model_id,
                         "prompt_id": prompt_id,
                         "agent_level": agent_level,
+                        # Full backend identity (top_k, chunking, embed cache
+                        # dir + batch size): a warm ingestion and a cold one
+                        # must be distinguishable from the snapshot alone.
+                        "memory_backend_config": dict(backend_cfg),
                         # Plan WS-D provenance: which documents produced the
                         # ``source="document"`` chunks in this snapshot.
                         "documents": document_manifests,
@@ -1095,7 +1261,14 @@ class BenchmarkRunner:
                             "ingestion_latency_ms": ingestion_latency,
                             "ingestion_embedding_tokens": preloaded_embedding_tokens
                             + sum(tr.embedding_tokens for tr in ingestion_turns),
+                            # Warm vs. cold label for the ingestion above
+                            # (TODOs/embedding-cache-todo.md §3).
+                            "ingestion_cache_hits": preloaded_cache_hits
+                            + sum(tr.embedding_cache_hits for tr in ingestion_turns),
+                            "ingestion_cache_misses": preloaded_cache_misses
+                            + sum(tr.embedding_cache_misses for tr in ingestion_turns),
                         },
+
                     },
                 )
                 memory_snapshot_path = f"{snapshot_dir.name}/{run_id}"
@@ -1113,6 +1286,19 @@ class BenchmarkRunner:
             passed_assertions=total_passed,
             failed_assertions=total_failed,
             pass_rate=total_passed / total_assertions if total_assertions > 0 else 0.0,
+            # ── Retrieval recall (SPEC §5.8) ───────────────────────────
+            retrieval_assertions_total=retrieval_total,
+            retrieval_assertions_evaluated=retrieval_evaluated,
+            retrieval_assertions_passed=retrieval_passed,
+            retrieval_recall=retrieval_recall,
+            retrieval_recall_ci_low=retrieval_recall_ci_low,
+            retrieval_recall_ci_high=retrieval_recall_ci_high,
+            # ── L2b agentic retrieval (0 / None on L0/L1/L2a) ─────────────
+            total_tool_calls=total_tool_calls,
+            avg_calls_per_retrieval_turn=avg_calls_per_retrieval_turn,
+            tool_call_cap_hits=tool_call_cap_hits,
+            calls_per_probe=calls_per_probe,
+            retrieval_call_efficiency=retrieval_call_efficiency,
             error_turns=error_count,
             error_rate=error_count / num_turns if num_turns > 0 else 0.0,
             total_latency_ms=total_latency,
@@ -1135,8 +1321,18 @@ class BenchmarkRunner:
             reasoning_tokens=reasoning_tokens,
             visible_output_tokens=visible_output_tokens,
             cached_prompt_tokens=cached_prompt_tokens,
+            # ── Plan §4.3 aggregated USD cost (registry pricing) ──────────
+            input_cost_usd=input_cost_usd,
+            output_cost_usd=output_cost_usd,
+            total_cost_usd=total_cost_usd,
+            input_cost_per_mtok=input_cost_per_mtok,
+            output_cost_per_mtok=output_cost_per_mtok,
             retrieved_context_tokens=retrieved_context_tokens,
             embedding_tokens=embedding_tokens_total,
+            # Warm-run labelling (TODOs/embedding-cache-todo.md §3).
+            embedding_cache_hits=embedding_cache_hits_total,
+            embedding_cache_misses=embedding_cache_misses_total,
+
             # ── Plan §4.3 aggregated latency metrics ──────────────────────
             total_retrieval_latency_ms=total_retrieval_latency,
             total_append_latency_ms=total_append_latency,
@@ -1368,11 +1564,24 @@ class BenchmarkRunner:
             "ingested_chunks",
             "corpus_chunks",
             "ingestion_latency_ms",
+            # Warm vs. cold ingestion: hits/misses must travel with the numbers
+            # they explain (TODOs/embedding-cache-todo.md §3).
+            "embedding_cache_hits",
+            "embedding_cache_misses",
             "total_turns",
+
             "total_assertions",
             "passed_assertions",
             "failed_assertions",
             "pass_rate",
+            # ── Retrieval recall (SPEC §5.8): declared denominator + rule-level
+            # unit, so an errored probe still counts in `retrieval_assertions_total`.
+            "retrieval_assertions_total",
+            "retrieval_assertions_evaluated",
+            "retrieval_assertions_passed",
+            "retrieval_recall",
+            "retrieval_recall_ci_low",
+            "retrieval_recall_ci_high",
             "error_turns",
             "error_rate",
             "total_latency_ms",
@@ -1380,6 +1589,13 @@ class BenchmarkRunner:
             "total_tokens",
             "prompt_tokens",
             "completion_tokens",
+            # USD cost from registry `pricing:` — unit prices are exported next
+            # to the totals so a figure stays reproducible after a price change.
+            "input_cost_usd",
+            "output_cost_usd",
+            "total_cost_usd",
+            "input_cost_per_mtok",
+            "output_cost_per_mtok",
             "timestamp",
         ]
 
@@ -1394,13 +1610,24 @@ class BenchmarkRunner:
 
         # ── Markdown Table (immediate human-friendly preview) ─────────
         md_path = run_dir / "summary.md"
-        headers = ["Scenario", "Model", "Prompt", "Level", "Turns", "Pass Rate", "Avg Latency", "Total Tokens", "Errors"]
+        # Retrieval recall only makes sense when at least one run declares
+        # positive retrieval pins; text-only batches keep the legacy table.
+        # Appended last so the existing alignment rules still apply.
+        show_recall = any(s.retrieval_assertions_total > 0 for s in results)
+        headers = ["Scenario", "Model", "Prompt", "Level", "Turns", "Pass Rate", "Avg Latency", "Total Tokens", "Cost (USD)", "Errors"]
+        if show_recall:
+            headers.append("Retrieval Recall")
         table_rows = []
         for summary in results:
             pass_pct = f"{summary.pass_rate * 100:.1f}%"
             latency = f"{summary.avg_latency_per_turn_ms:.0f} ms"
             tokens = f"{summary.total_tokens:,}" if summary.total_tokens > 0 else "N/A"
-            table_rows.append([
+            priced = (
+                summary.input_cost_per_mtok is not None
+                or summary.output_cost_per_mtok is not None
+            )
+            cost = f"${summary.total_cost_usd:.6f}" if priced else "N/A"
+            row = [
                 f"`{summary.scenario_id}`",
                 f"`{summary.model_id}`",
                 f"`{summary.prompt_id}`",
@@ -1409,8 +1636,27 @@ class BenchmarkRunner:
                 f"**{pass_pct}**",
                 latency,
                 tokens,
+                cost,
                 str(summary.error_turns),
-            ])
+            ]
+            if show_recall:
+                if summary.retrieval_recall is None:
+                    row.append("N/A")
+                else:
+                    cell = (
+                        f"{summary.retrieval_assertions_passed}/"
+                        f"{summary.retrieval_assertions_total} "
+                        f"({summary.retrieval_recall * 100:.1f}%)"
+                    )
+                    # Probes lost to infrastructure errors stay in the
+                    # denominator (they count as misses) - flag the gap.
+                    if (
+                        summary.retrieval_assertions_evaluated
+                        < summary.retrieval_assertions_total
+                    ):
+                        cell += "*"
+                    row.append(cell)
+            table_rows.append(row)
 
         col_widths = [len(h) for h in headers]
         for row in table_rows:
@@ -1442,6 +1688,15 @@ class BenchmarkRunner:
                     else:
                         row_cells.append(cell.ljust(col_widths[i]))
                 fh.write("| " + " | ".join(row_cells) + " |\n")
+            if show_recall:
+                fh.write(
+                    "\n`Retrieval Recall` = passed / declared `must_retrieve_chunk` "
+                    "pins (rule-level; a sibling sub-chunk of the gold document "
+                    "satisfies a pin). `*` marks a run where at least one declared "
+                    "probe was never evaluated (infrastructure error) and counts "
+                    "as a miss. Chunk-level `Recall@k` is a different metric: "
+                    "`scripts/lr_report.py`.\n"
+                )
 
         logger.info("Exported Markdown: %s", md_path)
         logger.info("Results directory: %s", run_dir)

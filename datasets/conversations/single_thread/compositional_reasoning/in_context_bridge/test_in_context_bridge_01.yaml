@@ -1,0 +1,68 @@
+# ─────────────────────────────────────────────────────────────────
+# test_in_context_bridge_01.yaml — In-context twin of the bridge cell
+# ─────────────────────────────────────────────────────────────────
+# Paired control for document_multihop_bridge_01. The SAME two
+# premises (the description -> identifier row, and the identifier ->
+# figure row) are handed over in ONE prompt, with the same probe and
+# the same assertion. No retrieval is involved.
+#
+#   pass here + fail the bridge cell -> retrieval/composition failure
+#   fail both                        -> reasoning failure (or a
+#                                       miscalibrated ground truth)
+# ─────────────────────────────────────────────────────────────────
+
+id: in_context_bridge_01
+name: "In-Context Bridge (Paired Control for the document bridge)"
+description: >
+  Single-turn control. Two short extracts are given verbatim — the registry row that maps
+  the west-aisle cooling loop to its identifier, and the schedule row that maps that
+  identifier to its figure — followed by the identical question from
+  document_multihop_bridge_01. Passing here while failing there isolates the failure to
+  retrieval and composition rather than to reading or reasoning.
+category: in_context_bridge
+metadata:
+  kind: "control_in_context"
+  quality_eligible: false
+  controls: "In-context twin of document_multihop_bridge_01: separates reading from retrieval composition."
+  expected:
+    level_0: "control"
+    level_1: "n/a"
+    level_2: "n/a"
+    level_3: "n/a"
+    level_4: "n/a"
+  difficulty: basic
+  paired_with: "document_multihop_bridge_01"
+  expected_level_0_behavior: "Answerable in-context in one reading. A failure here is a reasoning or extraction failure, never a memory failure."
+  target_research_question: "P1"
+
+turns:
+  - turn_number: 1
+    role: user
+    probe:
+      query_kind: semantic
+    content: |
+      Here are two extracts from the facility documentation. Read them carefully.
+
+      Extract A — asset registry, Viaduct facility (excerpt):
+
+      | Asset | Description | Value held in |
+      |---|---|---|
+      | NBL-420 | West-aisle cooling loop | calibration register |
+      | NBL-118 | East-aisle cooling loop | calibration register |
+      | TRB-260 | North cooling loop | calibration register |
+      | AHU-207 | Air-handling unit, row 3 | calibration register |
+
+      Extract B — limit schedule, Viaduct facility (extract):
+
+      Asset | Limit
+      --- | ---
+      NBL-420 | QMV-T3R8-4402
+      NBL-118 | ZTF-2H8N-5510
+      TRB-260 | NBR-7D4M-2073
+      AHU-207 | QMV-6B1P-8820
+
+      Based strictly on these extracts: what is the recorded figure for the west-aisle
+      cooling loop?
+    assertions:
+      - type: must_contain
+        value: "QMV-T3R8-4402"

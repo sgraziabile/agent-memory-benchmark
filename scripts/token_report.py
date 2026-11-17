@@ -23,7 +23,7 @@ agg: dict[str, dict] = {}
 def bucket(model_id: str) -> dict:
     return agg.setdefault(
         model_id,
-        {"turns": 0, "in": 0, "out": 0, "reasoning": 0, "cached_in": 0},
+        {"turns": 0, "in": 0, "out": 0, "reasoning": 0, "cached_in": 0, "cost_usd": 0.0},
     )
 
 
@@ -44,11 +44,14 @@ for path in sorted(files):
             b["reasoning"] += out_det.get("reasoning") or 0
             in_det = u.get("input_token_details") or {}
             b["cached_in"] += in_det.get("cache_read") or 0
+            # USD cost is priced at run time from the registry `pricing:`
+            # block and persisted per turn (core.runner._compute_cost_usd).
+            b["cost_usd"] += turn.get("total_cost_usd") or 0.0
 
 print(f"scanned {len(files)} results.json file(s)\n")
 hdr = (
     f"{'model':<18} {'turns':>5} {'input':>8} {'output':>8} "
-    f"{'reasoning':>9} {'content':>8} {'%reason':>8}"
+    f"{'reasoning':>9} {'content':>8} {'%reason':>8} {'cost_usd':>10}"
 )
 print(hdr)
 print("-" * len(hdr))
@@ -57,5 +60,6 @@ for model, b in sorted(agg.items()):
     pct = (b["reasoning"] / b["out"] * 100) if b["out"] else 0.0
     print(
         f"{model:<18} {b['turns']:>5} {b['in']:>8} {b['out']:>8} "
-        f"{b['reasoning']:>9} {content:>8} {pct:>7.1f}%"
+        f"{b['reasoning']:>9} {content:>8} {pct:>7.1f}% "
+        f"{('$' + format(b['cost_usd'], '.6f')):>10}"
     )

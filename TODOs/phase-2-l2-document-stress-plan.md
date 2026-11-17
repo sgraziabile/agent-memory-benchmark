@@ -409,6 +409,39 @@ that still isolates every factor, all on `deepseek-v4-flash` (L-R is model-indep
   (`scripts/generate_corpus.py --docs {8,60,200} --chars-per-doc 6000 --seed 7`), `top_k=5`,
   `--chunk-size 600`. Report `Recall@5` ± Wilson CI per corpus size. D5 is the single-needle version;
   D16 is the version where a *rate* can be estimated.
+  - **Implemented (2026-11-04):** `scripts/generate_corpus.py --needles 8` plants
+    opaque (entity, answer) needles; `scripts/build_d16_scenarios.py` emits
+    `document_corpus_size_{008,060,200}_01`; `scripts/lr_report.py` reports
+    chunk-level `Recall@k` + Wilson CI + MRR + Δcos + coverage. Each answer occurs
+    **exactly once** in the corpus and never in its probe, so a correct response
+    requires the gold chunk (no guess, no inference, no sibling-document shortcut).
+  - **Ingestion cost (2026-11-04):** chunks are written through
+    `InMemoryStore.batch()` windows (`--embed-batch-size`, default 8). Measured on
+    the 8-doc cell: **~154 s → 110–131 s**; the rest is token-bound (~7–10
+    ms/token), so a 200-doc cold run is ≈50 min and the 15-run grid ≈7 h.
+    A 60 s embedding timeout killed a 14-minute 60-doc ingestion on one slow
+    window, so the local embedder's timeout is now 240 s, timed-out windows are
+    halved and retried, and every window logs `window i/N · elapsed · ETA`.
+  - **Ingestion-embedding cache — IMPLEMENTED (2026-11-04), `--embed-cache DIR`.**
+    Content-addressed SQLite store of **ingestion** vectors only
+    (`core/embedding_cache.py`; key = `sha256(model \x00 dims \x00 text)`), so
+    repeated `top_k` × chat-model tuples over the same corpus re-embed nothing.
+    `embed_query` is never cached — it sits inside the measured
+    `retrieval_latency_ms` window. Measured on the 8-doc cell (`--chunk-size 600`,
+    123 chunks, CPU Ollama), cold cache deleted:
+
+    | run | `ingestion_latency_ms` | `embedding_tokens` | cache hits/misses | pass rate |
+    |---|---:|---:|---|---:|
+    | cold | 146–160 s | 15,975 | 0 / 123 | 8/8 |
+    | warm | **6–12 ms** | **117–236** (live query embeddings + chat chunks whose text changed) | 120–123 / 0–3 | 8/8 |
+
+    Retrieved `chunk_id`/`rank` lists and scores are identical (Δscore = 0.0).
+    Because `embedding_tokens` now means *tokens actually sent*,
+    `embedding_cache_hits`/`_misses` travel with every run (`results.json`,
+    `summary.csv`, and `manifest.json` → `embedding.cache`) and a warm run is
+    labelled warm instead of looking like a faster embedder. `outputs/embed_cache/`
+    is git-ignored; the design/decisions live in `TODOs/embedding-cache-todo.md`.
+
 
 #### 5.3.6 Bookkeeping required by the L-R column
 

@@ -72,7 +72,7 @@ flowchart LR
     end
 
     subgraph data["📋 Datasets"]
-        S["Scenario YAMLs\n(27 scenarios, 5 themes)"]
+        S["Scenario YAMLs\n(33 scenarios, 6 themes,\nsingle/multi-thread)"]
     end
 
     subgraph runner["🔄 BenchmarkRunner"]
@@ -182,8 +182,11 @@ document-memory results in [`notes/`](notes/), so they are worth stating before 
 
 ## Benchmark Scenarios
 
-**27 scenarios** across five themes. The tables below document the ones cited most often; the source
-of truth is `datasets/conversations/` (`python run.py --list-scenarios`):
+**33 scenarios** across six themes, split by thread count: **18** live under
+`datasets/conversations/single_thread/` (all turns share one `session_id` — L0/L1 can answer
+them) and **15** under `datasets/conversations/multi_thread/` (several sessions — only a
+cross-thread store can answer them). The tables below document the ones cited most often; the
+source of truth is `datasets/conversations/` (`python run.py --list-scenarios`):
 
 | Scenario | Category | Turns | Difficulty | Research Question | What It Tests |
 |----------|----------|:-----:|:----------:|:-----------------:|---------------|
@@ -195,6 +198,30 @@ of truth is `datasets/conversations/` (`python run.py --list-scenarios`):
 | `in_context_control_01` | Positive Control | 1 | Basic | P2 | Single-turn baseline — all premises in one prompt (upper bound) |
 
 Each scenario is a YAML file with structured `assertions` per turn, enabling fully automated pass/fail evaluation without human judgment. Text assertions (`must_contain` / `must_not_contain`) grade the answer; retrieval assertions (`must_retrieve_chunk`, `must_not_retrieve_chunk`, `must_retrieve_source`, `must_not_retrieve_source`) grade what the retriever actually injected, so top-k dilution failures are causal rather than inferred.
+
+Every scenario also declares the contract its assertions are allowed to imply, enforced dataset-wide by [`tests/test_assertion_hygiene.py`](tests/test_assertion_hygiene.py):
+
+```yaml
+metadata:
+  kind: recall                 # recall | revision | privacy | security | scaling | control_p3 | control_in_context
+  amnesia_passes: false        # required for every accuracy cell (privacy cells set true)
+  quality_eligible: true       # false for controls and amnesia-passing privacy cells
+  expected:                    # machine-readable pass/fail matrix, levels 0-4
+    level_0: fail
+    level_1: fail
+    level_2: partial
+    level_3: n/a
+    level_4: n/a
+turns:
+  - turn_number: 11
+    role: user
+    probe:
+      query_kind: semantic     # lookup (probe hands over the key) | semantic (it describes the entity) | guard
+    content: "..."
+    assertions: [...]
+```
+
+The hygiene pass (see [`TODOs/assertion-hygiene-pass.md`](TODOs/assertion-hygiene-pass.md)) makes those declarations mandatory: a `must_contain` token may not appear in its own probe, a value shorter than three characters must be case-sensitive (or belong to a declared cost control), document cells need both a positive and a precision retrieval pin, and every asserting turn must declare its query kind so the L2b sequencing experiment can separate query reformulation from a handed-over key.
 
 ### Document-memory scenarios (plan WS-D)
 
@@ -210,13 +237,14 @@ to) chat turns. See [`datasets/documents/README.md`](datasets/documents/README.m
 
 ### Scenario families
 
-| Theme (`datasets/conversations/…`) | Scenarios | Focus |
-|---|---:|---|
-| `logical_consistency/` | 10 | belief revision, contradictions, modus tollens, document revision, explicit forget, entity binding, hallucination control |
-| `retention_persistence/` | 8 | attrition, needle-in-haystack, document needle / dilution / cross-thread, top-k saturation |
-| `compositional_reasoning/` | 5 | multi-hop and derived-fact probes, in-context controls |
-| `robustness_security/` | 3 | adversarial forget, memory injection |
-| `computational_cost/` | 1 | P3 overhead baseline |
+| Theme (`datasets/conversations/<thread>/…`) | Scenarios | Single / Multi | Focus |
+|---|---:|---:|---|
+| `logical_consistency/` | 13 | 6 / 7 | belief revision, contradictions, modus tollens, document revision, explicit forget, entity binding, hallucination control |
+| `retention_persistence/` | 8 | 3 / 5 | attrition, needle-in-haystack, document needle / dilution / cross-thread, top-k saturation |
+| `compositional_reasoning/` | 5 | 4 / 1 | multi-hop and derived-fact probes, in-context controls |
+| `robustness_security/` | 3 | 2 / 1 | adversarial forget, memory injection |
+| `retrieval_limit/` | 3 | 3 / 0 | D16 corpus-size curve (8 / 60 / 200 documents) |
+| `computational_cost/` | 1 | 0 / 1 | P3 overhead baseline |
 
 ---
 
@@ -340,6 +368,56 @@ Ingestion volume/cost is reported separately from chat metrics:
 `ingestion_latency_ms` (see `results.json` / `summary.csv`), and snapshot
 provenance lands in `outputs/runs/<ts>/memory/<run_id>/manifest.json`.
 
+#### Retrieval recall (`must_retrieve` assertions)
+
+Scenarios that declare `must_retrieve_chunk` assertions get a recall figure in
+every export — `passed / declared` pins, with a Wilson 95% interval:
+
+```bash
+# Per-run fields: retrieval_recall, retrieval_assertions_passed/total/evaluated
+python scripts/retrieval_recall.py --scenario-prefix document_ --verbose
+
+# Grouped CSV, including archived runs whose results.json predates the fields
+python scripts/retrieval_recall.py --csv outputs/retrieval_recall.csv
+```
+
+Runs produced **before** the fields existed can be retro-fitted in place
+(`results.json` + `summary.csv`; originals are kept as `*.bak` and a
+`retrieval_recall_backfill.json` manifest records what was used):
+
+```bash
+python scripts/backfill_retrieval_recall.py --dry-run   # report only
+python scripts/backfill_retrieval_recall.py             # write the fields
+```
+
+Three policies define the number (SPEC §5.8): the denominator is the **declared**
+pin count from the scenario YAML (an errored probe stays in it and counts as a
+miss, so infrastructure failures can never inflate recall); the unit is **one
+pin on one turn**; and only `must_retrieve_chunk` counts — `must_not_retrieve_*`
+guards and `must_retrieve_source` stay out. The ratio is **document-level**: a
+sibling sub-chunk of the gold document satisfies a pin. Chunk-level `Recall@k`
+is a different metric — see `scripts/lr_report.py`. A `!` after the figure marks
+runs whose scenario gained pins after the run: the denominator used is today's
+(larger) one, so those figures are lower bounds.
+
+Repeat a corpus for free with the opt-in ingestion-embedding cache:
+
+```bash
+# Cold pass: ~110-160 s ingestion, 15,975 embedding tokens (8-doc D16 cell).
+# Second identical run: same command, same 8/8, ingestion in ~10 ms, ~120 tokens
+# (query embeddings only — queries are never cached).
+python run.py --level 2 --model qwen3-8b --scenario document_corpus_size_008_01 \
+    --chunk-size 600 --top-k 5 --embed-cache outputs/embed_cache
+```
+
+The cache stores chunk vectors keyed by `sha256(model, dims, text)` in
+`outputs/embed_cache/<embedding-id>.sqlite` (git-ignored). `embedding_tokens`
+then means tokens **actually sent**, and `embedding_cache_hits`/`_misses` travel
+with the run (`results.json`, `summary.csv`,
+`manifest.json` → `embedding.cache`) so a warm run is never mistaken for a faster
+embedder. See `datasets/documents/README.md` § *Ingestion cost*.
+
+
 ### Available options
 
 ```
@@ -354,6 +432,8 @@ python run.py --help
   --top-k           Retrieval cut-off for L2+        (default: 5; 0 disables retrieval)
   --chunk-size      Max chars per chunk              (default: 1200)
   --chunk-overlap   Chars shared between chunks      (default: 200; must be < --chunk-size)
+  --embed-batch-size Chunks per embedding request    (default: 8)
+  --embed-cache DIR On-disk ingestion-embedding cache (default: off; ~0 s warm ingestion)
   --no-documents    Ignore documents/attachments (control runs)
   --verbose, -v     Enable debug logging
   --list-models     List registered models and exit
@@ -430,31 +510,42 @@ agent-memory-benchmark/
 │   └── schemas.py                       # Pydantic v2 contracts + LangGraph state
 ├── datasets/
 │   ├── documents/                       # WS-D document corpus + generator docs
-│   └── conversations/                   # Scenario YAMLs, organized by research theme
-│       ├── logical_consistency/         # belief_revision, document_revision, explicit_forget, ...
-│       ├── retention_persistence/       # attrition, needle_haystack, document_needle, document_dilution, ...
-│       ├── compositional_reasoning/     # in_context_multihop, temporal_multi_hop
-│       ├── robustness_security/         # adversarial_forget, memory_injection
-│       └── computational_cost/          # overhead_baseline (P3)
+│   └── conversations/                   # Scenario YAMLs: <thread>/<theme>/<category>/
+│       ├── single_thread/               # One session_id — L0/L1 can answer (18)
+│       │   ├── logical_consistency/     # belief_revision, explicit_forget, in_context_control, ...
+│       │   ├── retention_persistence/   # attrition, needle_haystack, in_context_needle
+│       │   ├── compositional_reasoning/ # in_context_multihop, temporal_multi_hop, ...
+│       │   ├── robustness_security/     # adversarial_forget
+│       │   └── retrieval_limit/         # document_corpus_size (8 / 60 / 200 docs)
+│       └── multi_thread/                # Several sessions — needs cross-thread memory (15)
+│           ├── logical_consistency/     # document_revision, entity_binding, derived_belief_revision, ...
+│           ├── retention_persistence/   # cross_thread, document_needle, document_dilution, top_k_saturation
+│           ├── compositional_reasoning/ # cross_thread_derived
+│           ├── robustness_security/     # memory_injection
+│           └── computational_cost/      # overhead_baseline (P3)
 ├── outputs/
 │   ├── runs/                            # Timestamped results (JSON + CSV + Markdown + memory/)
-│   └── by_theme/                        # Runs reorganized by theme/category (generated)
+│   └── by_theme/                        # FROZEN historical snapshot (no longer regenerated)
 ├── archive/                             # Deprecated runs kept for provenance
 ├── notes/                               # Experiment write-ups (results, caveats, next steps)
 ├── TODOs/                               # Phase plans, stress-test designs, open decisions
 ├── scripts/
 │   ├── add_scenario.py                  # Materialize YAML blocks from a stage spec
+│   ├── build_d16_scenarios.py           # Generate the D16 corpus-size scenarios
 │   ├── generate_corpus.py               # Deterministic synthetic document corpus
-│   ├── organize_datasets.py             # Reorganize scenario YAMLs by theme
-│   ├── reorganize_outputs.py            # Group runs by theme under outputs/by_theme/
+│   ├── lr_report.py                     # Chunk-level recall report across runs
+│   ├── retrieval_recall.py            # Assertion-level must_retrieve recall report
+│   ├── backfill_retrieval_recall.py   # Retro-fit recall fields into old runs
 │   └── token_report.py                  # Token/latency breakdown per run
 ├── tests/                               # Harness, L2 and scenario-shape tests (no API keys)
+│   ├── test_dataset_layout.py           # Dataset tree invariants (thread/theme/category)
 │   ├── test_document_ingestion.py       # Document scenarios + ingestion
 │   ├── test_harness_m3.py               # Telemetry capture
 │   ├── test_harness_m5.py               # Backend injection and CLI flags
 │   ├── test_l2_contracts.py             # EpisodeRecord + backend protocol
 │   ├── test_l2_graph.py                 # L2 graph behaviour
 │   ├── test_l2_vector_backend.py        # Chunking, ranking, telemetry
+│   ├── test_retrieval_recall.py         # Retrieval-recall metric + report
 │   ├── test_scaffolding.py              # Base agent/harness contracts
 │   ├── test_stage4_scenarios.py         # Stage 4 scenario-shape guards
 │   └── test_stage5_scenarios.py         # Stage 5 scenario-shape guards

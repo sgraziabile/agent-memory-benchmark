@@ -29,7 +29,7 @@ from agents.base import BaseBenchmarkAgent
 from agents.level_2_episodic_rag.backends.vector import VectorMemoryBackend
 from agents.level_2_episodic_rag.graph import Level2EpisodicRAGAgent
 from core.runner import BenchmarkRunner
-from core.schemas import BenchmarkScenario, ConversationTurn
+from core.schemas import AssertionRule, BenchmarkScenario, ConversationTurn
 
 # ── Test doubles ─────────────────────────────────────────────────────────────
 
@@ -83,8 +83,14 @@ class FakeEmbeddings(Embeddings):
         return [float(len(text)), 1.0]
 
 
-def make_turn(n, content, session_id="default"):
-    return ConversationTurn(turn_number=n, role="user", content=content, session_id=session_id)
+def make_turn(n, content, session_id="default", assertions=None):
+    return ConversationTurn(
+        turn_number=n,
+        role="user",
+        content=content,
+        session_id=session_id,
+        assertions=assertions or [],
+    )
 
 
 def make_scenario(turns, scenario_id="test_scenario"):
@@ -282,6 +288,66 @@ class TestCsvExportColumns:
         assert header[idx + 2] == "embedding_model_id"
 
 
+# ── CSV/Markdown export: retrieval-recall columns (SPEC §5.8) ───────────────
+
+
+class TestRetrievalRecallExport:
+    @staticmethod
+    def _pinned_scenario():
+        pins = [
+            AssertionRule(type="must_retrieve_chunk", value="doc_a"),
+            AssertionRule(type="must_contain", value="answer"),
+        ]
+        return make_scenario([make_turn(1, "q", assertions=pins)])
+
+    def test_summary_csv_has_recall_columns(self, tmp_path):
+        runner = BenchmarkRunner(output_dir=tmp_path / "outputs")
+        summary = run_scenario(FakeGraph(["answer"]), self._pinned_scenario())
+        run_dir = runner._export_results([summary])
+
+        with open(run_dir / "summary.csv", encoding="utf-8-sig", newline="") as fh:
+            rows = list(csv.DictReader(fh))
+
+        assert len(rows) == 1
+        row = rows[0]
+        assert row["retrieval_assertions_total"] == "1"
+        assert row["retrieval_assertions_evaluated"] == "1"
+        # FakeGraph emits no retrieval telemetry -> declared pin missed.
+        assert row["retrieval_assertions_passed"] == "0"
+        assert row["retrieval_recall"] == "0.0"
+        assert row["retrieval_recall_ci_low"] != ""
+        assert row["retrieval_recall_ci_high"] != ""
+
+    def test_recall_columns_are_empty_for_text_only_runs(self, tmp_path):
+        runner = BenchmarkRunner(output_dir=tmp_path / "outputs")
+        summary = run_scenario(FakeGraph(["ok"]), make_scenario([make_turn(1, "q")]))
+        run_dir = runner._export_results([summary])
+
+        with open(run_dir / "summary.csv", encoding="utf-8-sig", newline="") as fh:
+            row = next(csv.DictReader(fh))
+
+        assert row["retrieval_assertions_total"] == "0"
+        assert row["retrieval_recall"] == ""
+        assert row["retrieval_recall_ci_low"] == ""
+
+    def test_summary_md_recall_column_only_when_pins_are_declared(self, tmp_path):
+        runner = BenchmarkRunner(output_dir=tmp_path / "outputs")
+        pinned = run_scenario(FakeGraph(["answer"]), self._pinned_scenario())
+        text_only = run_scenario(FakeGraph(["ok"]), make_scenario([make_turn(1, "q")]))
+
+        md_pinned = (runner._export_results([pinned]) / "summary.md").read_text(
+            encoding="utf-8"
+        )
+        assert "Retrieval Recall" in md_pinned
+        assert "0/1 (0.0%)" in md_pinned
+        assert "scripts/lr_report.py" in md_pinned
+
+        md_text = (runner._export_results([text_only]) / "summary.md").read_text(
+            encoding="utf-8"
+        )
+        assert "Retrieval Recall" not in md_text
+
+
 # ── requires_memory_backend class attribute ──────────────────────────────────
 
 
@@ -366,9 +432,11 @@ class TestBuildMemoryBackend:
         fake_embeddings = FakeEmbeddings()
         seen: dict = {}
 
-        def fake_create_embeddings(embedding_id):
+        def fake_create_embeddings(embedding_id, *, cache_dir=None):
             seen["create"] = embedding_id
+            seen["cache_dir"] = cache_dir
             return fake_embeddings
+
 
         def fake_get_dims(embedding_id):
             seen["dims"] = embedding_id
@@ -380,7 +448,13 @@ class TestBuildMemoryBackend:
         backend = run_cli._build_memory_backend("vector", "qwen3-embedding-8b")
 
         assert isinstance(backend, VectorMemoryBackend)
-        assert seen == {"create": "qwen3-embedding-8b", "dims": "qwen3-embedding-8b"}
+        # The cache directory is forwarded (``None`` = no cache, the default).
+        assert seen == {
+            "create": "qwen3-embedding-8b",
+            "dims": "qwen3-embedding-8b",
+            "cache_dir": None,
+        }
+
         # Provenance identity recorded for snapshot manifests.
         assert backend._embedding_id == "qwen3-embedding-8b"
         assert backend._dims == 8

@@ -590,6 +590,12 @@ class TestVectorBackendDocuments:
         assert manifest["document_chunks"] == len(documents)
         assert manifest["run_metadata"]["documents"][0]["doc_id"] == "handbook"
         assert manifest["run_metadata"]["document_ingestion"]["documents_ingested"] == 1
+        # Backend identity travels with the snapshot so a warm (cached) and a
+        # cold ingestion are distinguishable from the artifact alone.
+        assert manifest["run_metadata"]["memory_backend_config"] == {
+            "backend": "vector",
+            "top_k": 5,
+        }
 
         # Summary mirrors the store: the long document was split into chunks.
         assert summary.ingested_chunks == len(documents) > 1
@@ -715,6 +721,124 @@ class TestRetrievalAssertions:
 
         assert summary.passed_assertions == 0
         assert summary.failed_assertions == 1
+
+
+class TestRetrievalRecallMetric:
+    """SPEC §5.8: ``passed / declared`` ``must_retrieve_chunk`` pins."""
+
+    @staticmethod
+    def _rules():
+        return [
+            AssertionRule(type="must_contain", value="answer"),
+            AssertionRule(type="must_retrieve_chunk", value="doc_a"),
+            AssertionRule(type="must_retrieve_chunk", value="doc_b"),
+            AssertionRule(type="must_retrieve_chunk", value="doc_c"),
+            # Precision guard: must never enter the recall denominator (D3).
+            AssertionRule(type="must_not_retrieve_chunk", value="doc_decoy"),
+        ]
+
+    def test_summary_reports_rule_level_recall(self):
+        scenario = make_scenario(
+            [
+                make_turn(1, "q1", assertions=self._rules()),
+                make_turn(2, "q2", assertions=self._rules()),
+            ]
+        )
+        memories = [
+            {"chunk_id": "doc_a_c0", "source": "document"},
+            {"chunk_id": "doc_b_c0", "source": "document"},
+        ]
+
+        summary = run_scenario(RetrievalGraph(["answer", "answer"], memories), scenario)
+
+        # 3 chunk pins per turn (the text rule and the guard do not count).
+        assert summary.retrieval_assertions_total == 6
+        assert summary.retrieval_assertions_evaluated == 6
+        assert summary.retrieval_assertions_passed == 4
+        assert summary.retrieval_recall == pytest.approx(4 / 6)
+        assert summary.retrieval_recall_ci_low < summary.retrieval_recall
+        assert summary.retrieval_recall_ci_high > summary.retrieval_recall
+
+    def test_retrieve_source_rule_is_reported_separately(self):
+        """D3: a channel pin is an assertion, not a gold item."""
+        rules = [
+            AssertionRule(type="must_retrieve_chunk", value="doc_a"),
+            AssertionRule(type="must_retrieve_source", value="document"),
+        ]
+        scenario = make_scenario([make_turn(1, "q", assertions=rules)])
+
+        summary = run_scenario(
+            RetrievalGraph(
+                ["answer"], [{"chunk_id": "doc_a_c0", "source": "document"}]
+            ),
+            scenario,
+        )
+
+        assert summary.passed_assertions == 2  # both rules passed…
+        assert summary.retrieval_assertions_total == 1  # …but only one is a pin
+        assert summary.retrieval_assertions_passed == 1
+        assert summary.retrieval_recall == pytest.approx(1.0)
+
+    def test_recall_is_none_without_retrieval_pins(self):
+        """A text-only scenario is not "0 % recall"."""
+        scenario = make_scenario(
+            [
+                make_turn(
+                    1,
+                    "q",
+                    assertions=[AssertionRule(type="must_contain", value="answer")],
+                )
+            ]
+        )
+
+        summary = run_scenario(RetrievalGraph(["answer"], []), scenario)
+
+        assert summary.retrieval_assertions_total == 0
+        assert summary.retrieval_recall is None
+        assert summary.retrieval_recall_ci_low is None
+        assert summary.retrieval_recall_ci_high is None
+
+    def test_error_turn_counts_as_a_recall_miss(self):
+        """D1: the declared denominator keeps an unscored probe in the count."""
+        pin = AssertionRule(type="must_retrieve_chunk", value="doc_a")
+        scenario = make_scenario(
+            [
+                make_turn(1, "q1", assertions=[pin]),
+                make_turn(2, "q2", assertions=[pin]),
+            ]
+        )
+        memories = [{"chunk_id": "doc_a_c0", "source": "document"}]
+        # Second answer is blank -> flagged as an error turn and never scored.
+        graph = RetrievalGraph(["answer", "   "], memories)
+
+        summary = run_scenario(graph, scenario)
+
+        assert summary.error_turns == 1
+        assert summary.retrieval_assertions_total == 2
+        assert summary.retrieval_assertions_evaluated == 1
+        assert summary.retrieval_assertions_passed == 1
+        assert summary.retrieval_recall == pytest.approx(0.5)
+
+    def test_l0_style_graph_scores_zero_over_the_declared_denominator(self):
+        """No retrieval telemetry -> 0.0, never ``None`` (pins were declared)."""
+        scenario = make_scenario(
+            [
+                make_turn(
+                    1,
+                    "q",
+                    assertions=[
+                        AssertionRule(type="must_retrieve_chunk", value="doc_a")
+                    ],
+                )
+            ]
+        )
+
+        summary = run_scenario(FakeGraph(["answer"]), scenario)
+
+        assert summary.retrieval_assertions_total == 1
+        assert summary.retrieval_assertions_evaluated == 1
+        assert summary.retrieval_assertions_passed == 0
+        assert summary.retrieval_recall == pytest.approx(0.0)
 
 
 # ── Committed scenarios ──────────────────────────────────────────────────────
@@ -917,27 +1041,9 @@ class TestDocumentScenarios:
             for a in scope_turn.assertions
         ), "scope probe must pin the scope-note chunk"
 
-    def test_no_positive_assertion_echoes_its_own_probe(self):
-        """R10: a `must_contain` token must not appear in its own user turn.
-
-        An assertion satisfied by echoing the question measures nothing. This is
-        why ``must_contain: "Room 11"`` was rejected as an abstention check
-        (X10b): every answer, hallucinated or not, would have passed.
-        """
-        for scenario in self._load().values():
-            if not scenario.id.startswith("document_"):
-                continue
-            for turn in scenario.turns:
-                if turn.role != "user":
-                    continue
-                probe = turn.content.casefold()
-                for rule in turn.assertions:
-                    if rule.type != "must_contain":
-                        continue
-                    assert rule.value.casefold() not in probe, (
-                        f"{scenario.id} T{turn.turn_number}: assertion "
-                        f"{rule.value!r} is satisfied by the probe itself"
-                    )
+    # R10 (a positive assertion must not echo its own probe) now lives in the
+    # dataset-wide tests/test_assertion_hygiene.py::TestH1NoEcho — this file
+    # used to check only ``document_*`` scenarios.
 
     def test_documents_are_not_chat_turns(self):
         """Documents must be ingested out-of-band, never as user turns."""

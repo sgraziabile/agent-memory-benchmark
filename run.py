@@ -5,17 +5,17 @@ from the command line.
 
 Examples:
     # Run a single scenario (NanoGPT subscription model):
-    python run.py --model qwen3.6-27b --scenario belief_revision_01
+    python run.py --model glm-5.3-flash --scenario belief_revision_01
 
     # Run with a custom provider-qualified model string:
     python run.py --model google:gemini-2.0-flash --scenario needle_haystack_01
 
     # Run with strict epistemic prompt:
-    python run.py --model qwen3.6-27b --scenario belief_revision_01 --prompt strict_epistemic
+    python run.py --model glm-5.3-flash --scenario belief_revision_01 --prompt strict_epistemic
 
     # Select agent level(s) by number — full registry names also accepted:
     python run.py --level 1 --model glm-5.3-flash --scenario belief_revision_01
-    python run.py --level 0,1 --model qwen3.6-27b --scenario belief_revision_01
+    python run.py --level 0,1 --model glm-5.3-flash --scenario belief_revision_01
 
     # List available components:
     python run.py --list-models
@@ -84,6 +84,8 @@ def _build_memory_backend(
     *,
     chunk_size: int = 1200,
     chunk_overlap: int = 200,
+    embed_batch_size: int = 8,
+    embed_cache_dir: Path | str | None = None,
 ) -> VectorMemoryBackend:
     """Construct the requested ``EpisodicMemoryBackend`` (L2+ levels only).
 
@@ -95,8 +97,17 @@ def _build_memory_backend(
     ``chunk_size`` / ``chunk_overlap`` are exposed on the CLI (plan WS-D) so
     context-heavy document runs can sweep chunking without code edits; the
     backend validates that ``chunk_overlap < chunk_size``.
+
+    ``embed_batch_size`` sets how many chunks are embedded per provider call
+    (the backend writes them through ``InMemoryStore.batch()``); keep it small
+    enough that a single call fits the embedding client's timeout.
+
+    ``embed_cache_dir`` opts into the on-disk ingestion-embedding cache
+    (``--embed-cache``): the client is wrapped so chunk vectors are reused
+    across runs, while query embeddings stay live (they sit inside the
+    measured retrieval window).
     """
-    embeddings = create_embeddings(embedding_model_id)
+    embeddings = create_embeddings(embedding_model_id, cache_dir=embed_cache_dir)
     dims = get_embedding_dims(embedding_model_id)
     return VectorMemoryBackend(
         embeddings,
@@ -104,7 +115,9 @@ def _build_memory_backend(
         embedding_id=embedding_model_id,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
+        embed_batch_size=embed_batch_size,
     )
+
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -117,7 +130,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--model",
         "-m",
         type=str,
-        default="qwen3.6-27b",
+        default="glm-5.3-flash",
         help="Model ID from configs/models.yaml or 'provider:model_name'",
     )
     parser.add_argument(
@@ -173,7 +186,29 @@ def build_parser() -> argparse.ArgumentParser:
         help="Character overlap between adjacent chunks (must be < --chunk-size)",
     )
     parser.add_argument(
+        "--embed-batch-size",
+        type=int,
+        default=8,
+        metavar="N",
+        help=(
+            "Chunks per embedding request. 8 ≈ 17-22 s on CPU Ollama; larger "
+            "windows are faster but need the embedding timeout raised."
+        ),
+    )
+    parser.add_argument(
+        "--embed-cache",
+        type=str,
+        default=None,
+        metavar="DIR",
+        help=(
+            "Directory for the on-disk ingestion-embedding cache (opt-in; "
+            "one SQLite file per embedding model). Query embeddings are never "
+            "cached. Off by default."
+        ),
+    )
+    parser.add_argument(
         "--no-documents",
+
         action="store_true",
         help="Ignore scenario-declared documents and system_event attachments (control runs)",
     )
@@ -222,7 +257,10 @@ def main() -> int:
 
     if args.list_scenarios:
         scenarios = runner.load_scenarios()
-        print("\nAvailable Scenarios (datasets/conversations/):")
+        print(
+            "\nAvailable Scenarios "
+            "(datasets/conversations/{single,multi}_thread/):"
+        )
         for sc in scenarios:
             docs = f", {len(sc.documents)} docs" if sc.documents else ""
             print(
@@ -266,6 +304,16 @@ def main() -> int:
     if args.chunk_overlap < 0 or args.chunk_overlap >= args.chunk_size:
         print("Error: --chunk-overlap must be >= 0 and < --chunk-size.")
         return 1
+    if args.embed_batch_size < 1:
+        print("Error: --embed-batch-size must be >= 1.")
+        return 1
+    # An empty --embed-cache string would silently create the cache file in the
+    # working directory; make "off" (omit the flag) the only way to disable it.
+    embed_cache_dir = (args.embed_cache or "").strip() or None
+    if args.embed_cache is not None and embed_cache_dir is None:
+        print("Error: --embed-cache needs a directory (omit the flag for no cache).")
+        return 1
+
 
     # ── Filter setup ─────────────────────────────────────────────────
     scenario_ids = (
@@ -321,8 +369,10 @@ def main() -> int:
         print(
             f"  Memory:   top_k={args.top_k}, chunk_size={args.chunk_size}, "
             f"chunk_overlap={args.chunk_overlap}, "
-            f"documents={'off' if args.no_documents else 'on'}"
+            f"documents={'off' if args.no_documents else 'on'}, "
+            f"embed_cache={embed_cache_dir or 'off'}"
         )
+
     print("=" * 60 + "\n")
 
     # ── Execute one pass per level ────────────────────────────────────
@@ -353,7 +403,10 @@ def main() -> int:
                     args.embedding_model,
                     chunk_size=args.chunk_size,
                     chunk_overlap=args.chunk_overlap,
+                    embed_batch_size=args.embed_batch_size,
+                    embed_cache_dir=embed_cache_dir,
                 )
+
             except Exception as exc:
                 print(
                     f"Error: Could not construct {backend_name!r} memory "
@@ -369,12 +422,21 @@ def main() -> int:
                 "top_k": args.top_k,
                 "chunk_size": args.chunk_size,
                 "chunk_overlap": args.chunk_overlap,
+                # Batching identity: how many chunks went into one embedding
+                # request (and therefore how a slow ingestion is explained).
+                "embed_batch_size": args.embed_batch_size,
+                # Ingestion-cache identity: a warm run must be distinguishable
+                # from a cold one *in the artifact*, never from speed alone.
+                "embed_cache": embed_cache_dir,
             }
             print(
                 f"  Memory backend: {backend_name} "
                 f"(embedding: {args.embedding_model}, top_k={args.top_k}, "
-                f"chunk_size={args.chunk_size}, chunk_overlap={args.chunk_overlap})"
+                f"chunk_size={args.chunk_size}, chunk_overlap={args.chunk_overlap}, "
+                f"embed_batch_size={args.embed_batch_size}, "
+                f"embed_cache={embed_cache_dir or 'off'})"
             )
+
 
         if inline_model:
             # Inline path mirrors run_matrix: snapshots land under the
@@ -455,10 +517,38 @@ def _print_run_report(results: list, run_dir: Path | None = None) -> None:
         if res.error_turns:
             print(f"Error Turns:  {res.error_turns} ({res.error_rate * 100:.1f}%) — excluded from metrics")
         print(f"Assertions:   {res.passed_assertions}/{res.total_assertions} passed ({pass_pct:.1f}%)")
+        if res.retrieval_assertions_total > 0:
+            recall = res.retrieval_recall or 0.0
+            ci = ""
+            if res.retrieval_recall_ci_low is not None:
+                ci = (
+                    f"  CI95 [{res.retrieval_recall_ci_low * 100:.0f}%, "
+                    f"{res.retrieval_recall_ci_high * 100:.0f}%]"
+                )
+            print(
+                f"Retrieval:    {res.retrieval_assertions_passed}/"
+                f"{res.retrieval_assertions_total} must_retrieve pins hit "
+                f"({recall * 100:.1f}%){ci}"
+            )
+            lost = res.retrieval_assertions_total - res.retrieval_assertions_evaluated
+            if lost:
+                print(
+                    f"              {lost} declared pin(s) never evaluated "
+                    "(infrastructure error) - scored as misses"
+                )
         print(f"Avg Latency:  {res.avg_latency_per_turn_ms:.1f} ms/turn")
         print(f"Total Time:   {res.total_latency_ms:.1f} ms")
         if res.total_tokens > 0:
             print(f"Total Tokens: {res.total_tokens:,} (prompt: {res.prompt_tokens:,}, completion: {res.completion_tokens:,})")
+        priced = (
+            res.input_cost_per_mtok is not None
+            or res.output_cost_per_mtok is not None
+        )
+        if priced:
+            print(
+                f"Total Cost:   ${res.total_cost_usd:.6f} "
+                f"(input: ${res.input_cost_usd:.6f}, output: ${res.output_cost_usd:.6f})"
+            )
         print("-" * 60)
         print("Detailed Turn Breakdown:")
         for tr in res.turn_results:
@@ -476,6 +566,8 @@ def _print_run_report(results: list, run_dir: Path | None = None) -> None:
                 )
                 if t_count:
                     tok_info = f" tokens={t_count}"
+                if priced:
+                    tok_info += f" cost=${tr.total_cost_usd:.6f}"
             print(f"  [Turn {tr.turn_number}] ({status}) latency={tr.latency_ms:.1f}ms{tok_info}")
             print(f"    User:     {tr.user_input[:80]}...")
             print(f"    Agent:    {tr.agent_response[:100]}...")

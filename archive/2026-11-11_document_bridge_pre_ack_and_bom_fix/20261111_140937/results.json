@@ -1,0 +1,940 @@
+[
+  {
+    "run_id": "document_multihop_bridge_01_deepseek-v4.1-flash_baseline_react_770e562a",
+    "scenario_id": "document_multihop_bridge_01",
+    "model_id": "deepseek-v4.1-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 5,
+    "total_assertions": 10,
+    "passed_assertions": 8,
+    "failed_assertions": 2,
+    "pass_rate": 0.8,
+    "retrieval_assertions_total": 4,
+    "retrieval_assertions_evaluated": 4,
+    "retrieval_assertions_passed": 3,
+    "retrieval_recall": 0.75,
+    "retrieval_recall_ci_low": 0.30064184258240184,
+    "retrieval_recall_ci_high": 0.9544127391902995,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 45133.48600000609,
+    "avg_latency_per_turn_ms": 9026.697200001217,
+    "total_tokens": 6278,
+    "prompt_tokens": 5789,
+    "completion_tokens": 489,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I have loaded the Viaduct facility documents into your document memory: the asset registry, the limit schedule, the maintenance records and the standing policies. I will ask you about them in a later session. Just confirm you have them.",
+        "agent_response": "I can confirm what I actually have in this conversation — and I want to be precise, because it matters for later questions.\n\nWhat's in front of me now:\n\n1. **Limit schedule — Viaduct facility** (Revision 2026.02) — but the body is essentially empty. It has a title, a revision line, a note that unlisted assets have no entry, and then a separator. No asset rows, no limits.\n2. **Asset registry — Viaduct facility (excerpt)** — the cooling-assets table (NBL-420, NBL-118, NBL-501, TRB-260, TRB-318, TRB-515, NBL-604), each pointing to the limit schedule for its value. The air-handling section is empty. Plus revision history, scope, and custody notes.\n3. **Recorded value register — Rosario facility** (Revision 2025.12) — twelve asset/value rows, transfer notes, corrections, and \"what the registry is not.\"\n\nWhat I do **not** have: the **maintenance records** and the **standing policies** you mentioned. They aren't in this conversation.\n\nAlso worth flagging now, since it will affect later answers: the Viaduct registry says values are held in the limit schedule, but the limit schedule as loaded contains no values. So for the Viaduct cooling assets I can tell you which document holds a value, but not the value itself. And the Rosario register is a separate series that must not be merged with Viaduct — identifiers are unique per facility, not across the estate.\n\nIf you can paste in the maintenance records and standing policies, I'll have the full set.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 24768.70510000299,
+        "token_usage": {
+          "input_tokens": 1182,
+          "output_tokens": 355,
+          "total_tokens": 1537,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 1182,
+        "completion_tokens": 355,
+        "total_tokens": 1537,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 355,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0001182,
+        "output_cost_usd": 0.000213,
+        "total_cost_usd": 0.0003312,
+        "retrieved_context_chars": 4278,
+        "retrieved_context_tokens": 1069,
+        "embedding_tokens": 520,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 2,
+        "retrieval_latency_ms": 4166.035199996259,
+        "append_latency_ms": 6537.571799999569,
+        "embedding_latency_ms": 10698.89850000618,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_calibration_register_02_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Limit schedule — Viaduct facility\n\nRevision 2026.02. Maintained by the facilities group. An asset that is not listed here has no entry on file.",
+            "score": 0.703553642365648,
+            "rank": 1,
+            "char_count": 145,
+            "estimated_tokens": 36,
+            "metadata": {
+              "title": "Limit schedule — Viaduct facility",
+              "version": "2026.02",
+              "authority": "register",
+              "published": "2026-02-10",
+              "doc_id": "calibration_register_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\calibration_register_02.md",
+              "sha256": "cbc8b3a0a0b659b61deb14260a05ce85bdf67e324e5e8dc4a0388e6991eb2017",
+              "parent_chunk_id": "doc_calibration_register_02",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_asset_registry_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "﻿# Asset registry — Viaduct facility (excerpt)\n\nThe registry is the index of assets at the Viaduct facility. It answers one question: which asset am I\nlooking at, and what is its identifier? Recorded values are deliberately excluded — each row names the\ndocument where the value is held, so that a value has exactly one home and correcting it does not require\ncorrecting an index.\n\nThe excerpt below covers the cooling and air-handling assets of the north half of the facility. The full\nregistry, including the low-voltage distribution and the roof plant, lives in the same series with a\ndifferent suffix and is reissued whenever an asset is added or retired.\n\n## Cooling assets\n\n| Asset | Description | Value held in |\n|---|---|---|\n| NBL-420 | West-aisle cooling loop | limit schedule |\n| NBL-118 | East-aisle cooling loop | limit schedule |\n| NBL-501 | South-aisle cooling loop | limit schedule |\n| TRB-260 | North cooling loop | limit schedule |\n| TRB-318 | Return manifold, north half | limit schedule |\n| TRB-515 | Return manifold, south half | limit schedule |\n| NBL-604 | Make-up water loop | limit schedule |\n\n## Air handling assets",
+            "score": 0.6604627202229371,
+            "rank": 2,
+            "char_count": 1141,
+            "estimated_tokens": 285,
+            "metadata": {
+              "title": "Asset registry — Viaduct facility (excerpt)",
+              "version": "2026.02",
+              "authority": "registry",
+              "published": "2026-02-10",
+              "doc_id": "asset_registry_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\asset_registry_01.md",
+              "sha256": "b3c63737136a794f0e0fb21dc7bda002b4d09a65c1a1f6274440e0d84dd79615",
+              "parent_chunk_id": "doc_asset_registry_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_decoy_04_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "A transferred asset that has not yet been re-measured is marked in the ticket system but not in this\nregister, which is a known gap: the register has no status column. The gap is recorded here so that a reader\nwho notices an unexpectedly early value knows why it looks that way.\n\n## Revision history\n\n- 2025.12 — three distribution boards added; one retired identifier removed.\n- 2025.09 — two transferred assets re-recorded at transfer values.\n- 2025.05 — separator convention aligned with the Viaduct series.\n\n## Scope\n\nThis document records values. It does not describe assets, and a reader who needs a description should use\nthe Rosario registry rather than infer one from an identifier. It also does not record inspection grades,\nwhich live with the inspection reports and are revised on a different schedule.\n\n## Custody\n\nThe register is maintained by the Rosario calibration team and reviewed when the Viaduct series is revised,\nso that the two files do not drift in convention even though they are never merged. Where the two disagree\nabout a convention rather than a value, the disagreement is resolved by the facilities lead for the estate\nand recorded in both revision histories.",
+            "score": 0.5800680349344716,
+            "rank": 3,
+            "char_count": 1190,
+            "estimated_tokens": 297,
+            "metadata": {
+              "title": "Limit schedule — Rosario facility",
+              "version": "2025.12",
+              "authority": "register",
+              "published": "2025-12-03",
+              "doc_id": "decoy_04",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_04.md",
+              "sha256": "9b05ae2f83728ed03889b43563dffd5b0649a584763cde12fc9d5b0aa49d61d2",
+              "parent_chunk_id": "doc_decoy_04",
+              "chunk_index": 1,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_decoy_04_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Recorded value register — Rosario facility\n\nRevision 2025.12. This register covers the Rosario facility only. It is issued as a separate series from the\nViaduct register and the two must not be merged: identifiers are unique within a facility, not across the\nestate, and a merged file has produced two transposed readings in the past.\n\nAsset | Recorded value\n--- | ---\nTRB-902 | QMV-8L5R-3301\nTRB-918 | ZTF-3V7K-6628\nTRB-944 | NBR-5H1D-2214\nAHU-441 | ZTF-4M7T-9025\nAHU-470 | QMV-1C6N-4490\nAHU-496 | NBR-8B3P-7731\nSWD-210 | ZTF-7T2M-1185\nSWD-246 | QMV-9R4H-6620\nCND-330 | NBR-2M8K-3317\nCND-364 | ZTF-5D1V-8843\nPNL-420 | QMV-6K9T-2206\nFDR-455 | NBR-3R7P-9958\n\n## Transfer notes\n\nTwo assets were transferred to Rosario from the Viaduct facility when the southern hall was consolidated.\nBoth kept their Viaduct identifiers and both were re-recorded here at the value they carried at transfer,\nbecause the calibration team re-measures an asset after a move rather than assuming the value survives it.",
+            "score": 0.5678352718519722,
+            "rank": 4,
+            "char_count": 997,
+            "estimated_tokens": 249,
+            "metadata": {
+              "title": "Limit schedule — Rosario facility",
+              "version": "2025.12",
+              "authority": "register",
+              "published": "2025-12-03",
+              "doc_id": "decoy_04",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_04.md",
+              "sha256": "9b05ae2f83728ed03889b43563dffd5b0649a584763cde12fc9d5b0aa49d61d2",
+              "parent_chunk_id": "doc_decoy_04",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_asset_registry_01_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## Corrections\n\nA correction to a description is a registry change and is reviewed by the facilities lead. A correction to a\nrecorded value is not: values live in the register, and their correction is a register change. Keeping those\ntwo paths separate is why the index can be read quickly during an incident without anyone needing to check\nwhether the value beside an identifier is current.\n\n## What the registry is not\n\nIt is not a maintenance history, a warranty list or a commissioning record. Those documents exist, they cite\nidentifiers from this registry, and they are not substitutes for it. A ticket that describes an asset without\nits identifier is treated as incomplete at the change review, which is the reason the registry is short\nenough to be read aloud.",
+            "score": 0.5236685985783993,
+            "rank": 5,
+            "char_count": 769,
+            "estimated_tokens": 192,
+            "metadata": {
+              "title": "Asset registry — Viaduct facility (excerpt)",
+              "version": "2026.02",
+              "authority": "registry",
+              "published": "2026-02-10",
+              "doc_id": "asset_registry_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\asset_registry_01.md",
+              "sha256": "b3c63737136a794f0e0fb21dc7bda002b4d09a65c1a1f6274440e0d84dd79615",
+              "parent_chunk_id": "doc_asset_registry_01",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t1_c0",
+          "ep_s1_t1_c1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 2,
+        "user_input": "New session. What is the recorded figure for the west-aisle cooling loop?",
+        "agent_response": "I don't have that information. The documents provided cover the east-aisle cooling loop (NBL-118) and the north cooling loop (TRB-260), and the asset registry lists the west-aisle cooling loop as NBL-420 — but it explicitly excludes recorded values, pointing instead to the \"limit schedule\" as the document where the value is held. That limit schedule isn't included here, so I can't tell you the recorded figure for NBL-420.",
+        "assertions_passed": 2,
+        "assertions_failed": 2,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "QMV-T3R8-4402",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "asset_registry_01",
+            "passed": true,
+            "matched_chunks": [
+              "doc_asset_registry_01_c0"
+            ]
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "calibration_register_02",
+            "passed": false,
+            "matched_chunks": []
+          },
+          {
+            "rule_type": "must_not_retrieve_chunk",
+            "value": "bg_06",
+            "passed": true,
+            "matched_chunks": []
+          }
+        ],
+        "latency_ms": 10417.588000003889,
+        "token_usage": {
+          "input_tokens": 1065,
+          "output_tokens": 101,
+          "total_tokens": 1166,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1065,
+        "completion_tokens": 101,
+        "total_tokens": 1166,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 101,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0001065,
+        "output_cost_usd": 6.06e-05,
+        "total_cost_usd": 0.0001671,
+        "retrieved_context_chars": 4391,
+        "retrieved_context_tokens": 1097,
+        "embedding_tokens": 147,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 314.47710000065854,
+        "append_latency_ms": 3215.5490000004647,
+        "embedding_latency_ms": 3526.3654999944265,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_decoy_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — east-aisle cooling loop\n\n## Asset\n\nThe east-aisle cooling loop is asset NBL-118 in the facility registry. It serves the two aisle rows on the\neastern side of the north hall and shares a return manifold with the southern loop; the shared manifold is\nthe reason the two loops are never serviced on the same day.\n\n## Re-measurement\n\nThe loop was re-measured during the February window after the quarterly review flagged a drift between the\ncommissioning figure and the figure recorded on the local gauge. Both readings were taken at the same supply\ntemperature, fifteen minutes apart, with the secondary pump running and the bypass closed.\n\nThe discrepancy turned out to be a gauge fault rather than a loop fault. The gauge was replaced, the loop\nre-measured, and the reading returned to within the tolerance the commissioning report specifies. The\nrecorded value for NBL-118 is ZTF-2H8N-5510, unchanged from the previous revision, which is worth stating\nexplicitly: a re-measurement that confirms the existing value is still a re-measurement and is recorded as\none.\n\n## Method",
+            "score": 0.6486964437819811,
+            "rank": 1,
+            "char_count": 1097,
+            "estimated_tokens": 274,
+            "metadata": {
+              "title": "Calibration record — east-aisle cooling loop",
+              "version": "2026.02",
+              "authority": "maintenance",
+              "published": "2026-02-18",
+              "doc_id": "decoy_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_01.md",
+              "sha256": "205665522b727cd279a2584183cfb734f861ab9974ca5a948060ee52975938b6",
+              "parent_chunk_id": "doc_decoy_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_decoy_02_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Commissioning note — north cooling loop\n\n## Scope of the note\n\nThis note records the commissioning of the north cooling loop, asset TRB-260, and the measurements taken on\nthe day it was handed over. It is written for two readers: the engineer who will service the loop next, and\nthe auditor who will ask why the recorded value is what it is.\n\n## Handover\n\nThe loop was handed over after a four-hour soak test at design load. The soak was extended by one hour\nbecause the return temperature had not settled at the three-hour mark, which the commissioning engineer\nrecorded as an observation rather than a finding: the loop settled inside the tolerance during the\nadditional hour and held for the remainder.\n\nThe recorded value for TRB-260 is NBR-7D4M-2073. It was set from the reading taken at the end of the soak,\nnot from the design figure in the specification, and the two differ by a small margin that the commissioning\nreport explains as a consequence of the installed pipe run being longer than the design assumed.\n\n## Deviations",
+            "score": 0.5918524101964746,
+            "rank": 2,
+            "char_count": 1036,
+            "estimated_tokens": 259,
+            "metadata": {
+              "title": "Commissioning note — north cooling loop",
+              "version": "2025.11",
+              "authority": "maintenance",
+              "published": "2025-11-06",
+              "doc_id": "decoy_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_02.md",
+              "sha256": "c1d28b2072f6420fc764b5e6617c5a49276c68a3d1d54a0ad0a66687dbb90f82",
+              "parent_chunk_id": "doc_decoy_02",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_decoy_03_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## Access notes\n\nThe corridor between the units is narrow enough that the scaffold must be erected from the eastern end. This\nis recorded here because a contractor who starts from the western end will discover it halfway through\nerection, and the resulting delay is billed. The corridor also carries a services tray at head height that\nmust be isolated before the scaffold is placed; the isolation is a change of its own and is raised with the\nnormal change process.\n\n## Related records\n\nThe cooling loops served by these units have their own records and their own cadence. Where an air-handling\nfault is traced to a loop, the loop's record is updated rather than this one, so that a reader who starts\nfrom the loop reaches the loop's evidence and not an inspection note that mentions it in passing.",
+            "score": 0.532301215425525,
+            "rank": 3,
+            "char_count": 799,
+            "estimated_tokens": 199,
+            "metadata": {
+              "title": "Air-handling inspection — rows 3 and 5",
+              "version": "2026.01",
+              "authority": "maintenance",
+              "published": "2026-01-22",
+              "doc_id": "decoy_03",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_03.md",
+              "sha256": "faa6756dd28feb8e6439385c7a85261edd656cfd14ae91ab17c5745f2c3bbce3",
+              "parent_chunk_id": "doc_decoy_03",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_asset_registry_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "﻿# Asset registry — Viaduct facility (excerpt)\n\nThe registry is the index of assets at the Viaduct facility. It answers one question: which asset am I\nlooking at, and what is its identifier? Recorded values are deliberately excluded — each row names the\ndocument where the value is held, so that a value has exactly one home and correcting it does not require\ncorrecting an index.\n\nThe excerpt below covers the cooling and air-handling assets of the north half of the facility. The full\nregistry, including the low-voltage distribution and the roof plant, lives in the same series with a\ndifferent suffix and is reissued whenever an asset is added or retired.\n\n## Cooling assets\n\n| Asset | Description | Value held in |\n|---|---|---|\n| NBL-420 | West-aisle cooling loop | limit schedule |\n| NBL-118 | East-aisle cooling loop | limit schedule |\n| NBL-501 | South-aisle cooling loop | limit schedule |\n| TRB-260 | North cooling loop | limit schedule |\n| TRB-318 | Return manifold, north half | limit schedule |\n| TRB-515 | Return manifold, south half | limit schedule |\n| NBL-604 | Make-up water loop | limit schedule |\n\n## Air handling assets",
+            "score": 0.5228594901073669,
+            "rank": 4,
+            "char_count": 1141,
+            "estimated_tokens": 285,
+            "metadata": {
+              "title": "Asset registry — Viaduct facility (excerpt)",
+              "version": "2026.02",
+              "authority": "registry",
+              "published": "2026-02-10",
+              "doc_id": "asset_registry_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\asset_registry_01.md",
+              "sha256": "b3c63737136a794f0e0fb21dc7bda002b4d09a65c1a1f6274440e0d84dd79615",
+              "parent_chunk_id": "doc_asset_registry_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_decoy_01_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## Note on scope\n\nThis record covers the loop as an asset. It does not cover the pumps, which have their own records, and it\ndoes not cover the air-handling units served by the loop, whose inspection results are recorded separately\nbecause they are inspected on a different cadence.",
+            "score": 0.5021169699118501,
+            "rank": 5,
+            "char_count": 282,
+            "estimated_tokens": 70,
+            "metadata": {
+              "title": "Calibration record — east-aisle cooling loop",
+              "version": "2026.02",
+              "authority": "maintenance",
+              "published": "2026-02-18",
+              "doc_id": "decoy_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_01.md",
+              "sha256": "205665522b727cd279a2584183cfb734f861ab9974ca5a948060ee52975938b6",
+              "parent_chunk_id": "doc_decoy_01",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 3,
+        "user_input": "Separate question: which asset is the west-aisle cooling loop?",
+        "agent_response": "The west-aisle cooling loop is asset **NBL-420**, per the Viaduct facility asset registry.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "NBL-420",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "asset_registry_01",
+            "passed": true,
+            "matched_chunks": [
+              "doc_asset_registry_01_c0"
+            ]
+          }
+        ],
+        "latency_ms": 3995.7778999960283,
+        "token_usage": {
+          "input_tokens": 1160,
+          "output_tokens": 25,
+          "total_tokens": 1185,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1160,
+        "completion_tokens": 25,
+        "total_tokens": 1185,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 25,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.000116,
+        "output_cost_usd": 1.5e-05,
+        "total_cost_usd": 0.000131,
+        "retrieved_context_chars": 4244,
+        "retrieved_context_tokens": 1061,
+        "embedding_tokens": 57,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 230.9490999978152,
+        "append_latency_ms": 518.0417000010493,
+        "embedding_latency_ms": 744.340999990527,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_asset_registry_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "﻿# Asset registry — Viaduct facility (excerpt)\n\nThe registry is the index of assets at the Viaduct facility. It answers one question: which asset am I\nlooking at, and what is its identifier? Recorded values are deliberately excluded — each row names the\ndocument where the value is held, so that a value has exactly one home and correcting it does not require\ncorrecting an index.\n\nThe excerpt below covers the cooling and air-handling assets of the north half of the facility. The full\nregistry, including the low-voltage distribution and the roof plant, lives in the same series with a\ndifferent suffix and is reissued whenever an asset is added or retired.\n\n## Cooling assets\n\n| Asset | Description | Value held in |\n|---|---|---|\n| NBL-420 | West-aisle cooling loop | limit schedule |\n| NBL-118 | East-aisle cooling loop | limit schedule |\n| NBL-501 | South-aisle cooling loop | limit schedule |\n| TRB-260 | North cooling loop | limit schedule |\n| TRB-318 | Return manifold, north half | limit schedule |\n| TRB-515 | Return manifold, south half | limit schedule |\n| NBL-604 | Make-up water loop | limit schedule |\n\n## Air handling assets",
+            "score": 0.6807483346359403,
+            "rank": 1,
+            "char_count": 1141,
+            "estimated_tokens": 285,
+            "metadata": {
+              "title": "Asset registry — Viaduct facility (excerpt)",
+              "version": "2026.02",
+              "authority": "registry",
+              "published": "2026-02-10",
+              "doc_id": "asset_registry_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\asset_registry_01.md",
+              "sha256": "b3c63737136a794f0e0fb21dc7bda002b4d09a65c1a1f6274440e0d84dd79615",
+              "parent_chunk_id": "doc_asset_registry_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_decoy_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Calibration record — east-aisle cooling loop\n\n## Asset\n\nThe east-aisle cooling loop is asset NBL-118 in the facility registry. It serves the two aisle rows on the\neastern side of the north hall and shares a return manifold with the southern loop; the shared manifold is\nthe reason the two loops are never serviced on the same day.\n\n## Re-measurement\n\nThe loop was re-measured during the February window after the quarterly review flagged a drift between the\ncommissioning figure and the figure recorded on the local gauge. Both readings were taken at the same supply\ntemperature, fifteen minutes apart, with the secondary pump running and the bypass closed.\n\nThe discrepancy turned out to be a gauge fault rather than a loop fault. The gauge was replaced, the loop\nre-measured, and the reading returned to within the tolerance the commissioning report specifies. The\nrecorded value for NBL-118 is ZTF-2H8N-5510, unchanged from the previous revision, which is worth stating\nexplicitly: a re-measurement that confirms the existing value is still a re-measurement and is recorded as\none.\n\n## Method",
+            "score": 0.6334581586969356,
+            "rank": 2,
+            "char_count": 1097,
+            "estimated_tokens": 274,
+            "metadata": {
+              "title": "Calibration record — east-aisle cooling loop",
+              "version": "2026.02",
+              "authority": "maintenance",
+              "published": "2026-02-18",
+              "doc_id": "decoy_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_01.md",
+              "sha256": "205665522b727cd279a2584183cfb734f861ab9974ca5a948060ee52975938b6",
+              "parent_chunk_id": "doc_decoy_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_decoy_01_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## Note on scope\n\nThis record covers the loop as an asset. It does not cover the pumps, which have their own records, and it\ndoes not cover the air-handling units served by the loop, whose inspection results are recorded separately\nbecause they are inspected on a different cadence.",
+            "score": 0.5838975675962735,
+            "rank": 3,
+            "char_count": 282,
+            "estimated_tokens": 70,
+            "metadata": {
+              "title": "Calibration record — east-aisle cooling loop",
+              "version": "2026.02",
+              "authority": "maintenance",
+              "published": "2026-02-18",
+              "doc_id": "decoy_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_01.md",
+              "sha256": "205665522b727cd279a2584183cfb734f861ab9974ca5a948060ee52975938b6",
+              "parent_chunk_id": "doc_decoy_01",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_decoy_02_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Commissioning note — north cooling loop\n\n## Scope of the note\n\nThis note records the commissioning of the north cooling loop, asset TRB-260, and the measurements taken on\nthe day it was handed over. It is written for two readers: the engineer who will service the loop next, and\nthe auditor who will ask why the recorded value is what it is.\n\n## Handover\n\nThe loop was handed over after a four-hour soak test at design load. The soak was extended by one hour\nbecause the return temperature had not settled at the three-hour mark, which the commissioning engineer\nrecorded as an observation rather than a finding: the loop settled inside the tolerance during the\nadditional hour and held for the remainder.\n\nThe recorded value for TRB-260 is NBR-7D4M-2073. It was set from the reading taken at the end of the soak,\nnot from the design figure in the specification, and the two differ by a small margin that the commissioning\nreport explains as a consequence of the installed pipe run being longer than the design assumed.\n\n## Deviations",
+            "score": 0.5668354296615022,
+            "rank": 4,
+            "char_count": 1036,
+            "estimated_tokens": 259,
+            "metadata": {
+              "title": "Commissioning note — north cooling loop",
+              "version": "2025.11",
+              "authority": "maintenance",
+              "published": "2025-11-06",
+              "doc_id": "decoy_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_02.md",
+              "sha256": "c1d28b2072f6420fc764b5e6617c5a49276c68a3d1d54a0ad0a66687dbb90f82",
+              "parent_chunk_id": "doc_decoy_02",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t1_c1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "What I do **not** have: the **maintenance records** and the **standing policies** you mentioned. They aren't in this conversation.\n\nAlso worth flagging now, since it will affect later answers: the Viaduct registry says values are held in the limit schedule, but the limit schedule as loaded contains no values. So for the Viaduct cooling assets I can tell you which document holds a value, but not the value itself. And the Rosario register is a separate series that must not be merged with Viaduct — identifiers are unique per facility, not across the estate.\n\nIf you can paste in the maintenance records and standing policies, I'll have the full set.",
+            "score": 0.5506269926654478,
+            "rank": 5,
+            "char_count": 652,
+            "estimated_tokens": 163,
+            "metadata": {
+              "parent_chunk_id": "ep_s1_t1",
+              "chunk_index": 1,
+              "chunk_count": 2
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 4,
+        "user_input": "How often is the facility walkthrough audit run now? Answer in words, not digits.",
+        "agent_response": "Every six weeks.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "six weeks",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "bg_07",
+            "passed": true,
+            "matched_chunks": [
+              "doc_bg_07_c0"
+            ]
+          }
+        ],
+        "latency_ms": 2909.911700000521,
+        "token_usage": {
+          "input_tokens": 930,
+          "output_tokens": 5,
+          "total_tokens": 935,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 930,
+        "completion_tokens": 5,
+        "total_tokens": 935,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 5,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 9.3e-05,
+        "output_cost_usd": 3e-06,
+        "total_cost_usd": 9.6e-05,
+        "retrieved_context_chars": 3174,
+        "retrieved_context_tokens": 793,
+        "embedding_tokens": 20,
+        "embedding_cache_hits": 1,
+        "embedding_cache_misses": 0,
+        "retrieval_latency_ms": 366.31340000167256,
+        "append_latency_ms": 1.3507999974535778,
+        "embedding_latency_ms": 361.32529999304097,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_bg_07_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Facility audit — changelog\n\nChanges to the facility walkthrough audit, newest first. Each entry records what changed and the release\nof the audit pack that first carried it.\n\n## 2026-02-17 — pack 2026.02\n\nThe walkthrough audit is now run every six weeks. The previous semi-annual cadence was set when the\nestate held two halls; with seven halls in scope a semi-annual pass meant that a hall could go five months\nbetween physical inspections, which the review group judged too long to be useful.\n\nNothing else in the audit changed. The checklist, the evidence requirements and the sign-off chain are\nidentical to pack 2025.09.\n\n## 2025-09-04 — pack 2025.09\n\nThe audit pack gained a photographic evidence requirement for cable management. Written descriptions of\ncable routing had proven impossible to check against the previous pack, because two engineers describing the\nsame tray produced descriptions that could not be compared.\n\nThe pack also dropped the separate thermostat verification sheet. Its three checks were folded into the\nenvironmental section, where they were already being recorded twice.\n\n## 2025-03-11 — pack 2025.03",
+            "score": 0.6732492144765282,
+            "rank": 1,
+            "char_count": 1135,
+            "estimated_tokens": 283,
+            "metadata": {
+              "title": "Facility audit — changelog",
+              "version": "2026.02",
+              "authority": "changelog",
+              "published": "2026-02-17",
+              "doc_id": "bg_07",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_07.md",
+              "sha256": "8040d6d6fda15ba56c606a322d7b9b3d391dfc7330487eb992623404fa09421f",
+              "parent_chunk_id": "doc_bg_07",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_bg_08_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Handovers are written, not spoken. A spoken handover reaches the next shift and nobody else; a written one\nreaches the engineer who is called at three in the morning two weeks later and needs to know why a circuit\nwas left isolated.\n\n## Standing notes\n\nThe plant rooms are visited on a walking round twice per shift. Round times are recorded, because a round\nthat is consistently recorded at the same minute is a round that is being signed off from the office. The\nsecurity lead samples the timestamps monthly and has, on two occasions, asked for the round to be repeated\nunder observation.\n\nRooms under construction are excluded from the round only while the contractor's permit is open, and the\nexclusion ends automatically when the permit expires. An exclusion that outlives its permit is treated as a\nfinding in the next audit.\n\n## Out of hours",
+            "score": 0.5364830675027766,
+            "rank": 2,
+            "char_count": 848,
+            "estimated_tokens": 212,
+            "metadata": {
+              "doc_id": "bg_08",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_08.md",
+              "sha256": "d2e2ee5a4a4fc4617975ece2456ccf6d3b521256be8a4a2123f1fac32f32511e",
+              "parent_chunk_id": "doc_bg_08",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_calibration_register_02_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Limit schedule — Viaduct facility\n\nRevision 2026.02. Maintained by the facilities group. An asset that is not listed here has no entry on file.",
+            "score": 0.5236395935150292,
+            "rank": 3,
+            "char_count": 145,
+            "estimated_tokens": 36,
+            "metadata": {
+              "title": "Limit schedule — Viaduct facility",
+              "version": "2026.02",
+              "authority": "register",
+              "published": "2026-02-10",
+              "doc_id": "calibration_register_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\calibration_register_02.md",
+              "sha256": "cbc8b3a0a0b659b61deb14260a05ce85bdf67e324e5e8dc4a0388e6991eb2017",
+              "parent_chunk_id": "doc_calibration_register_02",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_bg_03_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## Method note\n\nThe ratio is computed from fifteen-minute samples, not hourly averages, because hourly averages hide exactly\nthe overlap the review is looking for. Samples with a known instrumentation fault are excluded and the\nexclusion is listed in the appendix so that a future reader can reproduce the figure. Where a hall has less\nthan a full quarter of clean samples it is reported as provisional and carries no flag either way.",
+            "score": 0.5127482278452918,
+            "rank": 4,
+            "char_count": 434,
+            "estimated_tokens": 108,
+            "metadata": {
+              "title": "Capacity review — Q1 memo",
+              "version": "2026.01",
+              "authority": "memo",
+              "published": "2026-01-28",
+              "doc_id": "bg_03",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_03.md",
+              "sha256": "d4a3d549f0fb74ecba9b9521416d1003f2ca816f7f5425a1be83969acf2268cc",
+              "parent_chunk_id": "doc_bg_03",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_bg_05_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Where evidence is contradictory, the reviewer records both versions and the resolution, and does not delete\nthe version that turned out to be wrong. The record of a mistake is worth more than a clean file.\n\n## Review\n\nThe policy is reviewed annually by the records owner and the security lead together. The review looks at\ntwo numbers: the share of sampled tickets that carry complete evidence, and the number of deletion\nexceptions granted. Both are reported to the operations group without commentary, so that the trend is read\nfrom the numbers rather than from the framing.",
+            "score": 0.4977295692389472,
+            "rank": 5,
+            "char_count": 576,
+            "estimated_tokens": 144,
+            "metadata": {
+              "title": "Retention and evidence policy",
+              "version": "2025.09",
+              "authority": "policy",
+              "published": "2025-09-30",
+              "doc_id": "bg_05",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_05.md",
+              "sha256": "1a893fdbe94ae2284bed5d85df475e9fd681681d5bc6cbc4f85ed5e734aab440",
+              "parent_chunk_id": "doc_bg_05",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t3"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Last thing: is the Rosario facility covered by this audit? Answer yes or no.",
+        "agent_response": "No.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_not_contain",
+            "value": "QMV-8L5R-3301",
+            "passed": true,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "TRB-902",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 3041.5033000026597,
+        "token_usage": {
+          "input_tokens": 1452,
+          "output_tokens": 3,
+          "total_tokens": 1455,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 1452,
+        "completion_tokens": 3,
+        "total_tokens": 1455,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 3,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0001452,
+        "output_cost_usd": 1.8e-06,
+        "total_cost_usd": 0.000147,
+        "retrieved_context_chars": 4635,
+        "retrieved_context_tokens": 1158,
+        "embedding_tokens": 19,
+        "embedding_cache_hits": 1,
+        "embedding_cache_misses": 0,
+        "retrieval_latency_ms": 483.3176000029198,
+        "append_latency_ms": 18.743700005870778,
+        "embedding_latency_ms": 497.0387000066694,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_decoy_04_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Recorded value register — Rosario facility\n\nRevision 2025.12. This register covers the Rosario facility only. It is issued as a separate series from the\nViaduct register and the two must not be merged: identifiers are unique within a facility, not across the\nestate, and a merged file has produced two transposed readings in the past.\n\nAsset | Recorded value\n--- | ---\nTRB-902 | QMV-8L5R-3301\nTRB-918 | ZTF-3V7K-6628\nTRB-944 | NBR-5H1D-2214\nAHU-441 | ZTF-4M7T-9025\nAHU-470 | QMV-1C6N-4490\nAHU-496 | NBR-8B3P-7731\nSWD-210 | ZTF-7T2M-1185\nSWD-246 | QMV-9R4H-6620\nCND-330 | NBR-2M8K-3317\nCND-364 | ZTF-5D1V-8843\nPNL-420 | QMV-6K9T-2206\nFDR-455 | NBR-3R7P-9958\n\n## Transfer notes\n\nTwo assets were transferred to Rosario from the Viaduct facility when the southern hall was consolidated.\nBoth kept their Viaduct identifiers and both were re-recorded here at the value they carried at transfer,\nbecause the calibration team re-measures an asset after a move rather than assuming the value survives it.",
+            "score": 0.5299879357071995,
+            "rank": 1,
+            "char_count": 997,
+            "estimated_tokens": 249,
+            "metadata": {
+              "title": "Limit schedule — Rosario facility",
+              "version": "2025.12",
+              "authority": "register",
+              "published": "2025-12-03",
+              "doc_id": "decoy_04",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_04.md",
+              "sha256": "9b05ae2f83728ed03889b43563dffd5b0649a584763cde12fc9d5b0aa49d61d2",
+              "parent_chunk_id": "doc_decoy_04",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_bg_07_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Facility audit — changelog\n\nChanges to the facility walkthrough audit, newest first. Each entry records what changed and the release\nof the audit pack that first carried it.\n\n## 2026-02-17 — pack 2026.02\n\nThe walkthrough audit is now run every six weeks. The previous semi-annual cadence was set when the\nestate held two halls; with seven halls in scope a semi-annual pass meant that a hall could go five months\nbetween physical inspections, which the review group judged too long to be useful.\n\nNothing else in the audit changed. The checklist, the evidence requirements and the sign-off chain are\nidentical to pack 2025.09.\n\n## 2025-09-04 — pack 2025.09\n\nThe audit pack gained a photographic evidence requirement for cable management. Written descriptions of\ncable routing had proven impossible to check against the previous pack, because two engineers describing the\nsame tray produced descriptions that could not be compared.\n\nThe pack also dropped the separate thermostat verification sheet. Its three checks were folded into the\nenvironmental section, where they were already being recorded twice.\n\n## 2025-03-11 — pack 2025.03",
+            "score": 0.5270562248373584,
+            "rank": 2,
+            "char_count": 1135,
+            "estimated_tokens": 283,
+            "metadata": {
+              "title": "Facility audit — changelog",
+              "version": "2026.02",
+              "authority": "changelog",
+              "published": "2026-02-17",
+              "doc_id": "bg_07",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_07.md",
+              "sha256": "8040d6d6fda15ba56c606a322d7b9b3d391dfc7330487eb992623404fa09421f",
+              "parent_chunk_id": "doc_bg_07",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t1_c0",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: I have loaded the Viaduct facility documents into your document memory: the asset registry, the limit schedule, the maintenance records and the standing policies. I will ask you about them in a later session. Just confirm you have them.\nAssistant: I can confirm what I actually have in this conversation — and I want to be precise, because it matters for later questions.\n\nWhat's in front of me now:\n\n1. **Limit schedule — Viaduct facility** (Revision 2026.02) — but the body is essentially empty. It has a title, a revision line, a note that unlisted assets have no entry, and then a separator. No asset rows, no limits.\n2. **Asset registry — Viaduct facility (excerpt)** — the cooling-assets table (NBL-420, NBL-118, NBL-501, TRB-260, TRB-318, TRB-515, NBL-604), each pointing to the limit schedule for its value. The air-handling section is empty. Plus revision history, scope, and custody notes.\n3. **Recorded value register — Rosario facility** (Revision 2025.12) — twelve asset/value rows, transfer notes, corrections, and \"what the registry is not.\"\n\nWhat I do **not** have: the **maintenance records** and the **standing policies** you mentioned. They aren't in this conversation.",
+            "score": 0.522500197554831,
+            "rank": 3,
+            "char_count": 1194,
+            "estimated_tokens": 298,
+            "metadata": {
+              "parent_chunk_id": "ep_s1_t1",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_bg_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Change-control checklist — platform facilities\n\nApplies to every change raised against the facility estate, including work carried out by vendors under\na framework agreement. The checklist is filled in by the change raiser and countersigned by the shift\nsupervisor before the ticket leaves draft.\n\n## Before the change\n\n- [ ] A change record exists with a single named owner, a start and end window, and a rollback step written\n      by someone other than the person who will execute it.\n- [ ] The rollback step names the exact state to restore and the person who verifies it afterwards.\n- [ ] Any safety interlock that must be bypassed is listed, together with the mitigation that replaces it\n      while the bypass is active.\n- [ ] The affected room and rack are named. \"Facilities\" is not an acceptable location.\n- [ ] A second engineer has read the plan and signed it. For changes that touch power distribution the\n      reviewer must be from the electrical team.\n\n## During the change",
+            "score": 0.5128692568209435,
+            "rank": 4,
+            "char_count": 991,
+            "estimated_tokens": 247,
+            "metadata": {
+              "title": "Change-control checklist",
+              "version": "2026.01",
+              "authority": "policy",
+              "published": "2026-01-09",
+              "doc_id": "bg_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_01.md",
+              "sha256": "8a24fae2768abdc29810d45dc4faab1f4de47684bdb16049c7845d306900f16a",
+              "parent_chunk_id": "doc_bg_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_decoy_01_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## Note on scope\n\nThis record covers the loop as an asset. It does not cover the pumps, which have their own records, and it\ndoes not cover the air-handling units served by the loop, whose inspection results are recorded separately\nbecause they are inspected on a different cadence.",
+            "score": 0.512330886563689,
+            "rank": 5,
+            "char_count": 282,
+            "estimated_tokens": 70,
+            "metadata": {
+              "title": "Calibration record — east-aisle cooling loop",
+              "version": "2026.02",
+              "authority": "maintenance",
+              "published": "2026-02-18",
+              "doc_id": "decoy_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\decoy_01.md",
+              "sha256": "205665522b727cd279a2584183cfb734f861ab9974ca5a948060ee52975938b6",
+              "parent_chunk_id": "doc_decoy_01",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t4"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      }
+    ],
+    "timestamp": "2026-11-11T17:09:37.989269+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": 1200,
+    "chunk_overlap": 200,
+    "memory_snapshot_path": "memory/document_multihop_bridge_01_deepseek-v4.1-flash_baseline_react_770e562a",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 489,
+    "cached_prompt_tokens": 0,
+    "input_cost_usd": 0.0005789,
+    "output_cost_usd": 0.00029340000000000003,
+    "total_cost_usd": 0.0008723,
+    "input_cost_per_mtok": 0.1,
+    "output_cost_per_mtok": 0.6,
+    "retrieved_context_tokens": 5178,
+    "embedding_tokens": 763,
+    "embedding_cache_hits": 44,
+    "embedding_cache_misses": 4,
+    "total_retrieval_latency_ms": 5561.092399999325,
+    "total_append_latency_ms": 10291.257000004407,
+    "total_embedding_latency_ms": 15829.622899989772,
+    "ingestion_latency_ms": 3.5598999966168776,
+    "documents_ingested": 14,
+    "ingested_chars": 35205,
+    "ingested_chunks": 42,
+    "corpus_chunks": 48,
+    "corpus_chars": 38587
+  }
+]

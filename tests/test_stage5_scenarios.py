@@ -19,15 +19,8 @@ from pathlib import Path
 
 import pytest
 
+from core.dataset_layout import scenario_id_from_filename
 from core.runner import BenchmarkRunner
-
-try:
-    from scripts.organize_datasets import scenario_id_from_filename
-except ImportError:  # scripts/ not importable — apply the same 2-line rule inline
-    def scenario_id_from_filename(filename: str) -> str | None:
-        if not (filename.startswith("test_") and filename.endswith(".yaml")):
-            return None
-        return filename[len("test_") : -len(".yaml")]
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -43,24 +36,18 @@ PAIRED_CONTROLS = {
 }
 _CONTROL_PROBE_MARKER = "Based strictly on this log:"
 
-STAGE5_PATHS = {
-    "derived_belief_revision_01": (
-        "datasets/conversations/logical_consistency/belief_revision/"
-        "test_derived_belief_revision_01.yaml"
-    ),
-    "backward_modus_tollens_01": (
-        "datasets/conversations/logical_consistency/belief_revision/"
-        "test_backward_modus_tollens_01.yaml"
-    ),
-    "in_context_derived_revision_01": (
-        "datasets/conversations/logical_consistency/in_context_control/"
-        "test_in_context_derived_revision_01.yaml"
-    ),
-    "in_context_modus_tollens_01": (
-        "datasets/conversations/logical_consistency/in_context_control/"
-        "test_in_context_modus_tollens_01.yaml"
-    ),
-}
+def scenario_path(scenario_id: str) -> Path:
+    """Locate ``test_<id>.yaml`` anywhere under ``datasets/conversations/``.
+
+    Pinned paths are deliberately avoided: the tree is organized as
+    ``<single_thread|multi_thread>/<theme>/<category>/`` and a
+    reclassification must not break these invariants.
+    """
+    hits = sorted(
+        (REPO_ROOT / "datasets" / "conversations").rglob(f"test_{scenario_id}.yaml")
+    )
+    assert len(hits) == 1, f"{scenario_id}: expected one file, got {hits}"
+    return hits[0]
 
 # Shared session layout: s1 = T1-T7, s2 = T8-T10, s3 = T11-T13.
 SESSION_LAYOUT = {
@@ -77,10 +64,21 @@ EXPECTED_ASSERTIONS = {
     "derived_belief_revision_01": {
         "commit": [("must_contain", "Level-1"), ("must_not_contain", "Level-3")],
         "control": "Level-3",
+        "control_shape": [("must_contain", "Level-3")],
     },
     "backward_modus_tollens_01": {
-        "commit": [("must_contain", "NO_EU_CENTRAL")],
+        "commit": [
+            ("must_contain", "NO_EU_CENTRAL"),
+            # M6: the probe prints the menu, so the rejected labels are guarded.
+            ("must_not_contain", "YES_EU_CENTRAL"),
+            ("must_not_contain", "CANNOT_DETERMINE"),
+        ],
         "control": "YES_BASTION",
+        "control_shape": [
+            ("must_contain", "YES_BASTION"),
+            ("must_not_contain", "NO_BASTION"),
+            ("must_not_contain", "CANNOT_DETERMINE"),
+        ],
     },
 }
 
@@ -128,9 +126,8 @@ class TestStage5Structure:
             )
 
     def test_id_matches_filename(self, stage5):
-        for sid, rel_path in STAGE5_PATHS.items():
-            path = REPO_ROOT / rel_path
-            assert path.is_file(), f"{rel_path} is missing"
+        for sid in STAGE5_IDS:
+            path = scenario_path(sid)
             assert scenario_id_from_filename(path.name) == sid
             assert stage5[sid].id == sid
 
@@ -179,15 +176,6 @@ class TestStage5Structure:
             missing = required - set(stage5[sid].metadata)
             assert not missing, f"{sid}: metadata missing {sorted(missing)}"
 
-    def test_registered_in_scenario_maps(self):
-        # Text check so the test does not depend on scripts/ being importable.
-        for script in ("scripts/organize_datasets.py", "scripts/reorganize_outputs.py"):
-            text = (REPO_ROOT / script).read_text(encoding="utf-8")
-            for sid in STAGE5_IDS:
-                entry = f'"{sid}": ("logical_consistency", "belief_revision")'
-                assert entry in text, f"{script}: SCENARIO_MAP lacks {sid}"
-
-
 # ── Assertion policy (two-step probe) ────────────────────────────────────────
 
 
@@ -217,17 +205,36 @@ class TestStage5AssertionPolicy:
         for sid in STAGE5_IDS:
             rules = _turn(stage5[sid], CONTROL_TURN).assertions
             shape = [(r.type, r.value) for r in rules]
-            assert shape == [("must_contain", EXPECTED_ASSERTIONS[sid]["control"])], sid
+            assert shape == EXPECTED_ASSERTIONS[sid]["control_shape"], sid
 
-    def test_must_not_contain_only_on_5_1_commitment_turn(self, stage5):
-        hits = {
-            (sid, t.turn_number)
-            for sid in STAGE5_IDS
-            for t in stage5[sid].turns
-            for r in t.assertions
-            if r.type == "must_not_contain"
-        }
-        assert hits == {("derived_belief_revision_01", COMMITMENT_TURN)}
+    def test_negative_rules_reject_a_named_alternative(self, stage5):
+        """M6: ``must_not_contain`` names a printed label or a declared stale value.
+
+        Two legitimate targets exist: a label the probe prints (forced-choice
+        menu guard) or a value the scenario's own metadata declares as stale
+        (``stale_answer``). Nothing else may be negated.
+        """
+        for sid in STAGE5_IDS:
+            scenario = stage5[sid]
+            declared = " ".join(
+                str(value)
+                for value in scenario.metadata.values()
+                if isinstance(value, (str, list, tuple))
+            ).casefold()
+            for turn in scenario.turns:
+                for rule in turn.assertions:
+                    if rule.type != "must_not_contain":
+                        continue
+                    assert turn.turn_number in (COMMITMENT_TURN, CONTROL_TURN), (
+                        f"{sid} T{turn.turn_number}: negatives belong on the "
+                        "graded turns only"
+                    )
+                    value = rule.value.casefold()
+                    assert value in turn.content.casefold() or value in declared, (
+                        f"{sid} T{turn.turn_number}: {rule.value!r} is neither a "
+                        "printed menu label nor a value the metadata declares "
+                        "stale — a guard must name a real alternative"
+                    )
 
     def test_all_assertions_case_insensitive(self, stage5):
         for sid in STAGE5_IDS:
@@ -456,10 +463,18 @@ class TestBackwardModusTollens01:
         assert BenchmarkRunner.evaluate_assertions("I don't know.", [rule])[0]["passed"]
 
     def test_decline_gets_zero_credit(self, sc):
-        # With must_contain only, amnesic decline scores 0% cleanly.
+        """A safe decline fails the positive rule; the menu guards pass free.
+
+        Turn-level credit is ``all()``, so the emitted menu guards cannot make
+        a decline look like a partial success.
+        """
         rules = _turn(sc, COMMITMENT_TURN).assertions
-        results = BenchmarkRunner.evaluate_assertions("I don't know.", rules)
-        assert [r["passed"] for r in results] == [False]
+        passed = {
+            (r["rule_type"], r["value"]): r["passed"]
+            for r in BenchmarkRunner.evaluate_assertions("I don't know.", rules)
+        }
+        assert passed[("must_contain", "NO_EU_CENTRAL")] is False
+        assert _turn_passes("I don't know.", rules) is False
 
 
 # ── Paired single-prompt controls (5.1c and 5.4c) ────────────────────────────
@@ -471,8 +486,7 @@ class TestStage5PairedControls:
     def test_controls_load_and_match_filenames(self, stage5):
         for cid in STAGE5_CONTROL_IDS:
             assert cid in stage5, f"control {cid!r} did not load"
-            path = REPO_ROOT / STAGE5_PATHS[cid]
-            assert path.is_file(), f"{STAGE5_PATHS[cid]} is missing"
+            path = scenario_path(cid)
             assert scenario_id_from_filename(path.name) == cid
             assert stage5[cid].id == cid
             assert stage5[cid].category == "in_context_control"
@@ -490,13 +504,6 @@ class TestStage5PairedControls:
             assert stage5[sid].metadata.get("paired_control") == cid
             assert stage5[cid].metadata.get("paired_with") == sid
             assert stage5[cid].metadata.get("premise_source_turns") == [3, 4, 6, 9]
-
-    def test_controls_registered_in_scenario_maps(self):
-        for script in ("scripts/organize_datasets.py", "scripts/reorganize_outputs.py"):
-            text = (REPO_ROOT / script).read_text(encoding="utf-8")
-            for cid in STAGE5_CONTROL_IDS:
-                entry = f'"{cid}": ("logical_consistency", "in_context_control")'
-                assert entry in text, f"{script}: SCENARIO_MAP lacks {cid}"
 
     def test_control_assertions_identical_to_commitment_turn(self, stage5):
         for sid, cid in PAIRED_CONTROLS.items():

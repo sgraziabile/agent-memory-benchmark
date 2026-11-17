@@ -1,0 +1,36 @@
+{
+  "backend": "vector",
+  "run_metadata": {
+    "run_id": "entity_binding_01_deepseek-v4-pro_baseline_react_c17f05b5",
+    "scenario_id": "entity_binding_01",
+    "model_id": "deepseek-v4-pro",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "documents": [],
+    "document_ingestion": {
+      "documents_ingested": 0,
+      "ingested_chars": 0,
+      "ingested_chunks": 0,
+      "ingestion_latency_ms": 0.0,
+      "ingestion_embedding_tokens": 0
+    }
+  },
+  "embedding": {
+    "id": "qwen3-embedding-0.6b",
+    "dims": 1024
+  },
+  "chunk_settings": {
+    "chunk_size": 1200,
+    "chunk_overlap": 200
+  },
+  "by_source": {
+    "chat": 11,
+    "document": 0
+  },
+  "document_chunks": 0,
+  "document_chars": 0,
+  "total_chunks": 11,
+  "total_chars": 2267,
+  "total_estimated_tokens": 562,
+  "snapshot_timestamp": "2026-11-03T17:49:37.717969+00:00"
+}

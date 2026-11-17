@@ -396,5 +396,57 @@ class TestNoBackendDegradation:
         assert result["append_latency_ms"] == 0.0
         assert result["embedding_latency_ms"] == 0.0
         assert result["embedding_tokens"] == 0
+        assert result["embedding_cache_hits"] == 0
+        assert result["embedding_cache_misses"] == 0
+
+
+# ── Ingestion-cache telemetry channels ───────────────────────────────────────
+
+
+class TestCacheTelemetryChannels:
+    """The per-turn cache counters must be overwrite, never cumulative.
+
+    ``embedding_cache_hits``/``_misses`` are reset by ``retrieve_node`` and
+    accumulated by ``append_node`` (mirroring ``embedding_tokens``). If the
+    reset were missing, the checkpointed thread state would carry turn N's
+    counter into turn N+1 and a run total would be a triangular number
+    (1 + 2 + … + n) instead of the real chunk count — measured once as 151
+    instead of 123 on the 8-document D16 cell (2026-11-04).
+    """
+
+    def test_counters_do_not_accumulate_across_turns(self, fake_model, tmp_path):
+        from core.embedding_cache import (
+            CachedEmbeddings,
+            EmbeddingCache,
+            cache_path_for,
+        )
+
+        cache = EmbeddingCache(
+            cache_path_for(tmp_path, "fake-test"), model_id="fake/model", dims=DIMS
+        )
+        client = CachedEmbeddings(
+            DeterministicFakeEmbedding(), cache, model_id="fake/model", dims=DIMS
+        )
+        backend = VectorMemoryBackend(client, DIMS, embedding_id="fake-test")
+        graph = Level2EpisodicRAGAgent().build_graph()
+
+        counters = []
+        for turn in range(1, 4):
+            result = graph.invoke(
+                {
+                    "messages": [
+                        HumanMessage(content=f"turn {turn}: my reactor is DELTA-{turn}")
+                    ]
+                },
+                make_config(backend, "s1", "thread_cache"),
+            )
+            counters.append(
+                (result["embedding_cache_hits"], result["embedding_cache_misses"])
+            )
+
+        # One new chat chunk per turn → exactly one miss, never a running sum.
+        assert counters == [(0, 1), (0, 1), (0, 1)]
+
+
 
 

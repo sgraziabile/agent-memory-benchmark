@@ -1,0 +1,946 @@
+[
+  {
+    "run_id": "document_split_evidence_01_deepseek-v4.1-flash_baseline_react_35f02ce9",
+    "scenario_id": "document_split_evidence_01",
+    "model_id": "deepseek-v4.1-flash",
+    "prompt_id": "baseline_react",
+    "agent_level": "level_2_episodic_rag",
+    "total_turns": 5,
+    "total_assertions": 9,
+    "passed_assertions": 6,
+    "failed_assertions": 3,
+    "pass_rate": 0.6666666666666666,
+    "retrieval_assertions_total": 3,
+    "retrieval_assertions_evaluated": 3,
+    "retrieval_assertions_passed": 3,
+    "retrieval_recall": 1.0,
+    "retrieval_recall_ci_low": 0.4385029682449546,
+    "retrieval_recall_ci_high": 1.0,
+    "error_turns": 0,
+    "error_rate": 0.0,
+    "total_latency_ms": 46425.85030000919,
+    "avg_latency_per_turn_ms": 9285.170060001838,
+    "total_tokens": 12691,
+    "prompt_tokens": 12228,
+    "completion_tokens": 463,
+    "turn_results": [
+      {
+        "turn_number": 1,
+        "user_input": "I have loaded the facility documentation into your document memory. I will ask you about it in a later session. Just confirm you have it.",
+        "agent_response": "I can confirm I have the facility documentation available in this conversation. It covers:\n\n- **Change-control checklist** for platform facilities (pre-change requirements, reviewer rules, rollback and interlock handling)\n- **Note-writing structure** (customer-facing vs. internal notes, postmortem rules, escalation touchpoints, handovers, standing notes on plant-room rounds, out-of-hours section)\n- **Export reading guide** for riser assembly extracts, including the field order table by family (third-riser, north-riser, low-voltage distribution, roof plant)\n- **Third-riser assembly export** description (headerless, one record per line, four fields per line, ordered by identifier)\n\nOne caveat worth flagging now: several sections in what you've shared are empty — \"During the change,\" \"Escalation touchpoints,\" \"Out of hours,\" and \"Field notes\" all appear as headings with no content beneath them. If you intended those to contain material, it may not have come through.\n\nAsk away whenever you're ready.",
+        "assertions_passed": 0,
+        "assertions_failed": 0,
+        "assertion_details": [],
+        "latency_ms": 15227.656399998523,
+        "token_usage": {
+          "input_tokens": 1083,
+          "output_tokens": 216,
+          "total_tokens": 1299,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s1",
+        "role": "user",
+        "prompt_tokens": 1083,
+        "completion_tokens": 216,
+        "total_tokens": 1299,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 216,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0001083,
+        "output_cost_usd": 0.0001296,
+        "total_cost_usd": 0.0002379,
+        "retrieved_context_chars": 4606,
+        "retrieved_context_tokens": 1151,
+        "embedding_tokens": 325,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 3467.163100001926,
+        "append_latency_ms": 3599.962399996002,
+        "embedding_latency_ms": 7063.378499995451,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_bg_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Change-control checklist — platform facilities\n\nApplies to every change raised against the facility estate, including work carried out by vendors under\na framework agreement. The checklist is filled in by the change raiser and countersigned by the shift\nsupervisor before the ticket leaves draft.\n\n## Before the change\n\n- [ ] A change record exists with a single named owner, a start and end window, and a rollback step written\n      by someone other than the person who will execute it.\n- [ ] The rollback step names the exact state to restore and the person who verifies it afterwards.\n- [ ] Any safety interlock that must be bypassed is listed, together with the mitigation that replaces it\n      while the bypass is active.\n- [ ] The affected room and rack are named. \"Facilities\" is not an acceptable location.\n- [ ] A second engineer has read the plan and signed it. For changes that touch power distribution the\n      reviewer must be from the electrical team.\n\n## During the change",
+            "score": 0.46930086555271017,
+            "rank": 1,
+            "char_count": 991,
+            "estimated_tokens": 247,
+            "metadata": {
+              "title": "Change-control checklist",
+              "version": "2026.01",
+              "authority": "policy",
+              "published": "2026-01-09",
+              "doc_id": "bg_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_01.md",
+              "sha256": "8a24fae2768abdc29810d45dc4faab1f4de47684bdb16049c7845d306900f16a",
+              "parent_chunk_id": "doc_bg_01",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_bg_04_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## Structure of a note\n\nThe first paragraph says what customers can observe, in their terms. The second says what is being done and\nby whom. The third, when known, says when the next update will follow. Anything else — hypotheses, internal\ntooling names, the names of engineers — is left out of the customer-facing note and recorded in the internal\ntimeline instead.\n\nInternal notes carry more detail. They name the working theory, the person testing it, and the two or three\ndiagnostics already excluded. An internal note that lists every alarm without saying which ones were ruled\nout costs the next responder the same investigation twice.\n\n## Postmortem\n\nA postmortem is written for every S1 and for any S2 that repeated within the quarter. It is blameless in the\nnarrow sense that it names systems and decisions rather than individuals, and it ends with no more than\nthree actions, each with an owner and a date. Postmortems with ten actions are treated as having none: the\nreview samples whether the actions were completed, and a list nobody finishes scores worse than a short one\nthat closes.\n\n## Escalation touchpoints",
+            "score": 0.41134805918460204,
+            "rank": 2,
+            "char_count": 1125,
+            "estimated_tokens": 281,
+            "metadata": {
+              "title": "Incident communications template",
+              "version": "2025.08",
+              "authority": "template",
+              "published": "2025-08-19",
+              "doc_id": "bg_04",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_04.md",
+              "sha256": "7bc7f184a045244cfbbb28ed22fc9061c78983fab664eb5bf06f3cd2b958c95f",
+              "parent_chunk_id": "doc_bg_04",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_bg_08_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "Handovers are written, not spoken. A spoken handover reaches the next shift and nobody else; a written one\nreaches the engineer who is called at three in the morning two weeks later and needs to know why a circuit\nwas left isolated.\n\n## Standing notes\n\nThe plant rooms are visited on a walking round twice per shift. Round times are recorded, because a round\nthat is consistently recorded at the same minute is a round that is being signed off from the office. The\nsecurity lead samples the timestamps monthly and has, on two occasions, asked for the round to be repeated\nunder observation.\n\nRooms under construction are excluded from the round only while the contractor's permit is open, and the\nexclusion ends automatically when the permit expires. An exclusion that outlives its permit is treated as a\nfinding in the next audit.\n\n## Out of hours",
+            "score": 0.4110164994698602,
+            "rank": 3,
+            "char_count": 848,
+            "estimated_tokens": 212,
+            "metadata": {
+              "title": "Escalation matrix and shift handover",
+              "version": "2025.12",
+              "authority": "policy",
+              "published": "2025-12-11",
+              "doc_id": "bg_08",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\bg_08.md",
+              "sha256": "d2e2ee5a4a4fc4617975ece2456ccf6d3b521256be8a4a2123f1fac32f32511e",
+              "parent_chunk_id": "doc_bg_08",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_split_legend_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Export reading guide — riser assembly extracts\n\n## Why this guide exists\n\nThe assembly exports are written by a field extractor that puts one record per line and omits the header\nrow. The omission is deliberate: the extractor is shared by four teams, and a header written by one team\nwould be wrong for the others. The order for each family is therefore recorded here and nowhere else, and\nevery extract names its family on its first line.\n\n## Field order by family\n\n| Extract family | Field order |\n|---|---|\n| third-riser assembly | asset identifier, certified value, test pressure, verification date |\n| north-riser assembly | asset identifier, test pressure, certified value, verification date |\n| low-voltage distribution | asset identifier, certified value, verification date |\n| roof plant | asset identifier, test pressure, verification date |\n\nThe two riser families share a shape but not an order. A record copied from one family into a ticket for\nthe other parses cleanly and reads wrongly, which is why the family name is printed on the first line of\nevery extract and why this table is the only place the order is written down.\n\n## Field notes",
+            "score": 0.4009997656366347,
+            "rank": 4,
+            "char_count": 1158,
+            "estimated_tokens": 289,
+            "metadata": {
+              "title": "Export reading guide — riser assembly extracts",
+              "version": "2026.01",
+              "authority": "policy",
+              "published": "2026-01-08",
+              "doc_id": "split_legend_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_legend_01.md",
+              "sha256": "c8ab760cff2fb4008efcb9d4ebd05f1da8f587e9aabb9a81c2f3bb6bc68cfdf4",
+              "parent_chunk_id": "doc_split_legend_01",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "﻿# Third-riser assembly export\n\nExtract of the valve records for the third riser, one record per line. The extractor that produced\nthis file omits the header row; the order of the fields is defined in the export reading guide, and a\nline that does not carry four fields is a malformed extract rather than a valve with missing data.\n\nRecords are ordered by identifier. Dates are the day the reading was verified, not the day the\nvalve was installed.",
+            "score": 0.3965808689978985,
+            "rank": 5,
+            "char_count": 448,
+            "estimated_tokens": 112,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 0,
+              "chunk_count": 4
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s1_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 2,
+        "user_input": "New session. What limit does valve VLV-220 carry?",
+        "agent_response": "VLV-220 carries **TST-9F2M-6630** (verified 2026-01-22).",
+        "assertions_passed": 2,
+        "assertions_failed": 1,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "KVN-4C8R-1194",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "split_rows_01",
+            "passed": true,
+            "matched_chunks": [
+              "doc_split_rows_01_c1",
+              "doc_split_rows_01_c3",
+              "doc_split_rows_01_c2",
+              "doc_split_rows_01_c0"
+            ]
+          },
+          {
+            "rule_type": "must_not_retrieve_chunk",
+            "value": "bg_02",
+            "passed": true,
+            "matched_chunks": []
+          }
+        ],
+        "latency_ms": 7434.694800002035,
+        "token_usage": {
+          "input_tokens": 3002,
+          "output_tokens": 28,
+          "total_tokens": 3030,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 2816
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 3002,
+        "completion_tokens": 28,
+        "total_tokens": 3030,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 28,
+        "cached_prompt_tokens": 2816,
+        "input_cost_usd": 0.0003002,
+        "output_cost_usd": 1.68e-05,
+        "total_cost_usd": 0.000317,
+        "retrieved_context_chars": 5144,
+        "retrieved_context_tokens": 1286,
+        "embedding_tokens": 12,
+        "embedding_cache_hits": 1,
+        "embedding_cache_misses": 0,
+        "retrieval_latency_ms": 182.7728999996907,
+        "append_latency_ms": 0.6202000004122965,
+        "embedding_latency_ms": 180.35060000693193,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_split_rows_01_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-200 | KVN-358R-1179 | TST-D4MC-2564 | 2026-01-18\nVLV-201 | KVN-L7OJ-9739 | TST-RYE7-1676 | 2026-01-14\nVLV-202 | KVN-2TEC-4645 | TST-L0XC-1818 | 2026-01-18\nVLV-203 | KVN-DBRD-5547 | TST-I8MB-7841 | 2026-01-24\nVLV-204 | KVN-4DOX-3346 | TST-OTZX-8759 | 2026-01-28\nVLV-205 | KVN-H007-6959 | TST-013Z-5264 | 2026-01-15\nVLV-206 | KVN-I4VG-8508 | TST-H69V-1639 | 2026-01-26\nVLV-207 | KVN-A6FU-5051 | TST-DW9S-9135 | 2026-01-20\nVLV-208 | KVN-TVUI-3249 | TST-WHLH-5408 | 2026-01-14\nVLV-209 | KVN-UQ50-8311 | TST-JFAE-3923 | 2026-01-26\nVLV-210 | KVN-WLBB-8016 | TST-J8AY-8471 | 2026-01-14\nVLV-211 | KVN-0PBS-5131 | TST-9X1S-4116 | 2026-01-23\nVLV-212 | KVN-1NQ3-1638 | TST-96LR-4140 | 2026-01-16\nVLV-213 | KVN-I9M8-2317 | TST-8WQZ-2317 | 2026-01-11\nVLV-214 | KVN-1C4X-6257 | TST-T2F3-1750 | 2026-01-13\nVLV-215 | KVN-GVTI-6817 | TST-Z7XD-6527 | 2026-01-12\nVLV-216 | KVN-E0KN-9809 | TST-0K6F-3000 | 2026-01-26\nVLV-217 | KVN-TVZP-2647 | TST-ADND-3897 | 2026-01-13\nVLV-218 | KVN-J3WQ-7005 | TST-AJMC-6447 | 2026-01-25\nVLV-219 | KVN-L0K1-3199 | TST-FHWY-9564 | 2026-01-12\nVLV-220 | KVN-4C8R-1194 | TST-9F2M-6630 | 2026-01-22\nVLV-221 | KVN-X6BP-2988 | TST-K4RO-8093 | 2026-01-10",
+            "score": 0.4525897102504352,
+            "rank": 1,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 1,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_01_c3",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-238 | KVN-MFR7-6509 | TST-VQZM-9750 | 2026-01-11\nVLV-239 | KVN-AZY0-4235 | TST-JFVC-5295 | 2026-01-12\nVLV-240 | KVN-RLKN-2652 | TST-AT8H-3834 | 2026-01-20\nVLV-241 | KVN-2P06-9665 | TST-HAOR-5079 | 2026-01-28\nVLV-242 | KVN-UGF3-6099 | TST-4JUN-9663 | 2026-01-25\nVLV-243 | KVN-FBZL-4677 | TST-HO7N-4819 | 2026-01-22\nVLV-244 | KVN-23PU-6504 | TST-4SIU-8278 | 2026-01-15\nVLV-245 | KVN-PCLO-3354 | TST-7CH2-7830 | 2026-01-28\nVLV-246 | KVN-YRJR-8008 | TST-32G6-3036 | 2026-01-13\nVLV-247 | KVN-8T2D-4417 | TST-3M6Q-9058 | 2026-01-10\nVLV-248 | KVN-T00E-2585 | TST-E5VM-3626 | 2026-01-10\nVLV-249 | KVN-CBYS-4517 | TST-JJNT-6346 | 2026-01-10\nVLV-250 | KVN-PEL8-5964 | TST-WR6K-8372 | 2026-01-17\nVLV-251 | KVN-M0Q5-3390 | TST-845M-6409 | 2026-01-22\nVLV-252 | KVN-ZXDV-2947 | TST-SI9X-3871 | 2026-01-16\nVLV-253 | KVN-D056-3323 | TST-80LD-1439 | 2026-01-25\nVLV-254 | KVN-LDGX-3405 | TST-MWJ8-9802 | 2026-01-28\nVLV-255 | KVN-OXQM-8457 | TST-HKPA-8795 | 2026-01-16\nVLV-256 | KVN-81U4-1937 | TST-MRZB-3715 | 2026-01-12\nVLV-257 | KVN-5NNT-6786 | TST-FW6Y-2702 | 2026-01-13\nVLV-258 | KVN-WADP-3362 | TST-M3LF-8897 | 2026-01-20\nVLV-259 | KVN-W35O-8756 | TST-GFXQ-7658 | 2026-01-28",
+            "score": 0.44818885165575933,
+            "rank": 2,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 3,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_01_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-219 | KVN-L0K1-3199 | TST-FHWY-9564 | 2026-01-12\nVLV-220 | KVN-4C8R-1194 | TST-9F2M-6630 | 2026-01-22\nVLV-221 | KVN-X6BP-2988 | TST-K4RO-8093 | 2026-01-10\nVLV-222 | KVN-EWR6-3516 | TST-9IKJ-6912 | 2026-01-15\nVLV-223 | KVN-33OA-7997 | TST-S0KY-5348 | 2026-01-26\nVLV-224 | KVN-A5HS-6811 | TST-PO0T-1138 | 2026-01-10\nVLV-225 | KVN-TRQI-6534 | TST-FC18-7849 | 2026-01-13\nVLV-226 | KVN-AZZ5-6615 | TST-7JC1-7952 | 2026-01-27\nVLV-227 | KVN-64RC-1535 | TST-7J81-3025 | 2026-01-22\nVLV-228 | KVN-OW0T-5966 | TST-KAG4-7441 | 2026-01-25\nVLV-229 | KVN-C3CV-2348 | TST-TJ4F-4225 | 2026-01-23\nVLV-230 | KVN-ENZN-6946 | TST-0G3K-9257 | 2026-01-15\nVLV-231 | KVN-U92Z-4177 | TST-KBYJ-2313 | 2026-01-19\nVLV-232 | KVN-Z98Y-5150 | TST-E22R-2923 | 2026-01-25\nVLV-233 | KVN-ZIGH-7457 | TST-GH7N-5853 | 2026-01-10\nVLV-234 | KVN-4ZVP-6865 | TST-6WQ1-5749 | 2026-01-13\nVLV-235 | KVN-R2EV-4904 | TST-0VO2-2564 | 2026-01-14\nVLV-236 | KVN-V3AA-8671 | TST-QNB4-4126 | 2026-01-18\nVLV-237 | KVN-QE08-1074 | TST-A0DQ-9101 | 2026-01-14\nVLV-238 | KVN-MFR7-6509 | TST-VQZM-9750 | 2026-01-11\nVLV-239 | KVN-AZY0-4235 | TST-JFVC-5295 | 2026-01-12\nVLV-240 | KVN-RLKN-2652 | TST-AT8H-3834 | 2026-01-20",
+            "score": 0.44536307482826454,
+            "rank": 3,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 2,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "﻿# Third-riser assembly export\n\nExtract of the valve records for the third riser, one record per line. The extractor that produced\nthis file omits the header row; the order of the fields is defined in the export reading guide, and a\nline that does not carry four fields is a malformed extract rather than a valve with missing data.\n\nRecords are ordered by identifier. Dates are the day the reading was verified, not the day the\nvalve was installed.",
+            "score": 0.43620032104054857,
+            "rank": 4,
+            "char_count": 448,
+            "estimated_tokens": 112,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 0,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_02_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-300 | TRQ-0L99-6060 | MVB-9I15-3329 | 2025-11-27\nVLV-301 | TRQ-IN0I-1586 | MVB-I7OG-6181 | 2025-11-28\nVLV-302 | TRQ-P9OQ-9761 | MVB-EK9V-3369 | 2025-11-15\nVLV-303 | TRQ-HZGU-6277 | MVB-AKHI-7303 | 2025-11-27\nVLV-304 | TRQ-U33D-1638 | MVB-RJOI-5140 | 2025-11-22\nVLV-305 | TRQ-1SKP-4710 | MVB-ZAGY-7446 | 2025-11-11\nVLV-306 | TRQ-KZ7O-7320 | MVB-7FJY-3861 | 2025-11-27\nVLV-307 | TRQ-H8UM-2969 | MVB-FL1Y-9472 | 2025-11-15\nVLV-308 | TRQ-VW8Q-1962 | MVB-NNIT-1542 | 2025-11-13\nVLV-309 | TRQ-2UWE-2585 | MVB-29UD-4695 | 2025-11-17\nVLV-310 | TRQ-0OTG-2262 | MVB-3ZMG-3503 | 2025-11-22\nVLV-311 | TRQ-AIUY-5219 | MVB-YT5Y-7437 | 2025-11-18\nVLV-312 | TRQ-2SYY-5902 | MVB-ESCW-5630 | 2025-11-17\nVLV-313 | TRQ-JDOK-4982 | MVB-DDYV-4359 | 2025-11-21\nVLV-314 | TRQ-PXPV-6526 | MVB-IPOZ-8120 | 2025-11-17\nVLV-315 | TRQ-7YBV-6693 | MVB-JR5X-6477 | 2025-11-17\nVLV-316 | TRQ-H43N-2447 | MVB-Z0BX-5335 | 2025-11-20\nVLV-317 | TRQ-LSW1-1057 | MVB-VRMU-2383 | 2025-11-10\nVLV-318 | TRQ-RNT5-1095 | MVB-ZEE2-6731 | 2025-11-26\nVLV-319 | TRQ-OM3J-6218 | MVB-GBXB-5781 | 2025-11-13\nVLV-320 | TRQ-HJZS-1262 | MVB-XNJL-1944 | 2025-11-20\nVLV-321 | TRQ-4WBN-8426 | MVB-EUYE-3077 | 2025-11-16",
+            "score": 0.41455138087082244,
+            "rank": 5,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "North-riser assembly export",
+              "version": "2025.11",
+              "authority": "export",
+              "published": "2025-11-26",
+              "doc_id": "split_rows_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_02.md",
+              "sha256": "6a55423bbff4c25e4d966a2c9806cb7aa32b943bc6eb61ba864c1cbf539873ec",
+              "parent_chunk_id": "doc_split_rows_02",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t1"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 3,
+        "user_input": "And valve VLV-247?",
+        "agent_response": "VLV-247 carries **TST-3M6Q-9058** (verified 2026-01-10).",
+        "assertions_passed": 1,
+        "assertions_failed": 1,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "KVN-8T2D-4417",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "split_rows_01",
+            "passed": true,
+            "matched_chunks": [
+              "doc_split_rows_01_c3",
+              "doc_split_rows_01_c2",
+              "doc_split_rows_01_c1"
+            ]
+          }
+        ],
+        "latency_ms": 6969.7753000000375,
+        "token_usage": {
+          "input_tokens": 3516,
+          "output_tokens": 28,
+          "total_tokens": 3544,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 3516,
+        "completion_tokens": 28,
+        "total_tokens": 3544,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 28,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0003516,
+        "output_cost_usd": 1.68e-05,
+        "total_cost_usd": 0.0003684,
+        "retrieved_context_chars": 5649,
+        "retrieved_context_tokens": 1412,
+        "embedding_tokens": 4,
+        "embedding_cache_hits": 1,
+        "embedding_cache_misses": 0,
+        "retrieval_latency_ms": 2214.76629999961,
+        "append_latency_ms": 0.41680000140331686,
+        "embedding_latency_ms": 2213.2126000069547,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_split_rows_01_c3",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-238 | KVN-MFR7-6509 | TST-VQZM-9750 | 2026-01-11\nVLV-239 | KVN-AZY0-4235 | TST-JFVC-5295 | 2026-01-12\nVLV-240 | KVN-RLKN-2652 | TST-AT8H-3834 | 2026-01-20\nVLV-241 | KVN-2P06-9665 | TST-HAOR-5079 | 2026-01-28\nVLV-242 | KVN-UGF3-6099 | TST-4JUN-9663 | 2026-01-25\nVLV-243 | KVN-FBZL-4677 | TST-HO7N-4819 | 2026-01-22\nVLV-244 | KVN-23PU-6504 | TST-4SIU-8278 | 2026-01-15\nVLV-245 | KVN-PCLO-3354 | TST-7CH2-7830 | 2026-01-28\nVLV-246 | KVN-YRJR-8008 | TST-32G6-3036 | 2026-01-13\nVLV-247 | KVN-8T2D-4417 | TST-3M6Q-9058 | 2026-01-10\nVLV-248 | KVN-T00E-2585 | TST-E5VM-3626 | 2026-01-10\nVLV-249 | KVN-CBYS-4517 | TST-JJNT-6346 | 2026-01-10\nVLV-250 | KVN-PEL8-5964 | TST-WR6K-8372 | 2026-01-17\nVLV-251 | KVN-M0Q5-3390 | TST-845M-6409 | 2026-01-22\nVLV-252 | KVN-ZXDV-2947 | TST-SI9X-3871 | 2026-01-16\nVLV-253 | KVN-D056-3323 | TST-80LD-1439 | 2026-01-25\nVLV-254 | KVN-LDGX-3405 | TST-MWJ8-9802 | 2026-01-28\nVLV-255 | KVN-OXQM-8457 | TST-HKPA-8795 | 2026-01-16\nVLV-256 | KVN-81U4-1937 | TST-MRZB-3715 | 2026-01-12\nVLV-257 | KVN-5NNT-6786 | TST-FW6Y-2702 | 2026-01-13\nVLV-258 | KVN-WADP-3362 | TST-M3LF-8897 | 2026-01-20\nVLV-259 | KVN-W35O-8756 | TST-GFXQ-7658 | 2026-01-28",
+            "score": 0.5430586028001982,
+            "rank": 1,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 3,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_01_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-219 | KVN-L0K1-3199 | TST-FHWY-9564 | 2026-01-12\nVLV-220 | KVN-4C8R-1194 | TST-9F2M-6630 | 2026-01-22\nVLV-221 | KVN-X6BP-2988 | TST-K4RO-8093 | 2026-01-10\nVLV-222 | KVN-EWR6-3516 | TST-9IKJ-6912 | 2026-01-15\nVLV-223 | KVN-33OA-7997 | TST-S0KY-5348 | 2026-01-26\nVLV-224 | KVN-A5HS-6811 | TST-PO0T-1138 | 2026-01-10\nVLV-225 | KVN-TRQI-6534 | TST-FC18-7849 | 2026-01-13\nVLV-226 | KVN-AZZ5-6615 | TST-7JC1-7952 | 2026-01-27\nVLV-227 | KVN-64RC-1535 | TST-7J81-3025 | 2026-01-22\nVLV-228 | KVN-OW0T-5966 | TST-KAG4-7441 | 2026-01-25\nVLV-229 | KVN-C3CV-2348 | TST-TJ4F-4225 | 2026-01-23\nVLV-230 | KVN-ENZN-6946 | TST-0G3K-9257 | 2026-01-15\nVLV-231 | KVN-U92Z-4177 | TST-KBYJ-2313 | 2026-01-19\nVLV-232 | KVN-Z98Y-5150 | TST-E22R-2923 | 2026-01-25\nVLV-233 | KVN-ZIGH-7457 | TST-GH7N-5853 | 2026-01-10\nVLV-234 | KVN-4ZVP-6865 | TST-6WQ1-5749 | 2026-01-13\nVLV-235 | KVN-R2EV-4904 | TST-0VO2-2564 | 2026-01-14\nVLV-236 | KVN-V3AA-8671 | TST-QNB4-4126 | 2026-01-18\nVLV-237 | KVN-QE08-1074 | TST-A0DQ-9101 | 2026-01-14\nVLV-238 | KVN-MFR7-6509 | TST-VQZM-9750 | 2026-01-11\nVLV-239 | KVN-AZY0-4235 | TST-JFVC-5295 | 2026-01-12\nVLV-240 | KVN-RLKN-2652 | TST-AT8H-3834 | 2026-01-20",
+            "score": 0.5113999929767434,
+            "rank": 2,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 2,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_01_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-200 | KVN-358R-1179 | TST-D4MC-2564 | 2026-01-18\nVLV-201 | KVN-L7OJ-9739 | TST-RYE7-1676 | 2026-01-14\nVLV-202 | KVN-2TEC-4645 | TST-L0XC-1818 | 2026-01-18\nVLV-203 | KVN-DBRD-5547 | TST-I8MB-7841 | 2026-01-24\nVLV-204 | KVN-4DOX-3346 | TST-OTZX-8759 | 2026-01-28\nVLV-205 | KVN-H007-6959 | TST-013Z-5264 | 2026-01-15\nVLV-206 | KVN-I4VG-8508 | TST-H69V-1639 | 2026-01-26\nVLV-207 | KVN-A6FU-5051 | TST-DW9S-9135 | 2026-01-20\nVLV-208 | KVN-TVUI-3249 | TST-WHLH-5408 | 2026-01-14\nVLV-209 | KVN-UQ50-8311 | TST-JFAE-3923 | 2026-01-26\nVLV-210 | KVN-WLBB-8016 | TST-J8AY-8471 | 2026-01-14\nVLV-211 | KVN-0PBS-5131 | TST-9X1S-4116 | 2026-01-23\nVLV-212 | KVN-1NQ3-1638 | TST-96LR-4140 | 2026-01-16\nVLV-213 | KVN-I9M8-2317 | TST-8WQZ-2317 | 2026-01-11\nVLV-214 | KVN-1C4X-6257 | TST-T2F3-1750 | 2026-01-13\nVLV-215 | KVN-GVTI-6817 | TST-Z7XD-6527 | 2026-01-12\nVLV-216 | KVN-E0KN-9809 | TST-0K6F-3000 | 2026-01-26\nVLV-217 | KVN-TVZP-2647 | TST-ADND-3897 | 2026-01-13\nVLV-218 | KVN-J3WQ-7005 | TST-AJMC-6447 | 2026-01-25\nVLV-219 | KVN-L0K1-3199 | TST-FHWY-9564 | 2026-01-12\nVLV-220 | KVN-4C8R-1194 | TST-9F2M-6630 | 2026-01-22\nVLV-221 | KVN-X6BP-2988 | TST-K4RO-8093 | 2026-01-10",
+            "score": 0.5074396247265937,
+            "rank": 3,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 1,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_02_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-319 | TRQ-OM3J-6218 | MVB-GBXB-5781 | 2025-11-13\nVLV-320 | TRQ-HJZS-1262 | MVB-XNJL-1944 | 2025-11-20\nVLV-321 | TRQ-4WBN-8426 | MVB-EUYE-3077 | 2025-11-16\nVLV-322 | TRQ-GHXU-7665 | MVB-YD9J-1635 | 2025-11-22\nVLV-323 | TRQ-6RRI-7051 | MVB-R1RY-7709 | 2025-11-15\nVLV-324 | TRQ-4Y4F-5823 | MVB-EN5Q-3816 | 2025-11-24\nVLV-325 | TRQ-HNWZ-5236 | MVB-TXB8-4001 | 2025-11-24\nVLV-326 | TRQ-QLCG-1028 | MVB-LHPO-1456 | 2025-11-17\nVLV-327 | TRQ-UKLO-2809 | MVB-6XDT-4879 | 2025-11-24\nVLV-328 | TRQ-KXSX-2853 | MVB-A15V-9814 | 2025-11-18\nVLV-329 | TRQ-NLF9-6711 | MVB-MERZ-1613 | 2025-11-28\nVLV-330 | TRQ-2N2S-5519 | MVB-F18J-8493 | 2025-11-10\nVLV-331 | TRQ-5N8C-2271 | MVB-2K9P-6634 | 2025-11-26\nVLV-332 | TRQ-Z076-6291 | MVB-S7GR-6803 | 2025-11-28\nVLV-333 | TRQ-8RU4-7970 | MVB-CFBL-7411 | 2025-11-22\nVLV-334 | TRQ-MD6O-7213 | MVB-EPGI-5831 | 2025-11-23\nVLV-335 | TRQ-6CZU-8216 | MVB-BT75-2105 | 2025-11-16\nVLV-336 | TRQ-9M14-9993 | MVB-KW5W-5176 | 2025-11-12",
+            "score": 0.45064200634557366,
+            "rank": 4,
+            "char_count": 953,
+            "estimated_tokens": 238,
+            "metadata": {
+              "title": "North-riser assembly export",
+              "version": "2025.11",
+              "authority": "export",
+              "published": "2025-11-26",
+              "doc_id": "split_rows_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_02.md",
+              "sha256": "6a55423bbff4c25e4d966a2c9806cb7aa32b943bc6eb61ba864c1cbf539873ec",
+              "parent_chunk_id": "doc_split_rows_02",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_02_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-300 | TRQ-0L99-6060 | MVB-9I15-3329 | 2025-11-27\nVLV-301 | TRQ-IN0I-1586 | MVB-I7OG-6181 | 2025-11-28\nVLV-302 | TRQ-P9OQ-9761 | MVB-EK9V-3369 | 2025-11-15\nVLV-303 | TRQ-HZGU-6277 | MVB-AKHI-7303 | 2025-11-27\nVLV-304 | TRQ-U33D-1638 | MVB-RJOI-5140 | 2025-11-22\nVLV-305 | TRQ-1SKP-4710 | MVB-ZAGY-7446 | 2025-11-11\nVLV-306 | TRQ-KZ7O-7320 | MVB-7FJY-3861 | 2025-11-27\nVLV-307 | TRQ-H8UM-2969 | MVB-FL1Y-9472 | 2025-11-15\nVLV-308 | TRQ-VW8Q-1962 | MVB-NNIT-1542 | 2025-11-13\nVLV-309 | TRQ-2UWE-2585 | MVB-29UD-4695 | 2025-11-17\nVLV-310 | TRQ-0OTG-2262 | MVB-3ZMG-3503 | 2025-11-22\nVLV-311 | TRQ-AIUY-5219 | MVB-YT5Y-7437 | 2025-11-18\nVLV-312 | TRQ-2SYY-5902 | MVB-ESCW-5630 | 2025-11-17\nVLV-313 | TRQ-JDOK-4982 | MVB-DDYV-4359 | 2025-11-21\nVLV-314 | TRQ-PXPV-6526 | MVB-IPOZ-8120 | 2025-11-17\nVLV-315 | TRQ-7YBV-6693 | MVB-JR5X-6477 | 2025-11-17\nVLV-316 | TRQ-H43N-2447 | MVB-Z0BX-5335 | 2025-11-20\nVLV-317 | TRQ-LSW1-1057 | MVB-VRMU-2383 | 2025-11-10\nVLV-318 | TRQ-RNT5-1095 | MVB-ZEE2-6731 | 2025-11-26\nVLV-319 | TRQ-OM3J-6218 | MVB-GBXB-5781 | 2025-11-13\nVLV-320 | TRQ-HJZS-1262 | MVB-XNJL-1944 | 2025-11-20\nVLV-321 | TRQ-4WBN-8426 | MVB-EUYE-3077 | 2025-11-16",
+            "score": 0.4505111411028314,
+            "rank": 5,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "North-riser assembly export",
+              "version": "2025.11",
+              "authority": "export",
+              "published": "2025-11-26",
+              "doc_id": "split_rows_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_02.md",
+              "sha256": "6a55423bbff4c25e4d966a2c9806cb7aa32b943bc6eb61ba864c1cbf539873ec",
+              "parent_chunk_id": "doc_split_rows_02",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t2"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 4,
+        "user_input": "What order are the fields in for the third-riser assembly export?",
+        "agent_response": "For the **third-riser assembly** export, the field order is:\n\n1. Asset identifier\n2. Certified value\n3. Test pressure\n4. Verification date\n\nNote that this differs from the north-riser family, which uses: asset identifier, test pressure, certified value, verification date.",
+        "assertions_passed": 2,
+        "assertions_failed": 0,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "certified value",
+            "passed": true,
+            "found_in_response": true
+          },
+          {
+            "rule_type": "must_retrieve_chunk",
+            "value": "split_legend_01",
+            "passed": true,
+            "matched_chunks": [
+              "doc_split_legend_01_c0",
+              "doc_split_legend_01_c1"
+            ]
+          }
+        ],
+        "latency_ms": 12353.539000003366,
+        "token_usage": {
+          "input_tokens": 988,
+          "output_tokens": 64,
+          "total_tokens": 1052,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 988,
+        "completion_tokens": 64,
+        "total_tokens": 1052,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 64,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 9.88e-05,
+        "output_cost_usd": 3.84e-05,
+        "total_cost_usd": 0.0001372,
+        "retrieved_context_chars": 3831,
+        "retrieved_context_tokens": 957,
+        "embedding_tokens": 104,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 184.89209999825107,
+        "append_latency_ms": 2593.519300004118,
+        "embedding_latency_ms": 2776.2222999954247,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_split_legend_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "# Export reading guide — riser assembly extracts\n\n## Why this guide exists\n\nThe assembly exports are written by a field extractor that puts one record per line and omits the header\nrow. The omission is deliberate: the extractor is shared by four teams, and a header written by one team\nwould be wrong for the others. The order for each family is therefore recorded here and nowhere else, and\nevery extract names its family on its first line.\n\n## Field order by family\n\n| Extract family | Field order |\n|---|---|\n| third-riser assembly | asset identifier, certified value, test pressure, verification date |\n| north-riser assembly | asset identifier, test pressure, certified value, verification date |\n| low-voltage distribution | asset identifier, certified value, verification date |\n| roof plant | asset identifier, test pressure, verification date |\n\nThe two riser families share a shape but not an order. A record copied from one family into a ticket for\nthe other parses cleanly and reads wrongly, which is why the family name is printed on the first line of\nevery extract and why this table is the only place the order is written down.\n\n## Field notes",
+            "score": 0.7440859011379627,
+            "rank": 1,
+            "char_count": 1158,
+            "estimated_tokens": 289,
+            "metadata": {
+              "title": "Export reading guide — riser assembly extracts",
+              "version": "2026.01",
+              "authority": "policy",
+              "published": "2026-01-08",
+              "doc_id": "split_legend_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_legend_01.md",
+              "sha256": "c8ab760cff2fb4008efcb9d4ebd05f1da8f587e9aabb9a81c2f3bb6bc68cfdf4",
+              "parent_chunk_id": "doc_split_legend_01",
+              "chunk_index": 0,
+              "chunk_count": 2
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_01_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "﻿# Third-riser assembly export\n\nExtract of the valve records for the third riser, one record per line. The extractor that produced\nthis file omits the header row; the order of the fields is defined in the export reading guide, and a\nline that does not carry four fields is a malformed extract rather than a valve with missing data.\n\nRecords are ordered by identifier. Dates are the day the reading was verified, not the day the\nvalve was installed.",
+            "score": 0.689401776163971,
+            "rank": 2,
+            "char_count": 448,
+            "estimated_tokens": 112,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 0,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_02_c0",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "﻿# North-riser assembly export\n\nExtract of the valve records for the north riser, one record per line, produced by the same extractor as\nthe other riser exports and therefore also without a header row. The field order for this family of\nexports is defined in the export reading guide and is not the same for every riser.\n\nRecords are ordered by identifier. A line that does not carry four fields is a malformed extract.",
+            "score": 0.658154850732548,
+            "rank": 3,
+            "char_count": 419,
+            "estimated_tokens": 104,
+            "metadata": {
+              "title": "North-riser assembly export",
+              "version": "2025.11",
+              "authority": "export",
+              "published": "2025-11-26",
+              "doc_id": "split_rows_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_02.md",
+              "sha256": "6a55423bbff4c25e4d966a2c9806cb7aa32b943bc6eb61ba864c1cbf539873ec",
+              "parent_chunk_id": "doc_split_rows_02",
+              "chunk_index": 0,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "ep_s1_t1",
+            "session_id": "s1",
+            "turn_number": 1,
+            "source": "chat",
+            "content": "User: I have loaded the facility documentation into your document memory. I will ask you about it in a later session. Just confirm you have it.\nAssistant: I can confirm I have the facility documentation available in this conversation. It covers:\n\n- **Change-control checklist** for platform facilities (pre-change requirements, reviewer rules, rollback and interlock handling)\n- **Note-writing structure** (customer-facing vs. internal notes, postmortem rules, escalation touchpoints, handovers, standing notes on plant-room rounds, out-of-hours section)\n- **Export reading guide** for riser assembly extracts, including the field order table by family (third-riser, north-riser, low-voltage distribution, roof plant)\n- **Third-riser assembly export** description (headerless, one record per line, four fields per line, ordered by identifier)\n\nOne caveat worth flagging now: several sections in what you've shared are empty — \"During the change,\" \"Escalation touchpoints,\" \"Out of hours,\" and \"Field notes\" all appear as headings with no content beneath them. If you intended those to contain material, it may not have come through.\n\nAsk away whenever you're ready.",
+            "score": 0.6292194609622433,
+            "rank": 4,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {}
+          },
+          {
+            "chunk_id": "doc_split_legend_01_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "## Field notes\n\nThe certified value is the rating recorded when the assembly is certified and revised only by the\ncertifying team. The test pressure is a single measurement taken during the pressure test and is not\nmaintained afterwards. The verification date is the day the reading was checked, not the day the assembly\nwas installed.\n\n## Corrections\n\nA change to a field order is a new release of this guide and is announced to all four teams together. The\nguide is not released per family: one release covers every family, so a family cannot be reading an order\nthat another family has already changed.",
+            "score": 0.4674263687396221,
+            "rank": 5,
+            "char_count": 605,
+            "estimated_tokens": 151,
+            "metadata": {
+              "title": "Export reading guide — riser assembly extracts",
+              "version": "2026.01",
+              "authority": "policy",
+              "published": "2026-01-08",
+              "doc_id": "split_legend_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_legend_01.md",
+              "sha256": "c8ab760cff2fb4008efcb9d4ebd05f1da8f587e9aabb9a81c2f3bb6bc68cfdf4",
+              "parent_chunk_id": "doc_split_legend_01",
+              "chunk_index": 1,
+              "chunk_count": 2
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t3"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      },
+      {
+        "turn_number": 5,
+        "user_input": "Which export does VLV-331 belong to?",
+        "agent_response": "VLV-331 appears in the **first block** of the data you pasted — the one containing VLV-319 through VLV-336 (rows with `TRQ-…` and `MVB-…` identifiers, dated 2025-11-10 through 2025-11-28).\n\nHowever, I don't have a name or label for that export in the data provided — the blocks are separated by `-----` but aren't titled. If you can tell me what that first block is called (e.g., which riser/assembly it corresponds to), I can confirm the mapping.",
+        "assertions_passed": 1,
+        "assertions_failed": 1,
+        "assertion_details": [
+          {
+            "rule_type": "must_contain",
+            "value": "north-riser",
+            "passed": false,
+            "found_in_response": false
+          },
+          {
+            "rule_type": "must_not_contain",
+            "value": "MVB-2K9P-6634",
+            "passed": true,
+            "found_in_response": false
+          }
+        ],
+        "latency_ms": 4440.184800005227,
+        "token_usage": {
+          "input_tokens": 3639,
+          "output_tokens": 127,
+          "total_tokens": 3766,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        "status": "ok",
+        "error": null,
+        "session_id": "s2",
+        "role": "user",
+        "prompt_tokens": 3639,
+        "completion_tokens": 127,
+        "total_tokens": 3766,
+        "reasoning_tokens": 0,
+        "visible_output_tokens": 127,
+        "cached_prompt_tokens": 0,
+        "input_cost_usd": 0.0003639,
+        "output_cost_usd": 7.62e-05,
+        "total_cost_usd": 0.0004401,
+        "retrieved_context_chars": 5649,
+        "retrieved_context_tokens": 1412,
+        "embedding_tokens": 134,
+        "embedding_cache_hits": 0,
+        "embedding_cache_misses": 1,
+        "retrieval_latency_ms": 163.52069999993546,
+        "append_latency_ms": 1051.002200001676,
+        "embedding_latency_ms": 1211.2636999954702,
+        "retrieved_memories": [
+          {
+            "chunk_id": "doc_split_rows_02_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-319 | TRQ-OM3J-6218 | MVB-GBXB-5781 | 2025-11-13\nVLV-320 | TRQ-HJZS-1262 | MVB-XNJL-1944 | 2025-11-20\nVLV-321 | TRQ-4WBN-8426 | MVB-EUYE-3077 | 2025-11-16\nVLV-322 | TRQ-GHXU-7665 | MVB-YD9J-1635 | 2025-11-22\nVLV-323 | TRQ-6RRI-7051 | MVB-R1RY-7709 | 2025-11-15\nVLV-324 | TRQ-4Y4F-5823 | MVB-EN5Q-3816 | 2025-11-24\nVLV-325 | TRQ-HNWZ-5236 | MVB-TXB8-4001 | 2025-11-24\nVLV-326 | TRQ-QLCG-1028 | MVB-LHPO-1456 | 2025-11-17\nVLV-327 | TRQ-UKLO-2809 | MVB-6XDT-4879 | 2025-11-24\nVLV-328 | TRQ-KXSX-2853 | MVB-A15V-9814 | 2025-11-18\nVLV-329 | TRQ-NLF9-6711 | MVB-MERZ-1613 | 2025-11-28\nVLV-330 | TRQ-2N2S-5519 | MVB-F18J-8493 | 2025-11-10\nVLV-331 | TRQ-5N8C-2271 | MVB-2K9P-6634 | 2025-11-26\nVLV-332 | TRQ-Z076-6291 | MVB-S7GR-6803 | 2025-11-28\nVLV-333 | TRQ-8RU4-7970 | MVB-CFBL-7411 | 2025-11-22\nVLV-334 | TRQ-MD6O-7213 | MVB-EPGI-5831 | 2025-11-23\nVLV-335 | TRQ-6CZU-8216 | MVB-BT75-2105 | 2025-11-16\nVLV-336 | TRQ-9M14-9993 | MVB-KW5W-5176 | 2025-11-12",
+            "score": 0.5518059831915719,
+            "rank": 1,
+            "char_count": 953,
+            "estimated_tokens": 238,
+            "metadata": {
+              "title": "North-riser assembly export",
+              "version": "2025.11",
+              "authority": "export",
+              "published": "2025-11-26",
+              "doc_id": "split_rows_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_02.md",
+              "sha256": "6a55423bbff4c25e4d966a2c9806cb7aa32b943bc6eb61ba864c1cbf539873ec",
+              "parent_chunk_id": "doc_split_rows_02",
+              "chunk_index": 2,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_02_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-300 | TRQ-0L99-6060 | MVB-9I15-3329 | 2025-11-27\nVLV-301 | TRQ-IN0I-1586 | MVB-I7OG-6181 | 2025-11-28\nVLV-302 | TRQ-P9OQ-9761 | MVB-EK9V-3369 | 2025-11-15\nVLV-303 | TRQ-HZGU-6277 | MVB-AKHI-7303 | 2025-11-27\nVLV-304 | TRQ-U33D-1638 | MVB-RJOI-5140 | 2025-11-22\nVLV-305 | TRQ-1SKP-4710 | MVB-ZAGY-7446 | 2025-11-11\nVLV-306 | TRQ-KZ7O-7320 | MVB-7FJY-3861 | 2025-11-27\nVLV-307 | TRQ-H8UM-2969 | MVB-FL1Y-9472 | 2025-11-15\nVLV-308 | TRQ-VW8Q-1962 | MVB-NNIT-1542 | 2025-11-13\nVLV-309 | TRQ-2UWE-2585 | MVB-29UD-4695 | 2025-11-17\nVLV-310 | TRQ-0OTG-2262 | MVB-3ZMG-3503 | 2025-11-22\nVLV-311 | TRQ-AIUY-5219 | MVB-YT5Y-7437 | 2025-11-18\nVLV-312 | TRQ-2SYY-5902 | MVB-ESCW-5630 | 2025-11-17\nVLV-313 | TRQ-JDOK-4982 | MVB-DDYV-4359 | 2025-11-21\nVLV-314 | TRQ-PXPV-6526 | MVB-IPOZ-8120 | 2025-11-17\nVLV-315 | TRQ-7YBV-6693 | MVB-JR5X-6477 | 2025-11-17\nVLV-316 | TRQ-H43N-2447 | MVB-Z0BX-5335 | 2025-11-20\nVLV-317 | TRQ-LSW1-1057 | MVB-VRMU-2383 | 2025-11-10\nVLV-318 | TRQ-RNT5-1095 | MVB-ZEE2-6731 | 2025-11-26\nVLV-319 | TRQ-OM3J-6218 | MVB-GBXB-5781 | 2025-11-13\nVLV-320 | TRQ-HJZS-1262 | MVB-XNJL-1944 | 2025-11-20\nVLV-321 | TRQ-4WBN-8426 | MVB-EUYE-3077 | 2025-11-16",
+            "score": 0.5498087785340221,
+            "rank": 2,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "North-riser assembly export",
+              "version": "2025.11",
+              "authority": "export",
+              "published": "2025-11-26",
+              "doc_id": "split_rows_02",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_02.md",
+              "sha256": "6a55423bbff4c25e4d966a2c9806cb7aa32b943bc6eb61ba864c1cbf539873ec",
+              "parent_chunk_id": "doc_split_rows_02",
+              "chunk_index": 1,
+              "chunk_count": 3
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_01_c2",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-219 | KVN-L0K1-3199 | TST-FHWY-9564 | 2026-01-12\nVLV-220 | KVN-4C8R-1194 | TST-9F2M-6630 | 2026-01-22\nVLV-221 | KVN-X6BP-2988 | TST-K4RO-8093 | 2026-01-10\nVLV-222 | KVN-EWR6-3516 | TST-9IKJ-6912 | 2026-01-15\nVLV-223 | KVN-33OA-7997 | TST-S0KY-5348 | 2026-01-26\nVLV-224 | KVN-A5HS-6811 | TST-PO0T-1138 | 2026-01-10\nVLV-225 | KVN-TRQI-6534 | TST-FC18-7849 | 2026-01-13\nVLV-226 | KVN-AZZ5-6615 | TST-7JC1-7952 | 2026-01-27\nVLV-227 | KVN-64RC-1535 | TST-7J81-3025 | 2026-01-22\nVLV-228 | KVN-OW0T-5966 | TST-KAG4-7441 | 2026-01-25\nVLV-229 | KVN-C3CV-2348 | TST-TJ4F-4225 | 2026-01-23\nVLV-230 | KVN-ENZN-6946 | TST-0G3K-9257 | 2026-01-15\nVLV-231 | KVN-U92Z-4177 | TST-KBYJ-2313 | 2026-01-19\nVLV-232 | KVN-Z98Y-5150 | TST-E22R-2923 | 2026-01-25\nVLV-233 | KVN-ZIGH-7457 | TST-GH7N-5853 | 2026-01-10\nVLV-234 | KVN-4ZVP-6865 | TST-6WQ1-5749 | 2026-01-13\nVLV-235 | KVN-R2EV-4904 | TST-0VO2-2564 | 2026-01-14\nVLV-236 | KVN-V3AA-8671 | TST-QNB4-4126 | 2026-01-18\nVLV-237 | KVN-QE08-1074 | TST-A0DQ-9101 | 2026-01-14\nVLV-238 | KVN-MFR7-6509 | TST-VQZM-9750 | 2026-01-11\nVLV-239 | KVN-AZY0-4235 | TST-JFVC-5295 | 2026-01-12\nVLV-240 | KVN-RLKN-2652 | TST-AT8H-3834 | 2026-01-20",
+            "score": 0.5041370356120584,
+            "rank": 3,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 2,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_01_c1",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-200 | KVN-358R-1179 | TST-D4MC-2564 | 2026-01-18\nVLV-201 | KVN-L7OJ-9739 | TST-RYE7-1676 | 2026-01-14\nVLV-202 | KVN-2TEC-4645 | TST-L0XC-1818 | 2026-01-18\nVLV-203 | KVN-DBRD-5547 | TST-I8MB-7841 | 2026-01-24\nVLV-204 | KVN-4DOX-3346 | TST-OTZX-8759 | 2026-01-28\nVLV-205 | KVN-H007-6959 | TST-013Z-5264 | 2026-01-15\nVLV-206 | KVN-I4VG-8508 | TST-H69V-1639 | 2026-01-26\nVLV-207 | KVN-A6FU-5051 | TST-DW9S-9135 | 2026-01-20\nVLV-208 | KVN-TVUI-3249 | TST-WHLH-5408 | 2026-01-14\nVLV-209 | KVN-UQ50-8311 | TST-JFAE-3923 | 2026-01-26\nVLV-210 | KVN-WLBB-8016 | TST-J8AY-8471 | 2026-01-14\nVLV-211 | KVN-0PBS-5131 | TST-9X1S-4116 | 2026-01-23\nVLV-212 | KVN-1NQ3-1638 | TST-96LR-4140 | 2026-01-16\nVLV-213 | KVN-I9M8-2317 | TST-8WQZ-2317 | 2026-01-11\nVLV-214 | KVN-1C4X-6257 | TST-T2F3-1750 | 2026-01-13\nVLV-215 | KVN-GVTI-6817 | TST-Z7XD-6527 | 2026-01-12\nVLV-216 | KVN-E0KN-9809 | TST-0K6F-3000 | 2026-01-26\nVLV-217 | KVN-TVZP-2647 | TST-ADND-3897 | 2026-01-13\nVLV-218 | KVN-J3WQ-7005 | TST-AJMC-6447 | 2026-01-25\nVLV-219 | KVN-L0K1-3199 | TST-FHWY-9564 | 2026-01-12\nVLV-220 | KVN-4C8R-1194 | TST-9F2M-6630 | 2026-01-22\nVLV-221 | KVN-X6BP-2988 | TST-K4RO-8093 | 2026-01-10",
+            "score": 0.5034528614196782,
+            "rank": 4,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 1,
+              "chunk_count": 4
+            }
+          },
+          {
+            "chunk_id": "doc_split_rows_01_c3",
+            "session_id": "corpus",
+            "turn_number": 0,
+            "source": "document",
+            "content": "VLV-238 | KVN-MFR7-6509 | TST-VQZM-9750 | 2026-01-11\nVLV-239 | KVN-AZY0-4235 | TST-JFVC-5295 | 2026-01-12\nVLV-240 | KVN-RLKN-2652 | TST-AT8H-3834 | 2026-01-20\nVLV-241 | KVN-2P06-9665 | TST-HAOR-5079 | 2026-01-28\nVLV-242 | KVN-UGF3-6099 | TST-4JUN-9663 | 2026-01-25\nVLV-243 | KVN-FBZL-4677 | TST-HO7N-4819 | 2026-01-22\nVLV-244 | KVN-23PU-6504 | TST-4SIU-8278 | 2026-01-15\nVLV-245 | KVN-PCLO-3354 | TST-7CH2-7830 | 2026-01-28\nVLV-246 | KVN-YRJR-8008 | TST-32G6-3036 | 2026-01-13\nVLV-247 | KVN-8T2D-4417 | TST-3M6Q-9058 | 2026-01-10\nVLV-248 | KVN-T00E-2585 | TST-E5VM-3626 | 2026-01-10\nVLV-249 | KVN-CBYS-4517 | TST-JJNT-6346 | 2026-01-10\nVLV-250 | KVN-PEL8-5964 | TST-WR6K-8372 | 2026-01-17\nVLV-251 | KVN-M0Q5-3390 | TST-845M-6409 | 2026-01-22\nVLV-252 | KVN-ZXDV-2947 | TST-SI9X-3871 | 2026-01-16\nVLV-253 | KVN-D056-3323 | TST-80LD-1439 | 2026-01-25\nVLV-254 | KVN-LDGX-3405 | TST-MWJ8-9802 | 2026-01-28\nVLV-255 | KVN-OXQM-8457 | TST-HKPA-8795 | 2026-01-16\nVLV-256 | KVN-81U4-1937 | TST-MRZB-3715 | 2026-01-12\nVLV-257 | KVN-5NNT-6786 | TST-FW6Y-2702 | 2026-01-13\nVLV-258 | KVN-WADP-3362 | TST-M3LF-8897 | 2026-01-20\nVLV-259 | KVN-W35O-8756 | TST-GFXQ-7658 | 2026-01-28",
+            "score": 0.49449844989594943,
+            "rank": 5,
+            "char_count": 1165,
+            "estimated_tokens": 291,
+            "metadata": {
+              "title": "Third-riser assembly export",
+              "version": "2026.01",
+              "authority": "export",
+              "published": "2026-01-22",
+              "doc_id": "split_rows_01",
+              "source_path": "C:\\Users\\sgraz\\Documents\\Stefano\\UNS\\Tesis\\agent-memory-benchmark\\datasets\\documents\\calibration\\split_rows_01.md",
+              "sha256": "00b306915548a437dbd58e08ac4c0499763e4c4cb0ea814ab4610167077357fe",
+              "parent_chunk_id": "doc_split_rows_01",
+              "chunk_index": 3,
+              "chunk_count": 4
+            }
+          }
+        ],
+        "appended_chunk_ids": [
+          "ep_s2_t4"
+        ],
+        "ingested_documents": [],
+        "ingested_chars": 0,
+        "ingested_chunk_ids": []
+      }
+    ],
+    "timestamp": "2026-11-11T18:46:40.594657+00:00",
+    "memory_backend": "vector",
+    "embedding_model_id": "qwen3-embedding-0.6b",
+    "top_k": 5,
+    "chunk_size": 1200,
+    "chunk_overlap": 200,
+    "memory_snapshot_path": "memory/document_split_evidence_01_deepseek-v4.1-flash_baseline_react_35f02ce9",
+    "reasoning_tokens": 0,
+    "visible_output_tokens": 463,
+    "cached_prompt_tokens": 2816,
+    "input_cost_usd": 0.0012228,
+    "output_cost_usd": 0.0002778,
+    "total_cost_usd": 0.0015006,
+    "input_cost_per_mtok": 0.1,
+    "output_cost_per_mtok": 0.6,
+    "retrieved_context_tokens": 6218,
+    "embedding_tokens": 579,
+    "embedding_cache_hits": 39,
+    "embedding_cache_misses": 3,
+    "total_retrieval_latency_ms": 6213.115099999413,
+    "total_append_latency_ms": 7245.520900003612,
+    "total_embedding_latency_ms": 13445.47189999139,
+    "ingestion_latency_ms": 2.6627000042935833,
+    "documents_ingested": 12,
+    "ingested_chars": 30775,
+    "ingested_chunks": 37,
+    "corpus_chunks": 42,
+    "corpus_chars": 33918
+  }
+]
