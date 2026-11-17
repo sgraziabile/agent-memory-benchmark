@@ -174,6 +174,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Retrieval cut-off for L2+ (0 disables retrieval entirely — a no-memory control)",
     )
     parser.add_argument(
+        "--max-tool-calls",
+        type=int,
+        default=3,
+        metavar="N",
+        help=(
+            "Hard per-turn cap on the retrieval tool loop for agentic levels "
+            "(L2b). Ignored by L0/L1/L2a, whose configurable is left untouched. "
+            "The cap is recorded in results.json (tool_call_cap_hits)."
+        ),
+    )
+    parser.add_argument(
         "--chunk-size",
         type=int,
         default=1200,
@@ -387,6 +398,16 @@ def main() -> int:
         agent = AGENT_REGISTRY[level_id]()
         graph = agent.build_graph()
 
+        # Tool-loop budget (L2b only). Levels without a tool loop must not gain
+        # a configurable key they ignore: their recorded run identity would
+        # change for no scientific gain (same discipline as the backend keys
+        # injected just below).
+        tool_budget = (
+            args.max_tool_calls
+            if getattr(agent, "supports_tool_calls", False)
+            else None
+        )
+
         # ── Memory backend lifecycle (plan §4.3, Milestone 5) ─────────
         # Constructed ONLY for levels that require one, so L0/L1 never
         # touches the embedding API (backward compatible, no keys needed).
@@ -437,6 +458,9 @@ def main() -> int:
                 f"embed_cache={embed_cache_dir or 'off'})"
             )
 
+        if tool_budget is not None:
+            print(f"  Tool loop budget: max_tool_calls={tool_budget}")
+
 
         if inline_model:
             # Inline path mirrors run_matrix: snapshots land under the
@@ -458,6 +482,7 @@ def main() -> int:
                     memory_backend_config=memory_backend_config,
                     snapshot_dir=snapshot_dir,
                     documents_enabled=not args.no_documents,
+                    max_tool_calls=tool_budget,
                 )
                 if memory_backend is not None:
                     memory_backend.reset()
@@ -474,6 +499,7 @@ def main() -> int:
                     memory_backend=memory_backend,
                     memory_backend_config=memory_backend_config,
                     documents_enabled=not args.no_documents,
+                    max_tool_calls=tool_budget,
                 )
             )
 

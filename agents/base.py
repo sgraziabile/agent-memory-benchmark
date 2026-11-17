@@ -27,6 +27,13 @@ class BaseBenchmarkAgent(ABC):
     #: other level stays fully backward compatible (no backend, no keys).
     requires_memory_backend: bool = False
 
+    #: Whether this level drives a bounded retrieval **tool loop** (L2b). The
+    #: CLI forwards ``--max-tool-calls`` to the runner only for levels that set
+    #: this, so L0/L1/L2a keep the exact pre-L2b ``config["configurable"]``
+    #: (adding a key they ignore would change their recorded run identity for
+    #: no scientific gain). Mirrors :attr:`requires_memory_backend`.
+    supports_tool_calls: bool = False
+
     @abstractmethod
     def build_graph(self, tools: list[Any] | None = None) -> Any:
         """Build and compile the LangGraph ``StateGraph``.

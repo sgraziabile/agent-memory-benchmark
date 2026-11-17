@@ -96,6 +96,18 @@ DEFAULT_FIELDS = [
     "retrieval_recall",
     "retrieval_recall_ci_low",
     "retrieval_recall_ci_high",
+    # L2b agentic-retrieval columns (see ``core.runner._export_results``). The
+    # backfill never recomputes them; they are listed so a rewritten CSV keeps
+    # the exact header a fresh export produces (sisyphus ratchet in
+    # ``tests/test_retrieval_recall.py``).
+    "total_tool_calls",
+    "avg_calls_per_retrieval_turn",
+    "calls_per_probe",
+    "retrieval_call_efficiency",
+    "tool_call_cap_hits",
+    "max_tool_calls",
+    "retrieval_context_tokens_gross",
+    "failure_class_counts",
     "error_turns",
     "error_rate",
     "total_latency_ms",

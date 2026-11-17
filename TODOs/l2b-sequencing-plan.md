@@ -650,10 +650,59 @@ document_split_binding_01  k=15  2 runs  hit 4  pins 4  100.0%   <- the guide is
 | Phase | State | Blocker |
 |---|---|---|
 | 0 — contract | ✅ done | — |
-| 1 — 4 cells | ✅ all four in the tree | cells 2–3 are **not** L2b discriminators (§9.3) |
+| 0b — contract closeout (§9.5) | ✅ done 2026-11-17 | `query_must_contain`, F0–F4, gross tokens, `--max-tool-calls` |
+| 1 — 4 cells | ⚠️ **3 of 4** in the tree | `document_prevalence_trap_01` (the negative control) does not exist yet; cells 2–3 are **not** L2b discriminators (§9.3) |
 | 1b — L0/L1 baselines | ⬜ not run | 18/19 multihilo cells have no measured amnesia baseline; cheapest fix after the contract |
 | 2 — L2b agent | ⬜ next | the contract is frozen, so runs made from here are comparable |
 | 3 — widen (D3, M9 generator, numeric/`must_store` assertions) | ⬜ **after** Phase 2 — see §10–11 | needs the agent's failure modes |
+
+---
+
+## 9.5 Status 2026-11-17 — the rest of the §1 contract, closed before the agent
+
+Phase 0 (§9.1) froze four channels and the union policy. It did **not** ship the
+machinery §1.1/§1.2 need for a failure to be *attributable*, so that landed
+next, before any agent code. Files: `core/schemas.py`, `core/metrics.py`,
+`core/runner.py`, `run.py`, `agents/base.py`, `tests/test_l2b_telemetry.py`
+(+35 tests), `scripts/backfill_retrieval_recall.py`.
+
+| Piece | What shipped |
+|---|---|
+| `query_must_contain` (§1.1.1, detector for F1) | `AssertionRule.query_must_contain: list[str]` (a bare YAML string is normalized). A guarded pin is satisfied **only** by calls whose `query` carried every token; the assertion detail gains `query_matched` + the declared tokens. With no `retrieval_calls` in scope the guard cannot be verified, so the pin is **not** credited. |
+| `call_index` (§1.1.1, "the second query must find it") | `AssertionRule.call_index: int \| None` (`ge=1`). When set, only that call's episodes may satisfy the rule — the ordering/budget claim the union cannot express. It composes with `query_must_contain`: the index filters *which* call counts, the token guard decides whether the searching was sane (so F1 stays about the query, not the index). |
+| Five-class taxonomy (§1.2) | `core.metrics.classify_failure_class()` + `count_failure_classes()`; `TurnResult.failure_class` (`F0`–`F4`, `null` for text-only turns); `BenchmarkRunSummary.failure_class_counts` (`{"F0": 1, "F2": 3}`), emitted in `F0…F4` order. |
+| Gross re-query cost (§1.1.5) | `retrieval_context_tokens_gross` on `L2AgentState` / `TurnResult` / summary; `core.metrics.gross_context_tokens()`. The runner also falls back to summing each call's `context_tokens`, so an L2b graph only has to annotate its calls — the metric cannot silently read 0 for a correct implementation. |
+| Tool-loop cap (§1.1.3) | `--max-tool-calls` (default **3**) → `configurable["max_tool_calls"]`, forwarded **only** for levels whose new `BaseBenchmarkAgent.supports_tool_calls` is `True` (mirrors `requires_memory_backend`), so L0/L1/L2a keep a byte-identical configurable. Recorded as `BenchmarkRunSummary.max_tool_calls`. |
+| CSV parity | `summary.csv` gained the eight L2b columns; the distribution is flattened to `F0=1;F2=3` (a cell cannot hold a dict). `backfill_retrieval_recall.py::DEFAULT_FIELDS` was extended, so the header ratchet (`tests/test_retrieval_recall.py`) still holds. |
+
+**One semantic decision the tests forced.** The first implementation tested
+`retrieval_call_count == 0` *before* the pins, which classified a **satisfied
+L2a pin** as `F0` — L2a retrieves implicitly and always reports zero tool calls.
+The order is now: no positive pin → `None`; pins pass → `F3`/`F4`; then zero
+calls → `F0`; then the query guard → `F1`; else `F2`. So `F0` means "nothing
+was retrieved *and* the pin failed", which is the only reading under which the
+L0/L1/L2a baseline rows are meaningful.
+
+**Verification (measured).** `pytest -q` = **826 passed** (787 + 39 new; the
+file holds **65**). A pre-L2b `results.json` (`20261112_163150`,
+`document_split_binding_01`, L2a) still validates against the extended schema
+and gains only the new fields at `{}` / `0` / `null`: `pass_rate` **0.7143**,
+`retrieval_recall` **1.0** and `total_tokens` **11 406** are unchanged. Export
+smoke test: CSV cell `F0=1;F2=3`, JSON `{"F0": 1, "F2": 3}`, turn
+`failure_class: "F2"`.
+
+**Corrections to this plan's own numbers** (verified against the tree today):
+
+| Claim in this document | Measured 2026-11-17 |
+|---|---|
+| §9.1 "`pytest -q` = 783 passed", "22 tests" | 787 collected at that commit (the file was extended to 26 later that day); **826** now, **65** in the file |
+| §9.4 "Phase 1 — 4 cells ✅ all four in the tree" | 3 cells + the split pair (`document_split_evidence_01` + `document_split_binding_01`); **`document_prevalence_trap_01` does not exist** |
+| §6 coverage matrix rows 4–6 "❌ Phase 1" | implemented (§2.4–2.8); row 7 (prevalence trap) is still ❌ and is the missing negative control |
+| `next-steps-agentic-rag-and-tests.md` proposes `level_3_agentic_rag` | superseded (§3): `level_2b_agentic_rag`, alias `2b` already wired |
+
+**What this does not buy.** `must_store`, numeric assertions, set-recall and
+`--memory-provenance` remain Phase 3 (H2/M*); nothing in this pass touched the
+corpus, the YAMLs or `_format_memory_block`.
 
 ---
 

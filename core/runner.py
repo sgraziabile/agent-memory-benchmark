@@ -98,7 +98,10 @@ from core.schemas import (
 from core.model_factory import get_model_pricing
 from core.metrics import (
     assertion_recall,
+    classify_failure_class,
+    count_failure_classes,
     declared_retrieval_assertions,
+    gross_context_tokens,
     mean_calls_per_probe,
     pins_per_call,
     recall_with_ci,
@@ -205,6 +208,14 @@ def _read_l2_telemetry(result: Any) -> dict[str, Any]:
         "retrieval_call_count": int(result.get("retrieval_call_count") or 0),
         "retrieval_skipped": bool(result.get("retrieval_skipped") or False),
         "tool_call_cap_hit": bool(result.get("tool_call_cap_hit") or False),
+        # Gross re-query cost (plan §1.1.5): the agent may report the channel
+        # directly, but a graph that only annotates each call with its own
+        # ``context_tokens`` still produces the figure — otherwise the metric
+        # would silently read 0 for a correct L2b implementation.
+        "retrieval_context_tokens_gross": (
+            int(result.get("retrieval_context_tokens_gross") or 0)
+            or gross_context_tokens(result.get("retrieval_calls"))
+        ),
     }
 
 
@@ -262,6 +273,91 @@ def _evaluate_retrieval_assertion(
         "passed": bool(matched) == expects_present,
         "matched_chunks": matched,
     }
+
+
+def _calls_matching_query(
+    retrieval_calls: list[dict[str, Any]] | None,
+    query_tokens: list[str],
+) -> list[dict[str, Any]]:
+    """Calls whose recorded query satisfies the probe's ``query_must_contain``.
+
+    Class F1 of the failure taxonomy (``l2b-sequencing-plan`` §1.2) is "the
+    agent did search, but for the wrong thing". That is only measurable if the
+    probe declares which tokens the query had to carry; this helper is the
+    matching rule, and an empty result is what makes ``F1`` reportable instead
+    of being folded into ``F2``.
+
+    Args:
+        retrieval_calls: One dict per tool call issued this turn.
+        query_tokens: Tokens every qualifying query must contain. Matching is
+            cosmetic-Unicode normalized and case-insensitive, same policy as
+            the text assertions.
+
+    Returns:
+        The calls that qualify, in issue order. With no tokens declared every
+        call qualifies (nothing to check). With no calls, ``[]``.
+    """
+    normalized_tokens = [
+        _normalize_for_matching(str(token)).casefold()
+        for token in query_tokens
+        if str(token).strip()
+    ]
+    calls = [call for call in (retrieval_calls or []) if isinstance(call, dict)]
+    if not normalized_tokens:
+        return calls
+    return [
+        call
+        for call in calls
+        if all(
+            token in _normalize_for_matching(str(call.get("query") or "")).casefold()
+            for token in normalized_tokens
+        )
+    ]
+
+
+def _turn_failure_class(
+    assertion_details: list[dict[str, Any]],
+    retrieval_call_count: int,
+) -> str | None:
+    """Classify a graded turn from its own assertion details (F0–F4).
+
+    Reads the positive pins (``must_retrieve_chunk``), the text rules and the
+    ``query_matched`` flags the guarded pins recorded, then delegates the
+    decision to :func:`core.metrics.classify_failure_class`. Kept here (not in
+    metrics) because it knows the assertion-detail shape, which is the
+    runner's output format.
+
+    Args:
+        assertion_details: Output of :meth:`BenchmarkRunner.evaluate_assertions`.
+        retrieval_call_count: Calls the turn issued, from its telemetry.
+
+    Returns:
+        ``"F0"``–``"F4"``, or ``None`` when the turn declares no positive pin.
+    """
+    positive_pins = [
+        detail
+        for detail in assertion_details
+        if detail.get("rule_type") == "must_retrieve_chunk"
+    ]
+    text_rules = [
+        detail
+        for detail in assertion_details
+        if detail.get("rule_type") not in _RETRIEVAL_ASSERTION_TYPES
+    ]
+    query_flags = [
+        detail.get("query_matched")
+        for detail in positive_pins
+        if detail.get("query_matched") is not None
+    ]
+    return classify_failure_class(
+        pins_total=len(positive_pins),
+        pins_passed=sum(1 for detail in positive_pins if detail.get("passed")),
+        text_total=len(text_rules),
+        text_passed=sum(1 for detail in text_rules if detail.get("passed")),
+        retrieval_call_count=retrieval_call_count,
+        query_checked=bool(query_flags),
+        query_matched=any(flag is True for flag in query_flags),
+    )
 
 
 # ── Default paths ────────────────────────────────────────────────────────────
@@ -426,6 +522,7 @@ class BenchmarkRunner:
         rules: list[AssertionRule],
         *,
         retrieved_memories: list[dict[str, Any]] | None = None,
+        retrieval_calls: list[dict[str, Any]] | None = None,
     ) -> list[dict[str, Any]]:
         """Evaluate assertion rules against the response and/or retrieval.
 
@@ -444,23 +541,62 @@ class BenchmarkRunner:
             response: The agent's response text.
             rules: List of ``AssertionRule`` instances to check.
             retrieved_memories: Top-k retrieved episode dicts from the agent's
-                own telemetry (``L2AgentState.retrieved_memories``). ``None``
+                own telemetry (``L2AgentState.retrieved_memories``) — for L2b
+                the caller passes the **union** of every call. ``None``
                 or empty means "nothing was retrieved" — retrieval assertions
                 then fail (positive) or pass (negative), deterministically.
+            retrieval_calls: One dict per tool call issued this turn. Only
+                needed by rules that declare ``query_must_contain`` and/or
+                ``call_index``: those are scored against the qualifying calls,
+                never against the whole union. Without this argument a guarded
+                rule has no query to check and fails with
+                ``query_matched: False`` — the honest reading, since the guard
+                could not be verified.
 
         Returns:
             List of dicts, each with keys: ``rule_type``, ``value``,
             ``passed``, ``found_in_response`` (text rules) or
-            ``matched_chunks`` (retrieval rules).
+            ``matched_chunks`` (retrieval rules). Guarded retrieval rules also
+            carry their declarations in the detail — ``query_must_contain`` +
+            ``query_matched`` (what ``classify_failure_class`` reads to
+            separate F1 from F2) and/or ``call_index``.
         """
         results: list[dict[str, Any]] = []
         episodes = retrieved_memories or []
 
         for rule in rules:
             if rule.type in _RETRIEVAL_ASSERTION_TYPES:
-                results.append(
-                    _evaluate_retrieval_assertion(rule, episodes)
+                query_tokens = getattr(rule, "query_must_contain", None) or []
+                call_index = getattr(rule, "call_index", None)
+                if not query_tokens and call_index is None:
+                    results.append(
+                        _evaluate_retrieval_assertion(rule, episodes)
+                    )
+                    continue
+
+                # Guarded rule: score it against a *subset* of the calls.
+                # ``call_index`` answers "the second query must find it";
+                # ``query_must_contain`` answers "it must have searched for
+                # the right thing". Both can be declared at once.
+                scoped_calls = _calls_matching_query(retrieval_calls, query_tokens)
+                query_matched = bool(scoped_calls)
+                if call_index is not None:
+                    scoped_calls = [
+                        call
+                        for call in scoped_calls
+                        if call.get("call_index") == call_index
+                    ]
+                detail = _evaluate_retrieval_assertion(
+                    rule, union_retrieved_episodes([], scoped_calls)
                 )
+                if query_tokens:
+                    detail["query_must_contain"] = list(query_tokens)
+                    # Whether the *query* was right is independent of the
+                    # index filter: F1 is about what the agent asked for.
+                    detail["query_matched"] = query_matched
+                if call_index is not None:
+                    detail["call_index"] = call_index
+                results.append(detail)
                 continue
 
             # Normalize cosmetic Unicode variance (typographic hyphens,
@@ -614,6 +750,7 @@ class BenchmarkRunner:
         memory_backend_config: dict[str, Any] | None = None,
         snapshot_dir: Path | None = None,
         documents_enabled: bool = True,
+        max_tool_calls: int | None = None,
     ) -> BenchmarkRunSummary:
         """Execute a single benchmark tuple: ⟨Scenario, Prompt, Model, Level⟩.
 
@@ -645,6 +782,13 @@ class BenchmarkRunner:
                         ``system_event`` attachments are ignored (control
                         runs: same conversation, empty corpus). Defaults to
                         ``True``.
+            max_tool_calls: Hard per-turn cap for the agent's retrieval tool
+                        loop (L2b). Injected into
+                        ``config["configurable"]["max_tool_calls"]`` only when
+                        not ``None``, so L0/L1/L2a keep their exact
+                        pre-L2b configurable — the same discipline used for
+                        ``memory_backend`` / ``top_k``. ``None`` (default) is
+                        the pre-L2b behavior: no key, no summary field.
 
         Returns:
             A ``BenchmarkRunSummary`` with all turn results and metrics.
@@ -721,6 +865,12 @@ class BenchmarkRunner:
             configured_top_k = backend_cfg.get("top_k")
             if configured_top_k is not None:
                 config["configurable"]["top_k"] = configured_top_k
+
+        # Tool-loop budget (L2b). Injected only when declared — ``None`` keeps
+        # L0/L1/L2a on the byte-identical configurable they had before this
+        # argument existed, which is what makes their artifacts comparable.
+        if max_tool_calls is not None:
+            config["configurable"]["max_tool_calls"] = max_tool_calls
 
         # ── Plan WS-D: scenario-level corpus preload ──────────────────────
         # Documents declared on the scenario are ingested ONCE, before turn 1,
@@ -1038,9 +1188,20 @@ class BenchmarkRunner:
                 retrieved_memories=union_retrieved_episodes(
                     l2_tel["retrieved_memories"], l2_tel["retrieval_calls"]
                 ),
+                # Per-call queries, so a probe that declares
+                # ``query_must_contain`` can tell "searched for the wrong
+                # thing" (F1) from "the retriever missed it" (F2).
+                retrieval_calls=l2_tel["retrieval_calls"],
             )
             passed = sum(1 for a in assertion_details if a["passed"])
             failed = sum(1 for a in assertion_details if not a["passed"])
+
+            # Five-class taxonomy (plan §1.2): one class per probe, emitted
+            # here because it needs both the assertion verdicts and the call
+            # count. ``None`` for text-only turns.
+            failure_class = _turn_failure_class(
+                assertion_details, l2_tel["retrieval_call_count"]
+            )
 
             turn_result = TurnResult(
                 turn_number=turn.turn_number,
@@ -1050,6 +1211,7 @@ class BenchmarkRunner:
                 assertions_passed=passed,
                 assertions_failed=failed,
                 assertion_details=assertion_details,
+                failure_class=failure_class,
                 latency_ms=latency_ms,
                 token_usage=token_usage,
                 session_id=session_id,
@@ -1133,6 +1295,15 @@ class BenchmarkRunner:
         )
         tool_call_cap_hits = sum(
             1 for tr in chat_ok_turns if tr.tool_call_cap_hit
+        )
+        # Gross re-query cost and the failure-taxonomy distribution travel with
+        # the same ok-chat-turn policy as the rest of the L2b block: an errored
+        # turn's partial loop is not a measurement of the agent's retrieval.
+        retrieval_context_tokens_gross = sum(
+            tr.retrieval_context_tokens_gross for tr in chat_ok_turns
+        )
+        failure_class_counts = count_failure_classes(
+            tr.failure_class for tr in chat_ok_turns
         )
         retrieving_turns = [
             tr for tr in chat_ok_turns if tr.retrieval_call_count > 0
@@ -1299,6 +1470,9 @@ class BenchmarkRunner:
             tool_call_cap_hits=tool_call_cap_hits,
             calls_per_probe=calls_per_probe,
             retrieval_call_efficiency=retrieval_call_efficiency,
+            retrieval_context_tokens_gross=retrieval_context_tokens_gross,
+            failure_class_counts=failure_class_counts,
+            max_tool_calls=max_tool_calls,
             error_turns=error_count,
             error_rate=error_count / num_turns if num_turns > 0 else 0.0,
             total_latency_ms=total_latency,
@@ -1368,6 +1542,7 @@ class BenchmarkRunner:
         memory_backend: Any = None,
         memory_backend_config: dict[str, Any] | None = None,
         documents_enabled: bool = True,
+        max_tool_calls: int | None = None,
     ) -> list[BenchmarkRunSummary]:
         """Execute the full Cartesian product: Scenarios × Prompts × Models.
 
@@ -1392,6 +1567,9 @@ class BenchmarkRunner:
                 run summaries and snapshot manifests.
             documents_enabled: When ``False``, scenario documents and
                 ``system_event`` attachments are ignored (control runs).
+            max_tool_calls: Optional hard cap for the agent's retrieval tool
+                loop (L2b), passed through to every ``run_single`` call.
+                ``None`` keeps L0/L1/L2a untouched.
 
         Returns:
             List of ``BenchmarkRunSummary`` objects for all executed tuples.
@@ -1456,6 +1634,7 @@ class BenchmarkRunner:
                     memory_backend_config=memory_backend_config,
                     snapshot_dir=snapshot_dir,
                     documents_enabled=documents_enabled,
+                    max_tool_calls=max_tool_calls,
                 )
                 results.append(summary)
             except Exception as exc:
@@ -1582,6 +1761,18 @@ class BenchmarkRunner:
             "retrieval_recall",
             "retrieval_recall_ci_low",
             "retrieval_recall_ci_high",
+            # ── L2b agentic retrieval: calls made, efficiency, the cap that was
+            # applied, gross re-query cost, and the failure-class distribution
+            # flattened to "F0=1;F2=3" (a CSV cell cannot hold a dict). All of
+            # them are 0 / None / "" on L0/L1/L2a.
+            "total_tool_calls",
+            "avg_calls_per_retrieval_turn",
+            "calls_per_probe",
+            "retrieval_call_efficiency",
+            "tool_call_cap_hits",
+            "max_tool_calls",
+            "retrieval_context_tokens_gross",
+            "failure_class_counts",
             "error_turns",
             "error_rate",
             "total_latency_ms",
@@ -1604,6 +1795,13 @@ class BenchmarkRunner:
             writer.writeheader()
             for summary in results:
                 row = summary.model_dump(include=set(fieldnames))
+                # A dict cannot live in a CSV cell: the taxonomy distribution
+                # travels as "F0=1;F2=3" ("" when the run had no probes), in
+                # FAILURE_CLASSES order so two runs are diffable by eye.
+                row["failure_class_counts"] = ";".join(
+                    f"{cls}={count}"
+                    for cls, count in summary.failure_class_counts.items()
+                )
                 writer.writerow(row)
 
         logger.info("Exported CSV: %s", csv_path)

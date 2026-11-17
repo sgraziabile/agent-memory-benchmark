@@ -178,11 +178,13 @@ class TestReadL2Telemetry:
             "appended_chunk_ids": [],
             # L2b agentic retrieval (TODOs/l2b-telemetry-contract-todo.md §2.3):
             # L0/L1/L2a never write these, so a pre-L2b record gains exactly
-            # these four at [] / 0 / False and nothing else moves.
+            # these at [] / 0 / False and nothing else moves. The gross token
+            # count also falls back to summing per-call ``context_tokens``.
             "retrieval_calls": [],
             "retrieval_call_count": 0,
             "retrieval_skipped": False,
             "tool_call_cap_hit": False,
+            "retrieval_context_tokens_gross": 0,
         }
 
 

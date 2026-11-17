@@ -12,7 +12,7 @@ from typing import Annotated, Any, Literal, Sequence
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing_extensions import TypedDict
 
 
@@ -68,6 +68,11 @@ class L2AgentState(TypedDict):
         retrieval_skipped: ``True`` when the agent decided not to call the tool.
         tool_call_cap_hit: ``True`` when the bounded loop stopped on
             ``max_tool_calls`` rather than on the model's own decision.
+        retrieval_context_tokens_gross: Token estimate summed over **every**
+            call this turn, duplicates included. ``retrieved_context_tokens``
+            is the de-duplicated union actually injected, so the difference
+            between the two is the cost of re-querying — the quantity an
+            agentic loop can make worse (``l2b-sequencing-plan`` §1.1.5).
     """
 
     messages: Annotated[Sequence[BaseMessage], add_messages]
@@ -86,6 +91,7 @@ class L2AgentState(TypedDict):
     retrieval_call_count: int
     retrieval_skipped: bool
     tool_call_cap_hit: bool
+    retrieval_context_tokens_gross: int
 
 
 
@@ -117,6 +123,18 @@ class AssertionRule(BaseModel):
         value: The substring/keyword (text rules), chunk-ID fragment
             (``*_chunk``), or source tag (``*_source``).
         case_sensitive: Whether the match should be case-sensitive.
+        query_must_contain: Optional per-probe query guard (``l2b-sequencing-plan``
+            §1.2, class F1). When non-empty, only **calls whose recorded
+            ``query`` contains every listed token** (case-insensitive) may
+            satisfy the rule — a call with the right gold but a malformed
+            query does not count. That is what separates "the agent searched
+            for the wrong thing" (F1) from "the retriever missed it" (F2).
+            A bare string is accepted and normalized to a one-element list.
+        call_index: Optional 1-based call selector (``l2b-sequencing-plan``
+            §1.1.1). When set, only that call's episodes may satisfy the rule,
+            which is how a probe states "the *second* query must find it" — a
+            budget/ordering claim no union can express. ``None`` (default)
+            scores against every call, the union policy.
     """
 
     type: Literal[
@@ -129,6 +147,18 @@ class AssertionRule(BaseModel):
     ]
     value: str
     case_sensitive: bool = False
+    query_must_contain: list[str] = Field(default_factory=list)
+    call_index: int | None = Field(default=None, ge=1)
+
+    @field_validator("query_must_contain", mode="before")
+    @classmethod
+    def _coerce_query_tokens(cls, value: Any) -> Any:
+        """Accept ``query_must_contain: NBL-420`` as well as a YAML list."""
+        if value is None:
+            return []
+        if isinstance(value, str):
+            return [value]
+        return value
 
 
 class DocumentSpec(BaseModel):
@@ -421,6 +451,17 @@ class TurnResult(BaseModel):
     retrieval_call_count: int = 0
     retrieval_skipped: bool = False
     tool_call_cap_hit: bool = False
+    #: Token estimate summed over every call this turn, duplicates included.
+    #: ``retrieved_context_tokens`` above is the de-duplicated union actually
+    #: injected, so the gap is the re-query cost (plan §1.1.5).
+    retrieval_context_tokens_gross: int = 0
+    #: Five-class retrieval failure taxonomy (``TODOs/l2b-sequencing-plan.md``
+    #: §1.2), emitted only on turns that declare a positive retrieval pin:
+    #: ``F0`` no call · ``F1`` call with a malformed query · ``F2`` gold absent
+    #: from the union · ``F3`` gold present, answer wrong · ``F4`` both right.
+    #: ``None`` for text-only turns and for every pre-L2b level, so an old
+    #: ``results.json`` gains the field at ``null`` and nothing else moves.
+    failure_class: Literal["F0", "F1", "F2", "F3", "F4"] | None = None
     # ── Plan WS-D document ingestion (0/[] for chat turns and L0/L1) ──────
     ingested_documents: list[str] = Field(default_factory=list)
     ingested_chars: int = 0
@@ -593,6 +634,17 @@ class BenchmarkRunSummary(BaseModel):
     calls_per_probe: float | None = None
     #: Declared positive pins satisfied per tool call (``None`` with no calls).
     retrieval_call_efficiency: float | None = None
+    #: Token estimate summed over every retrieval call of the run (duplicates
+    #: included): the gross counterpart of :attr:`retrieved_context_tokens`.
+    retrieval_context_tokens_gross: int = 0
+    #: Distribution of the five-class taxonomy over graded probes, e.g.
+    #: ``{"F0": 1, "F2": 3, "F4": 5}``. Empty when the run declares no
+    #: retrieval pins (L0/L1 and every text-only scenario).
+    failure_class_counts: dict[str, int] = Field(default_factory=dict)
+    #: Hard per-turn tool-call cap the agent ran with (``None`` for levels
+    #: without a tool loop), recorded so a capped run is reproducible from
+    #: the artifact instead of from the shell history.
+    max_tool_calls: int | None = None
     # ── Plan §4.3 aggregated latency metrics ───────────────────────────────
     total_retrieval_latency_ms: float = 0.0
     total_append_latency_ms: float = 0.0

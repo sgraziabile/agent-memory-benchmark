@@ -5,6 +5,10 @@
 > (22) + the updated `tests/test_harness_m3.py` exact-dict assertion.
 > `pytest -q` = **783 passed**. Recorded in
 > `TODOs/l2b-sequencing-plan.md` §9.
+> **Extended 2026-11-17** (mismo TODO, ver §"Extended" más abajo): contrato
+> cerrado con `query_must_contain` + `call_index`, taxonomía F0–F4, tokens
+> brutos y `--max-tool-calls`. `pytest -q` = **826 passed**, **65** tests en
+> `tests/test_l2b_telemetry.py`. Registro en `l2b-sequencing-plan.md` §9.5.
 > **Origen:** `TODOs/l2b-sequencing-plan.md` §1 (Phase 0) y §0 (por qué no "L2b first").
 > **Alcance:** `core/schemas.py`, `core/runner.py`, `core/metrics.py`,
 > `agents/__init__.py`, `tests/`. Sin cambios en el corpus, en los YAML ni en
@@ -25,6 +29,23 @@
 Verificación de no-regresión (criterio §3): un `results.json` L2a pre-existente
 (`20261112_132030`) valida contra el esquema nuevo y gana **solo** los campos nuevos en
 cero — `pass_rate` 0.5714, `retrieval_recall` 0.6667 y `total_tokens` 5 576 intactos.
+
+### Extended (2026-11-17) — lo que faltaba de §1.1/§1.2 del plan
+
+| Pieza | Qué quedó |
+|---|---|
+| `AssertionRule.query_must_contain` | Guarda por probe; sólo cuentan las llamadas cuya `query` contiene **todos** los tokens (case-insensitive, normalización cosmética). El detalle expone `query_matched` + `query_must_contain`. Sin `retrieval_calls` la guarda no se puede verificar → el pin **no** se acredita |
+| `AssertionRule.call_index` | Selector 1-based (`ge=1`): "la *segunda* query debe encontrarlo". Filtra qué llamada puede satisfacer el pin y compone con la guarda de query (el índice decide *cuál*, la guarda decide si buscó bien → F1 sigue siendo sobre la query) |
+| `core.metrics.classify_failure_class()` | F0–F4 por probe, con el orden "gold primero": sin pin → `None`; pins OK → `F3`/`F4`; 0 llamadas → `F0`; query mala → `F1`; resto → `F2`. Así una fila L2a con pin satisfecho no se etiqueta `F0` |
+| `core.metrics.count_failure_classes()` | Distribución por corrida en orden F0…F4; `{}` sin probes, así los `results.json` previos sólo ganan `{}` |
+| `retrieval_context_tokens_gross` | En state/turn/summary; `gross_context_tokens()` suma `context_tokens` por llamada (duplicados incluidos). El runner usa el canal explícito y, si falta, cae al fallback por llamada |
+| `--max-tool-calls` | Default **3**, inyectado en `configurable` sólo para niveles con `supports_tool_calls = True` (flag nuevo en `BaseBenchmarkAgent`); se registra en el summary |
+| CSV | Ocho columnas L2b nuevas; `failure_class_counts` aplanado como `F0=1;F2=3`. `backfill_retrieval_recall.py::DEFAULT_FIELDS` extendido (ratchet de header) |
+
+**No se tocó:** corpus, YAMLs, `_format_memory_block`, `must_store`, aserciones
+numéricas, set-recall ni provenance (siguen en Fase 3).
+
+---
 
 ### Decisión de grafo adoptada
 
